@@ -1,0 +1,1194 @@
+{% extends "base.html" %}
+{% block title %}{{ job.title }} - SIMA{% endblock %}
+{% block content %}
+
+<section class="ld-header">
+  <div class="ld-title-group">
+    <a href="{% url 'dashboard' %}" class="back-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Volver
+    </a>
+    <div class="ld-title-row" id="title-display">
+      <h1>{{ job.title }}</h1>
+      {% if is_owner %}
+      <button class="edit-title-btn" onclick="startEditTitle()" title="Editar nombre">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </button>
+      {% endif %}
+    </div>
+    {% if is_owner %}
+    <form class="ld-title-edit" id="title-edit" action="{% url 'rename_lesson' job.pk %}" method="post" hidden>
+      {% csrf_token %}
+      <input type="text" name="title" value="{{ job.title }}" maxlength="140" class="title-input" id="title-input">
+      <button type="submit" class="primary-button" style="padding:6px 14px;font-size:.85rem">Guardar</button>
+      <button type="button" class="secondary-button" style="padding:6px 14px;font-size:.85rem" onclick="cancelEditTitle()">Cancelar</button>
+    </form>
+    {% endif %}
+    <p class="ld-meta">{{ job.updated_at|date:"d M Y" }} · {{ job.get_status_display }}</p>
+  </div>
+  {% if is_owner %}
+  <div class="ld-actions">
+    {% if job.corrected_output or job.toon_output %}
+    <button class="icon-btn" title="Compartir / Visibilidad" onclick="openShareModal()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+    </button>
+    <button class="icon-btn" title="Descargar JSON" onclick="window.location='{% url 'download_json' job.pk %}'">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    </button>
+    {% endif %}
+    <button class="icon-btn icon-btn--danger" title="Eliminar clase" onclick="openDeleteModal()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+    </button>
+  </div>
+  {% endif %}
+</section>
+
+{# ══════════════════════════════════════════════════════════════════ #}
+{# VISTA: CLASE LISTA PARA ESTUDIAR                                   #}
+{# ══════════════════════════════════════════════════════════════════ #}
+{% if job.corrected_output or job.toon_output %}
+
+<div class="study-container">
+  
+  {# meta de la clase #}
+  <div class="study-meta-card">
+    <div class="study-meta-row">
+      <span class="study-badge">{{ item_count }} preguntas</span>
+      <span class="study-badge">IRT adaptativo</span>
+      {% if job.corrected_output %}
+        <span class="study-badge study-badge--verified">Verificado</span>
+      {% endif %}
+      {% for tag in job.tag_list %}
+        <span class="study-badge study-badge--tag">{{ tag }}</span>
+      {% endfor %}
+    </div>
+  </div>
+
+  {# configuración de intensidad #}
+  <form class="intensity-card" method="post" action="{% url 'start_quiz' job.pk %}" id="start-quiz-form">
+    {% csrf_token %}
+    <h3>Plan de estudio</h3>
+    <p class="muted">El CAT elegirá cada ítem por información IRT 3PL y cubrirá niveles de Bloom según tu banco.</p>
+    <div class="intensity-options">
+      <label class="intensity-btn">
+        <input type="radio" name="target_count" value="5">
+        5 preguntas<br><small>Rápido (3 min)</small>
+      </label>
+      <label class="intensity-btn intensity-btn--active">
+        <input type="radio" name="target_count" value="10" checked>
+        10 preguntas<br><small>Estándar (6 min)</small>
+      </label>
+      <label class="intensity-btn">
+        <input type="radio" name="target_count" value="15">
+        15 preguntas<br><small>Intenso (10 min)</small>
+      </label>
+    </div>
+  </form>
+
+  {# CTA principal #}
+  <div class="study-cta-card">
+    <button class="study-start-btn" type="submit" form="start-quiz-form">
+      <span class="btn-icon" aria-hidden="true">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v4"/><path d="M12 18v4"/><path d="M2 12h4"/><path d="M18 12h4"/></svg>
+      </span>
+      <span>
+        <strong>Iniciar quiz adaptativo</strong>
+        <small>θ inicial {{ cat_params.theta_init|default:0 }} · parada SE ≤ {{ cat_params.se_stop|default:"0.30" }} · {{ item_count }} ítems disponibles</small>
+      </span>
+    </button>
+  </div>
+
+  <div class="study-meta-card">
+    <h3>Banco IRT y Bloom</h3>
+    <div class="study-meta-row">
+      {% for stat in bloom_stats %}
+        <span class="study-badge">{{ stat.level }} {{ stat.label }}: {{ stat.count }}</span>
+      {% empty %}
+        <span class="study-badge">Sin distribución Bloom</span>
+      {% endfor %}
+    </div>
+  </div>
+
+  {# historial de intentos #}
+  <div class="history-card">
+    <h3>Tu historial</h3>
+    {% if quiz_attempts %}
+      <div class="attempt-list">
+        {% for attempt in quiz_attempts %}
+        <a class="attempt-row" href="{% url 'quiz_attempt' job.pk attempt.pk %}">
+          <span>
+            <strong>{{ attempt.correct_count }}/{{ attempt.answered_count }} correctas</strong>
+            <small>{{ attempt.created_at|date:"d M H:i" }} · θ {{ attempt.theta|floatformat:2 }} · SE {{ attempt.standard_error|floatformat:2 }}</small>
+          </span>
+          <span class="study-badge">{{ attempt.accuracy }}%</span>
+        </a>
+        {% endfor %}
+      </div>
+    {% else %}
+    <div class="empty-state-mini">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <p>Aún no has hecho ningún intento.</p>
+      <p class="muted">Cuando completes el primero, verás precisión, θ, error estándar y recorrido por Bloom.</p>
+    </div>
+    {% endif %}
+  </div>
+
+  {# resumen adaptativo #}
+  <div class="ranking-card">
+    <h3>Adaptación CAT</h3>
+    <p class="muted">El siguiente ítem se elige por información máxima cerca de tu θ actual, con balance por Bloom y control de exposición.</p>
+    <div class="study-meta-row">
+      <span class="study-badge">Modelo {{ cat_params.exposure_control|default:"SH" }}</span>
+      <span class="study-badge">θ {{ cat_params.theta_min|default:"-3" }} a {{ cat_params.theta_max|default:"3" }}</span>
+      <span class="study-badge">Máx. {{ cat_params.max_items|default:"10" }} ítems</span>
+    </div>
+  </div>
+
+  {# botón avanzado #}
+  <div class="advanced-toggle">
+    <button class="advanced-btn" onclick="toggleAdvanced()">
+      <span id="advanced-icon" class="advanced-icon" aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </span>
+      Modo avanzado (ver pipeline y editar)
+    </button>
+  </div>
+
+  {# panel avanzado (oculto por defecto) #}
+  <div class="advanced-panel" id="advanced-panel" hidden>
+    
+    <div class="advanced-header">
+      <h3>Pipeline de generación</h3>
+      <p class="muted">Aquí puedes ver cómo se generó la clase y editar manualmente si es necesario.</p>
+    </div>
+
+    {# toggle raw / estilizado #}
+    <div class="view-toggle">
+      <button class="view-btn view-btn--active" id="btn-styled" onclick="setView('styled')">Vista legible</button>
+      <button class="view-btn" id="btn-raw" onclick="setView('raw')">MINI raw</button>
+      {% if is_owner %}
+      <form method="post" action="{% url 'repair_coherence' job.pk %}" class="inline-ai-form" onsubmit="return confirmRepairCoherence(this);">
+        {% csrf_token %}
+        <button class="view-btn view-btn--ai" type="submit">Arreglar coherencia con IA</button>
+      </form>
+      {% endif %}
+    </div>
+
+    <div id="view-styled">
+      {% if items_html %}
+        {{ items_html }}
+      {% else %}
+        <p class="muted">No se pudo renderizar el formato MINI.</p>
+      {% endif %}
+    </div>
+
+    <div id="view-raw" hidden>
+      <pre class="mini-raw">{{ job.corrected_output|default:job.toon_output }}</pre>
+    </div>
+
+    {% if job.mini_coherence_trace %}
+    <section class="output-block audit-block">
+      <h4>Auditoria de coherencia MINI</h4>
+      {% for repair in job.mini_coherence_trace reversed %}
+      <details class="audit-detail" {% if forloop.first %}open{% endif %}>
+        <summary>
+          {{ repair.created_at }}
+          {% if repair.changed %}<span class="audit-pill audit-pill--ok">items reparados</span>{% else %}<span class="audit-pill audit-pill--ok">sin cambios</span>{% endif %}
+        </summary>
+        <div class="audit-summary">
+          <span>Backend: {{ repair.backend }}</span>
+          <span>Prompt: {{ repair.prompt_chars }} chars</span>
+          <span>Salida: {{ repair.output_chars }} chars</span>
+        </div>
+        <div class="audit-change-grid transcript-diff-grid">
+          <div>
+            <h5>Antes</h5>
+            <pre class="mini-raw">{{ repair.before }}</pre>
+          </div>
+          <div>
+            <h5>Despues</h5>
+            <pre class="mini-raw">{{ repair.after }}</pre>
+          </div>
+        </div>
+        <h5>Cambios por item</h5>
+        <div class="transcript-change-list">
+          {% for change in repair.changes %}
+          <div class="transcript-change">
+            <strong>{{ change.item }} · {{ change.field }}</strong>
+            {% if change.before %}<p><b>Antes:</b> {{ change.before }}</p>{% endif %}
+            {% if change.after %}<p><b>Despues:</b> {{ change.after }}</p>{% endif %}
+          </div>
+          {% empty %}
+          <p class="muted">No hubo diferencias en los items.</p>
+          {% endfor %}
+        </div>
+      </details>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    {% if job.transcript %}
+    <section class="output-block">
+      <div class="output-block-header">
+        <h4>Transcripción</h4>
+        {% if is_owner and job.status != 'queued' and job.status != 'processing' %}
+        <form method="post" action="{% url 'repair_transcript' job.pk %}" class="inline-ai-form" onsubmit="return confirmRepairTranscript(this);">
+          {% csrf_token %}
+          <button class="view-btn view-btn--ai" type="submit">Arreglar transcripción con IA</button>
+        </form>
+        {% endif %}
+      </div>
+      <pre>{{ job.transcript }}</pre>
+    </section>
+    {% endif %}
+
+    {% if job.transcript_repair_trace %}
+    <section class="output-block audit-block">
+      <h4>Auditoria de transcripcion</h4>
+      {% for repair in job.transcript_repair_trace reversed %}
+      <details class="audit-detail" {% if forloop.first %}open{% endif %}>
+        <summary>
+          {{ repair.created_at }} · {{ repair.downstream_action }}
+          {% if repair.changed %}<span class="audit-pill audit-pill--ok">con cambios</span>{% else %}<span class="audit-pill">sin cambios</span>{% endif %}
+        </summary>
+        <div class="audit-summary">
+          <span>Backend: {{ repair.backend }}</span>
+          <span>Prompt: {{ repair.prompt_chars }} chars</span>
+          <span>Salida: {{ repair.output_chars }} chars</span>
+        </div>
+        <div class="audit-change-grid transcript-diff-grid">
+          <div>
+            <h5>Antes</h5>
+            <pre class="mini-raw">{{ repair.before }}</pre>
+          </div>
+          <div>
+            <h5>Despues</h5>
+            <pre class="mini-raw">{{ repair.after }}</pre>
+          </div>
+        </div>
+        <h5>Cambios detectados</h5>
+        <div class="transcript-change-list">
+          {% for change in repair.changes %}
+          <div class="transcript-change">
+            <strong>{{ change.type }}</strong>
+            {% if change.before %}<p><b>Antes:</b> {{ change.before }}</p>{% endif %}
+            {% if change.after %}<p><b>Despues:</b> {{ change.after }}</p>{% endif %}
+          </div>
+          {% empty %}
+          <p class="muted">No hubo diferencias de palabras.</p>
+          {% endfor %}
+        </div>
+      </details>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    {% if job.verification_output %}
+    <section class="output-block">
+      <h4>Reporte de verificación</h4>
+      <pre class="mini-raw">{{ job.verification_output }}</pre>
+    </section>
+    {% endif %}
+
+    {% if job.verification_trace %}
+    <section class="output-block audit-block">
+      <h4>Auditoria de fuentes</h4>
+      <div class="audit-summary">
+        <span>Modo: {{ job.verification_trace.mode|default:job.verification_mode }}</span>
+        <span>Prompt: {{ job.verification_trace.prompt_chars|default:"-" }} chars</span>
+        <span>Contexto: {{ job.verification_trace.context_chars|default:"-" }} chars</span>
+      </div>
+
+      {% if job.verification_trace.web.queries %}
+      <h5>Busquedas web</h5>
+      {% for query in job.verification_trace.web.queries %}
+      <details class="audit-detail" {% if forloop.first %}open{% endif %}>
+        <summary>{{ query.query }}</summary>
+        {% for result in query.results %}
+        <div class="audit-source {% if result.ok %}audit-source--ok{% else %}audit-source--error{% endif %}">
+          <strong>{{ result.title|default:result.url }}</strong>
+          <a href="{{ result.url }}" target="_blank" rel="noopener">{{ result.url }}</a>
+          {% if result.ok %}
+            <small>{{ result.chars }} chars leidos</small>
+            <p>{{ result.snippet|truncatechars:420 }}</p>
+          {% else %}
+            <p>{{ result.error }}</p>
+          {% endif %}
+        </div>
+        {% empty %}
+        <p class="muted">La busqueda no devolvio resultados legibles.</p>
+        {% endfor %}
+      </details>
+      {% endfor %}
+      {% endif %}
+
+      {% if job.verification_trace.web.configured_sources %}
+      <h5>Fuentes configuradas</h5>
+      {% for source in job.verification_trace.web.configured_sources %}
+      <div class="audit-source {% if source.ok %}audit-source--ok{% else %}audit-source--error{% endif %}">
+        <a href="{{ source.url }}" target="_blank" rel="noopener">{{ source.url }}</a>
+        {% if source.ok %}
+          <small>{{ source.chars }} chars leidos</small>
+          <p>{{ source.snippet|truncatechars:420 }}</p>
+        {% else %}
+          <p>{{ source.error }}</p>
+        {% endif %}
+      </div>
+      {% endfor %}
+      {% endif %}
+
+      {% if job.verification_trace.eduqg.enabled %}
+      <h5>EduQG local</h5>
+      <div class="audit-summary">
+        <span>Registros: {{ job.verification_trace.eduqg.records_loaded|default:0 }}</span>
+        <span>Archivos: {{ job.verification_trace.eduqg.files|length }}</span>
+        <span>Path: {{ job.verification_trace.eduqg.path }}</span>
+      </div>
+      {% if job.verification_trace.eduqg.error %}
+        <p class="muted">{{ job.verification_trace.eduqg.error }}</p>
+      {% endif %}
+      {% for match in job.verification_trace.eduqg.matches %}
+      <div class="audit-source audit-source--ok">
+        <strong>{{ match.title }} · score {{ match.score }}</strong>
+        <small>{{ match.file }}</small>
+        {% if match.question %}<p><b>Ejemplo:</b> {{ match.question }}</p>{% endif %}
+        {% if match.answer %}<p><b>Respuesta:</b> {{ match.answer }}</p>{% endif %}
+        <p>{{ match.excerpt|truncatechars:480 }}</p>
+      </div>
+      {% empty %}
+        <p class="muted">EduQG no aporto matches para este contenido.</p>
+      {% endfor %}
+      {% endif %}
+    </section>
+    {% endif %}
+
+    {% if job.correction_trace %}
+    <section class="output-block audit-block">
+      <h4>Aplicacion de correcciones al MINI</h4>
+      {% for change in job.correction_trace %}
+      <details class="audit-detail" {% if forloop.first %}open{% endif %}>
+        <summary>
+          Reporte {{ change.report_item_id }} {% if change.matched %}-> {{ change.matched_item_id }}{% else %}-> sin match{% endif %}
+          {% if change.applied %}<span class="audit-pill audit-pill--ok">aplicado</span>{% else %}<span class="audit-pill">sin cambio</span>{% endif %}
+        </summary>
+        <div class="audit-change-grid">
+          <div>
+            <h5>Antes</h5>
+            {% if change.before %}
+              <p>{{ change.before.statement }}</p>
+              <ul>
+              {% for option in change.before.options %}
+                <li>{% if option.correct %}<strong>{{ option.text }}</strong>{% else %}{{ option.text }}{% endif %}</li>
+              {% endfor %}
+              </ul>
+            {% else %}
+              <p class="muted">No hubo match contra el MINI.</p>
+            {% endif %}
+          </div>
+          <div>
+            <h5>Despues</h5>
+            {% if change.after %}
+              <p>{{ change.after.statement }}</p>
+              <ul>
+              {% for option in change.after.options %}
+                <li>{% if option.correct %}<strong>{{ option.text }}</strong>{% else %}{{ option.text }}{% endif %}</li>
+              {% endfor %}
+              </ul>
+            {% else %}
+              <p class="muted">{{ change.note }}</p>
+            {% endif %}
+          </div>
+        </div>
+        <p class="muted">{{ change.error_type }} · {{ change.field }} · {{ change.note }}</p>
+        {% if change.justification %}<p class="muted">Justificacion: {{ change.justification }}</p>{% endif %}
+      </details>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+  </div>
+
+</div>
+
+{# ══════════════════════════════════════════════════════════════════ #}
+{# VISTA: CLASE EN PROCESO (sin ítems listos)                         #}
+{# ══════════════════════════════════════════════════════════════════ #}
+{% else %}
+
+<div class="pipeline-container">
+  
+  {# barra de progreso del pipeline #}
+  <div class="pipeline-progress">
+    <div class="pipeline-progress-bar">
+      {% for i in "1234" %}
+      <div class="pipeline-step {% if forloop.counter <= pipeline_step %}pipeline-step--done{% endif %}">
+        <div class="pipeline-step-dot">{{ forloop.counter }}</div>
+        <span>{% if forloop.counter == 1 %}Prompt{% elif forloop.counter == 2 %}Ítems{% elif forloop.counter == 3 %}Verificar{% else %}Listo{% endif %}</span>
+      </div>
+      {% if not forloop.last %}<div class="pipeline-connector {% if forloop.counter < pipeline_step %}pipeline-connector--done{% endif %}"></div>{% endif %}
+      {% endfor %}
+    </div>
+    <p class="pipeline-progress-label">Paso {{ pipeline_step }} de {{ pipeline_total }}</p>
+  </div>
+
+  <div class="pipeline-status">
+    <h2>Clase en proceso</h2>
+    <p>Completa los pasos del pipeline para poder estudiar con esta clase.</p>
+  </div>
+
+  {% if job.status == 'queued' or job.status == 'processing' %}
+  <section class="output-block queue-status" data-status-url="{% url 'lesson_job_status' job.pk %}">
+    <h3>{{ job.get_status_display }}</h3>
+    <p id="queue-stage">{{ job.processing_stage|default:"Preparando cola local" }}</p>
+    <div class="processing-bar"><div class="processing-bar__fill"></div></div>
+    <pre class="processing-log" id="queue-log">{{ job.processing_log }}</pre>
+    <p class="muted">La generación y verificación corren en segundo plano para no colgar la página.</p>
+  </section>
+  {% endif %}
+
+  {% if job.error %}
+  <section class="output-block error-note">
+    <h3>No se pudo completar automáticamente</h3>
+    <p>{{ job.error }}</p>
+    {% if job.mode == 'api' %}
+    <form method="post" action="{% url 'retry_api_lesson' job.pk %}" class="retry-form" onsubmit="this.querySelector('button').textContent='Reintentando…'; this.querySelector('button').disabled=true;">
+      {% csrf_token %}
+      <input type="hidden" name="backend" value="auto">
+      <input type="hidden" name="verification_mode" value="{{ job.verification_mode|default:'web' }}">
+      <button class="primary-button" type="submit">Reintentar</button>
+    </form>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  {% if job.transcript %}
+  <section class="output-block">
+    <div class="output-block-header">
+      <h3>Transcripción</h3>
+      {% if is_owner and job.status != 'queued' and job.status != 'processing' %}
+      <form method="post" action="{% url 'repair_transcript' job.pk %}" class="inline-ai-form" onsubmit="return confirmRepairTranscript(this);">
+        {% csrf_token %}
+        <button class="view-btn view-btn--ai" type="submit">Arreglar transcripción con IA</button>
+      </form>
+      {% endif %}
+    </div>
+    <pre>{{ job.transcript }}</pre>
+  </section>
+  {% endif %}
+
+  {% if job.transcript_repair_trace %}
+  <section class="output-block audit-block">
+    <h3>Auditoria de transcripcion</h3>
+    {% for repair in job.transcript_repair_trace reversed %}
+    <details class="audit-detail" {% if forloop.first %}open{% endif %}>
+      <summary>
+        {{ repair.created_at }} · {{ repair.downstream_action }}
+        {% if repair.changed %}<span class="audit-pill audit-pill--ok">con cambios</span>{% else %}<span class="audit-pill">sin cambios</span>{% endif %}
+      </summary>
+      <div class="audit-summary">
+        <span>Backend: {{ repair.backend }}</span>
+        <span>Prompt: {{ repair.prompt_chars }} chars</span>
+        <span>Salida: {{ repair.output_chars }} chars</span>
+      </div>
+      <div class="audit-change-grid transcript-diff-grid">
+        <div>
+          <h5>Antes</h5>
+          <pre class="mini-raw">{{ repair.before }}</pre>
+        </div>
+        <div>
+          <h5>Despues</h5>
+          <pre class="mini-raw">{{ repair.after }}</pre>
+        </div>
+      </div>
+      <h5>Cambios detectados</h5>
+      <div class="transcript-change-list">
+        {% for change in repair.changes %}
+        <div class="transcript-change">
+          <strong>{{ change.type }}</strong>
+          {% if change.before %}<p><b>Antes:</b> {{ change.before }}</p>{% endif %}
+          {% if change.after %}<p><b>Despues:</b> {{ change.after }}</p>{% endif %}
+        </div>
+        {% empty %}
+        <p class="muted">No hubo diferencias de palabras.</p>
+        {% endfor %}
+      </div>
+    </details>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  <section class="step-card {% if pipeline_step >= 1 %}step-card--done{% endif %}">
+    <span class="step-number">1</span>
+    <h3>Prompt generador</h3>
+    {% if job.generation_prompt and job.mode == 'api' %}
+      <p class="muted">La API procesó tu clase automáticamente con este prompt.</p>
+    {% elif job.generation_prompt %}
+      <p class="muted">Cópialo en tu IA para generar los ítems manualmente.</p>
+    {% else %}
+      <p class="muted">Aún no se generó un prompt para esta clase.</p>
+    {% endif %}
+    {% if job.generation_prompt %}
+    <textarea readonly rows="10" class="prompt-textarea">{{ job.generation_prompt }}</textarea>
+    {% endif %}
+  </section>
+
+  {% if job.toon_output %}
+  <section class="output-block">
+    <h3>Ítems IRT generados (raw)</h3>
+    <pre class="mini-raw">{{ job.toon_output }}</pre>
+  </section>
+  {% if job.mini_coherence_trace %}
+  <section class="output-block audit-block">
+    <h3>Auditoria de coherencia MINI</h3>
+    {% for repair in job.mini_coherence_trace reversed %}
+    <details class="audit-detail" {% if forloop.first %}open{% endif %}>
+      <summary>
+        {{ repair.created_at }}
+        {% if repair.changed %}<span class="audit-pill audit-pill--ok">items reparados</span>{% else %}<span class="audit-pill audit-pill--ok">sin cambios</span>{% endif %}
+      </summary>
+      <div class="audit-summary">
+        <span>Backend: {{ repair.backend }}</span>
+        <span>Prompt: {{ repair.prompt_chars }} chars</span>
+        <span>Salida: {{ repair.output_chars }} chars</span>
+      </div>
+      <div class="audit-change-grid transcript-diff-grid">
+        <div>
+          <h5>Antes</h5>
+          <pre class="mini-raw">{{ repair.before }}</pre>
+        </div>
+        <div>
+          <h5>Despues</h5>
+          <pre class="mini-raw">{{ repair.after }}</pre>
+        </div>
+      </div>
+      <h5>Cambios por item</h5>
+      <div class="transcript-change-list">
+        {% for change in repair.changes %}
+        <div class="transcript-change">
+          <strong>{{ change.item }} · {{ change.field }}</strong>
+          {% if change.before %}<p><b>Antes:</b> {{ change.before }}</p>{% endif %}
+          {% if change.after %}<p><b>Despues:</b> {{ change.after }}</p>{% endif %}
+        </div>
+        {% empty %}
+        <p class="muted">No hubo diferencias en los items.</p>
+        {% endfor %}
+      </div>
+    </details>
+    {% endfor %}
+  </section>
+  {% endif %}
+  {% elif job.mode == 'api' %}
+  <section class="step-card {% if job.status == 'queued' or job.status == 'processing' %}step-card--done{% endif %}">
+    <span class="step-number">2</span>
+    <h3>Generacion automatica de items</h3>
+    {% if job.status == 'queued' or job.status == 'processing' %}
+      <p class="muted">La IA generara los items automaticamente cuando termine el turno de la cola.</p>
+    {% elif job.error %}
+      <p class="muted">La generacion automatica se detuvo por el error mostrado arriba. Usa Reintentar para volver a ponerla en cola.</p>
+    {% else %}
+      <p class="muted">No hay items todavia. Este flujo no necesita pegado manual.</p>
+    {% endif %}
+  </section>
+  {% else %}
+  <section class="step-card">
+    <span class="step-number">2</span>
+    <h3>Pega los ítems generados</h3>
+    <form method="post" action="{% url 'submit_toon' job.pk %}">
+      {% csrf_token %}
+      <textarea name="toon_output" rows="8" placeholder="Pega aquí la respuesta en formato MINI (a|... + líneas i)..."></textarea>
+      <button class="primary-button" type="submit">Guardar ítems</button>
+    </form>
+  </section>
+  {% endif %}
+
+  {% if job.verification_prompt and not job.corrected_output %}
+  <section class="step-card">
+    <span class="step-number">3</span>
+    <h3>Prompt de verificación</h3>
+    {% if job.mode == 'api' %}
+      <p class="muted">La verificacion automatica usa este prompt internamente; no necesitas pegar nada.</p>
+    {% else %}
+      <p class="muted">Pega los ítems generados + este prompt en tu IA para detectar errores.</p>
+    {% endif %}
+    <textarea readonly rows="10">{{ job.verification_prompt }}</textarea>
+  </section>
+  {% endif %}
+
+  {% if job.corrected_output %}
+  <section class="output-block output-block--success">
+    <h3 class="inline-status">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      Clase lista
+    </h3>
+    <p>Los ítems fueron verificados y corregidos. Ya puedes estudiar.</p>
+    <a class="primary-button" href="{% url 'lesson_detail' job.pk %}">Ir a estudiar</a>
+  </section>
+  {% elif job.verification_prompt and job.mode == 'free_manual' %}
+  <section class="step-card">
+    <span class="step-number">4</span>
+    <h3>Pega el reporte de verificación</h3>
+    <p class="muted">Las correcciones se aplican automáticamente al guardar.</p>
+    <form method="post" action="{% url 'submit_verification' job.pk %}">
+      {% csrf_token %}
+      <textarea name="verification_output" rows="6" placeholder="Pega aquí el reporte (formato v|... + líneas e)..."></textarea>
+      <button class="primary-button" type="submit">Aplicar correcciones</button>
+    </form>
+  </section>
+  {% elif job.verification_prompt and job.mode == 'api' %}
+  <section class="step-card">
+    <span class="step-number">4</span>
+    <h3>Correcciones automaticas</h3>
+    <p class="muted">El flujo API aplica el reporte de verificacion en segundo plano. Si se detuvo, usa Reintentar.</p>
+  </section>
+  {% endif %}
+
+</div>
+
+{% endif %}
+
+{# ── MODAL ELIMINAR ───────────────────────────────────────────────── #}
+<div class="modal" id="delete-modal" aria-modal="true" role="dialog">
+  <div class="modal-backdrop" onclick="closeDeleteModal()"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Eliminar clase</h3>
+      <button class="modal-close" onclick="closeDeleteModal()" aria-label="Cerrar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <p>¿Eliminar <strong>{{ job.title }}</strong>? Esta acción no se puede deshacer.</p>
+    <form method="post" action="{% url 'delete_lesson' job.pk %}">
+      {% csrf_token %}
+      <div class="modal-footer">
+        <button type="button" class="secondary-button" onclick="closeDeleteModal()">Cancelar</button>
+        <button type="submit" class="danger-button">Eliminar</button>
+      </div>
+    </form>
+  </div>
+</div>
+{# ── MODAL ELIMINAR ───────────────────────────────────────────────── #}
+<div class="modal" id="delete-modal" aria-modal="true" role="dialog">
+  <div class="modal-backdrop" onclick="closeDeleteModal()"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Eliminar clase</h3>
+      <button class="modal-close" onclick="closeDeleteModal()" aria-label="Cerrar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <p>¿Eliminar <strong>{{ job.title }}</strong>? Esta acción no se puede deshacer.</p>
+    <form method="post" action="{% url 'delete_lesson' job.pk %}">
+      {% csrf_token %}
+      <div class="modal-footer">
+        <button type="button" class="secondary-button" onclick="closeDeleteModal()">Cancelar</button>
+        <button type="submit" class="danger-button">Eliminar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal" id="share-modal" aria-modal="true" role="dialog">
+  <div class="modal-backdrop" onclick="closeShareModal()"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Visibilidad de la clase</h3>
+      <button class="modal-close" onclick="closeShareModal()" aria-label="Cerrar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <p class="muted">Puedes cambiarlo en cualquier momento.</p>
+    <form method="post" action="{% url 'set_visibility' job.pk %}">
+      {% csrf_token %}
+      <div class="share-options" id="share-options">
+
+        <label class="share-option" data-value="private">
+          <input type="radio" name="visibility" value="private" {% if job.visibility == 'private' %}checked{% endif %}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span>
+            <strong>Privada</strong>
+            <small>Solo tú puedes verla</small>
+          </span>
+        </label>
+
+        <label class="share-option" data-value="shared">
+          <input type="radio" name="visibility" value="shared" {% if job.visibility == 'shared' %}checked{% endif %}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          <span>
+            <strong>Compartir con link</strong>
+            <small>Cualquiera con el link puede estudiar</small>
+          </span>
+        </label>
+
+        <label class="share-option" data-value="public">
+          <input type="radio" name="visibility" value="public" {% if job.visibility == 'public' %}checked{% endif %}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <span>
+            <strong>Pública</strong>
+            <small>Aparece en Explorar para todos</small>
+          </span>
+        </label>
+
+      </div>
+
+      <label class="tag-editor">
+        <span>Tags para Explorar</span>
+        <input type="text" name="tags" value="{{ job.tags }}" placeholder="historia, videojuegos, examen">
+        <small>Separalos con comas. Se usan en la busqueda publica.</small>
+      </label>
+
+      {% if job.share_token %}
+      <div class="share-link-box">
+        <p class="share-link-label">Link de acceso:</p>
+        <div class="share-link-row">
+          <input type="text" readonly value="{{ request.scheme }}://{{ request.get_host }}{% url 'shared_lesson_detail' job.share_token %}" id="share-link-input">
+          <button type="button" class="copy-btn" onclick="copyShareLink()">Copiar</button>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="modal-footer">
+        <button type="button" class="secondary-button" onclick="closeShareModal()">Cancelar</button>
+        <button type="submit" class="primary-button">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{# ── ESTILOS ──────────────────────────────────────────────────────── #}
+<style>
+  /* header */
+  [hidden] { display: none !important; }
+  .ld-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .ld-title-group { flex: 1; }
+  .back-link { 
+    font-size: .85rem; color: var(--muted); text-decoration: none; 
+    display: inline-flex; align-items: center; gap: 4px; margin-bottom: 8px; 
+  }
+  .back-link:hover { color: var(--ink); }
+  .ld-title-row { display: flex; align-items: center; gap: 10px; }
+  .ld-header h1 { margin: 0; font-size: 2rem; }
+  .edit-title-btn {
+    padding: 6px; border-radius: 6px; border: 1px solid var(--line);
+    background: var(--surface); cursor: pointer; opacity: .6; transition: all .2s;
+  }
+  .edit-title-btn:hover { opacity: 1; border-color: var(--green); }
+  .ld-title-edit { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+  .title-input {
+    flex: 1; padding: 8px 12px; border-radius: 8px; border: 2px solid var(--green);
+    font-size: 1.3rem; font-weight: 700; font-family: inherit;
+  }
+  .ld-meta { margin: 4px 0 0; font-size: .85rem; color: var(--muted); }
+  .ld-actions { display: flex; gap: 8px; }
+  .icon-btn {
+    width: 40px; height: 40px; border-radius: 10px; border: 2px solid var(--line);
+    background: var(--surface); cursor: pointer; font-size: 1.2rem;
+    transition: all .2s; display: flex; align-items: center; justify-content: center;
+  }
+  .icon-btn:hover { border-color: var(--green); }
+
+  /* study container */
+  .study-container { max-width: 720px; margin: 0 auto; }
+  .study-meta-card { padding: 16px; border-radius: 12px; background: var(--soft); margin-bottom: 20px; }
+  .study-meta-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .study-badge {
+    padding: 4px 12px; border-radius: 999px; background: var(--surface);
+    font-size: .8rem; font-weight: 600; border: 1px solid var(--line);
+  }
+  .study-badge--verified { background: #e6f9d8; color: var(--green-dark); border-color: var(--green); }
+
+  /* intensity */
+  .intensity-card { padding: 20px; border-radius: 16px; border: 2px solid var(--line); background: var(--surface); margin-bottom: 20px; }
+  .intensity-card h3 { margin: 0 0 6px; font-size: 1.1rem; }
+  .intensity-card .muted { margin: 0 0 16px; }
+  .intensity-options { display: flex; gap: 12px; flex-wrap: wrap; }
+  .intensity-btn {
+    flex: 1; min-width: 140px; padding: 14px 12px; border-radius: 12px;
+    border: 2px solid var(--line); background: var(--surface); cursor: pointer;
+    font-weight: 600; font-size: .9rem; transition: all .2s; text-align: center;
+  }
+  .intensity-btn input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .intensity-btn small { display: block; margin-top: 4px; font-size: .75rem; color: var(--muted); font-weight: 400; }
+  .intensity-btn:hover { border-color: var(--green); }
+  .intensity-btn--active { border-color: var(--green); background: #f0fce8; color: var(--green-dark); }
+
+  /* study CTA */
+  .study-cta-card { margin-bottom: 20px; }
+  .study-start-btn {
+    width: 100%; padding: 20px; border-radius: 16px; border: none;
+    background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
+    color: #111; cursor: pointer; display: flex; align-items: center; gap: 16px;
+    transition: all .3s; opacity: 1;
+  }
+  .study-start-btn:not(:disabled) { cursor: pointer; opacity: 1; }
+  .study-start-btn:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(88,204,2,.3); }
+  .btn-icon { display: inline-flex; color: var(--green-dark); }
+  .study-start-btn strong { display: block; font-size: 1.1rem; margin-bottom: 4px; }
+  .study-start-btn small { display: block; font-size: .8rem; opacity: .9; }
+  .study-note { margin: 12px 0 0; font-size: .8rem; color: var(--muted); text-align: center; }
+
+  /* history & ranking */
+  .history-card, .ranking-card {
+    padding: 20px; border-radius: 16px; border: 2px solid var(--line);
+    background: var(--surface); margin-bottom: 20px;
+  }
+  .history-card h3, .ranking-card h3 { margin: 0 0 8px; font-size: 1.1rem; }
+  .history-card .muted, .ranking-card .muted { margin: 0 0 16px; font-size: .85rem; }
+  .empty-state-mini { text-align: center; padding: 24px; background: var(--soft); border-radius: 12px; }
+  .empty-icon-mini { font-size: 2rem; display: block; margin-bottom: 8px; }
+  .empty-state-mini p { margin: 8px 0; }
+  .feature-list { text-align: left; max-width: 360px; margin: 16px auto 0; font-size: .85rem; color: var(--muted); }
+  .feature-list li { margin: 6px 0; }
+  .attempt-list { display: grid; gap: 10px; }
+  .attempt-row {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px;
+    background: rgba(255,255,255,.02); color: var(--ink); text-decoration: none;
+  }
+  .attempt-row:hover { border-color: var(--green); }
+  .attempt-row strong, .attempt-row small { display: block; }
+  .attempt-row small { margin-top: 3px; color: var(--muted); }
+
+  /* advanced toggle */
+  .advanced-toggle { margin: 32px 0 20px; text-align: center; }
+  .advanced-btn {
+    padding: 10px 20px; border-radius: 8px; border: 2px solid var(--line);
+    background: var(--surface); cursor: pointer; font-size: .9rem; font-weight: 600;
+    color: var(--muted); transition: all .2s;
+  }
+  .advanced-btn:hover { border-color: var(--green); color: var(--ink); }
+  #advanced-icon { display: inline-flex; transition: transform .2s; }
+  .advanced-icon--open { transform: rotate(90deg); }
+  .inline-status { display: inline-flex; align-items: center; gap: 8px; }
+  .advanced-panel { margin-top: 20px; padding: 24px; border-radius: 16px; border: 2px solid var(--line); background: var(--soft); }
+  .advanced-header { margin-bottom: 20px; }
+  .advanced-header h3 { margin: 0 0 6px; }
+
+  /* view toggle */
+  .view-toggle { display: flex; gap: 4px; margin-bottom: 16px; align-items: center; flex-wrap: wrap; }
+  .view-btn {
+    padding: 6px 16px; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--surface); cursor: pointer; font-size: .85rem; color: var(--muted);
+  }
+  .view-btn--active { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .inline-ai-form { margin-left: auto; }
+  .view-btn--ai { color: var(--green-dark); border-color: var(--green); font-weight: 700; }
+  .view-btn--ai:hover { background: #f0fce8; }
+  .view-btn:disabled { opacity: .65; cursor: wait; }
+
+  /* mini viewer */
+  .mini-viewer { display: flex; flex-direction: column; gap: 12px; }
+  .mini-meta { display: flex; flex-wrap: wrap; gap: 12px; font-size: .8rem; color: var(--muted); padding: 4px 0 8px; }
+  .mini-item { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; background: var(--surface); }
+  .mini-item-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+  .mini-id { font-weight: 700; font-size: .85rem; color: var(--muted); }
+  .mini-bloom { font-size: .72rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; color: #fff; }
+  .mini-topic { font-size: .85rem; font-weight: 600; }
+  .mini-diff { margin-left: auto; font-size: .78rem; color: var(--muted); }
+  .mini-statement { margin: 0 0 10px; font-weight: 500; }
+  .mini-options { margin: 0 0 10px; padding-left: 20px; }
+  .mini-options li { margin: 4px 0; font-size: .9rem; }
+  .mini-opt-correct { color: var(--green-dark); font-weight: 700; }
+  .mini-irt { display: flex; gap: 14px; flex-wrap: wrap; font-size: .78rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 8px; margin-top: 4px; }
+  .mini-raw { font-size: .8rem; line-height: 1.6; white-space: pre-wrap; word-break: break-all; }
+
+  /* pipeline progress bar */
+  .pipeline-progress { margin-bottom: 28px; }
+  .pipeline-progress-bar { display: flex; align-items: center; gap: 0; }
+  .pipeline-step { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 0 0 auto; }
+  .pipeline-step-dot {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--line); color: var(--muted);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: .85rem; transition: all .3s;
+  }
+  .pipeline-step--done .pipeline-step-dot { background: var(--green); color: #fff; }
+  .pipeline-step span { font-size: .72rem; color: var(--muted); white-space: nowrap; }
+  .pipeline-step--done span { color: var(--green-dark); font-weight: 600; }
+  .pipeline-connector { flex: 1; height: 3px; background: var(--line); transition: background .3s; min-width: 24px; }
+  .pipeline-connector--done { background: var(--green); }
+  .pipeline-progress-label { margin: 8px 0 0; font-size: .8rem; color: var(--muted); text-align: center; }
+
+  /* prompt textarea */
+  .prompt-textarea {
+    width: 100%; padding: 12px; border-radius: 8px;
+    border: 2px solid var(--line); font-family: monospace; font-size: .82rem;
+    resize: vertical; background: var(--black); color: var(--gray-200);
+    line-height: 1.5;
+  }
+  .prompt-textarea:focus { outline: none; border-color: var(--green); }
+
+  /* danger button */
+  .danger-button {
+    padding: 10px 20px; border-radius: 10px; border: none;
+    background: var(--red); color: #fff; font-weight: 700;
+    cursor: pointer; font-size: .95rem; transition: all .2s;
+  }
+  .danger-button:hover { background: #d93025; }
+  .icon-btn--danger:hover { border-color: var(--red) !important; color: var(--red); }
+  .output-block { padding: 20px; border-radius: 12px; border: 2px solid var(--line); background: var(--surface); margin-bottom: 20px; }
+  .output-block-header { display: flex; align-items: center; gap: 10px; justify-content: space-between; flex-wrap: wrap; margin-bottom: 12px; }
+  .output-block .output-block-header h3, .output-block .output-block-header h4 { margin: 0; }
+  .output-block h3, .output-block h4 { margin: 0 0 12px; font-size: 1.1rem; }
+  .output-block h5 { margin: 16px 0 8px; font-size: .9rem; color: var(--ink); }
+  .output-block pre { margin: 0; font-size: .85rem; line-height: 1.6; white-space: pre-wrap; }
+  .study-badge--tag { color: var(--blue); }
+  .audit-block { display: grid; gap: 10px; }
+  .audit-summary { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+  .audit-summary span, .audit-pill {
+    display: inline-flex; align-items: center; padding: 4px 9px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--soft); color: var(--muted); font-size: .75rem;
+  }
+  .audit-pill--ok { color: var(--green-dark); border-color: var(--green); background: #f0fce8; }
+  .audit-detail { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: var(--soft); }
+  .audit-detail summary { cursor: pointer; font-weight: 700; }
+  .audit-source { display: grid; gap: 5px; margin: 10px 0; padding: 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); }
+  .audit-source a { overflow-wrap: anywhere; font-size: .78rem; }
+  .audit-source small { color: var(--muted); }
+  .audit-source p { margin: 0; font-size: .82rem; line-height: 1.5; }
+  .audit-source--ok { border-left: 3px solid var(--green); }
+  .audit-source--error { border-left: 3px solid var(--red); }
+  .audit-change-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 10px; }
+  .audit-change-grid ul { margin: 6px 0 0; padding-left: 18px; }
+  .transcript-diff-grid pre { max-height: 260px; overflow: auto; padding: 10px; border-radius: 8px; background: var(--black); color: var(--gray-200); }
+  .transcript-change-list { display: grid; gap: 8px; }
+  .transcript-change { padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+  .transcript-change strong { display: inline-flex; margin-bottom: 4px; font-size: .75rem; text-transform: uppercase; color: var(--muted); }
+  .transcript-change p { margin: 3px 0; font-size: .82rem; line-height: 1.45; }
+  .tag-editor { display: grid; gap: 6px; margin: 14px 0; font-size: .85rem; }
+  .tag-editor input { width: 100%; padding: 9px 11px; border-radius: 8px; border: 1px solid var(--line); }
+  .tag-editor small { color: var(--muted); }
+  .queue-status { border-color: rgba(212, 255, 0, .42); }
+  .processing-log {
+    max-height: 180px; overflow: auto; padding: 12px; border-radius: 8px;
+    background: var(--black); color: var(--gray-200); font-size: .8rem;
+    line-height: 1.5; white-space: pre-wrap; margin: 12px 0;
+  }
+  .processing-bar { width: 100%; height: 10px; border-radius: 999px; background: var(--line); overflow: hidden; margin: 12px 0; }
+  .processing-bar__fill {
+    height: 100%; width: 0%; background: var(--green); border-radius: 999px;
+    animation: indeterminate 2s ease-in-out infinite;
+  }
+  @keyframes indeterminate {
+    0% { width: 0%; margin-left: 0%; }
+    50% { width: 60%; margin-left: 20%; }
+    100% { width: 0%; margin-left: 100%; }
+  }
+  .output-block--success { border-color: var(--green); background: #f0fce8; }
+  .step-card { padding: 20px; border-radius: 12px; border: 2px solid var(--line); background: var(--surface); margin-bottom: 20px; position: relative; }
+  .step-number {
+    position: absolute; top: -12px; left: 20px; width: 32px; height: 32px;
+    border-radius: 50%; background: var(--green); color: #fff;
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .9rem;
+  }
+  .step-card h3 { margin: 0 0 8px; font-size: 1.1rem; }
+  .step-card textarea { width: 100%; padding: 12px; border-radius: 8px; border: 2px solid var(--line); font-family: monospace; font-size: .85rem; resize: vertical; background: var(--black); color: var(--gray-200); }
+  .step-card form { margin-top: 12px; }
+
+  /* modal */
+  .modal { 
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+    display: none; align-items: center; justify-content: center; z-index: 1000; 
+  }
+  .modal.modal--open { display: flex; }
+  .modal-backdrop { 
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
+    background: rgba(0,0,0,.5); 
+  }
+  .modal-content { 
+    position: relative; max-width: 480px; width: 90%; padding: 28px; 
+    border-radius: 16px; background: var(--surface); z-index: 1; 
+  }
+  .modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+  .modal-header h3 { margin: 0; }
+  .modal-close {
+    padding: 4px; border: none; background: none; cursor: pointer;
+    color: var(--muted); transition: color .2s;
+  }
+  .modal-close:hover { color: var(--ink); }
+  .share-options { display: flex; flex-direction: column; gap: 10px; margin: 20px 0; }
+  .share-option {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 16px; border-radius: 12px; border: 2px solid var(--line);
+    background: var(--surface); cursor: pointer; transition: all .2s;
+  }
+  .share-option input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+  .share-option.share-option--active { border-color: var(--green); background: #f0fce8; }
+  .share-option svg { flex-shrink: 0; color: var(--muted); }
+  .share-option.share-option--active svg { color: var(--green-dark); }
+  .share-option strong { display: block; margin-bottom: 2px; font-size: .95rem; }
+  .share-option small { display: block; font-size: .8rem; color: var(--muted); }
+  .share-option:hover { border-color: var(--green); }
+  .share-link-box { margin: 16px 0; padding: 14px; background: var(--soft); border-radius: 10px; }
+  .share-link-label { margin: 0 0 8px; font-size: .8rem; font-weight: 600; color: var(--muted); }
+  .share-link-row { display: flex; gap: 8px; }
+  .share-link-row input { flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--line); font-size: .85rem; background: var(--surface); }
+  .copy-btn { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; font-size: .85rem; font-weight: 600; }
+  .copy-btn:hover { background: var(--green); color: #fff; border-color: var(--green); }
+  .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+
+  /* modal open state */
+  .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; display: none; align-items: center; justify-content: center; z-index: 1000; }
+  .modal.modal--open { display: flex; }
+  .modal-backdrop { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.5); }
+  .modal-content { position: relative; max-width: 480px; width: 90%; padding: 28px; border-radius: 16px; background: var(--surface); z-index: 1; }
+  .modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  .modal-header h3 { margin: 0; }
+  .modal-close { padding: 4px; border: none; background: none; cursor: pointer; color: var(--muted); }
+  .modal-close:hover { color: var(--ink); }
+
+  /* danger */
+  .danger-button { padding: 10px 20px; border-radius: 10px; border: none; background: #ff4b4b; color: #fff; font-weight: 700; cursor: pointer; font-size: .95rem; transition: background .2s; }
+  .danger-button:hover { background: #d93025; }
+  .icon-btn--danger:hover { border-color: #ff4b4b !important; }
+  .icon-btn--danger:hover svg { stroke: #ff4b4b; }
+
+  @media (max-width: 640px) {
+    .ld-header { flex-direction: column; }
+    .intensity-options { flex-direction: column; }
+    .intensity-btn { min-width: 100%; }
+    .audit-change-grid { grid-template-columns: 1fr; }
+    .inline-ai-form { margin-left: 0; width: 100%; }
+    .inline-ai-form .view-btn { width: 100%; }
+  }
+</style>
+
+{# ── JS ───────────────────────────────────────────────────────────── #}
+<script>
+  // ── Editar título ────────────────────────────────────────────────────────
+  function startEditTitle() {
+    document.getElementById('title-display').hidden = true;
+    document.getElementById('title-edit').hidden = false;
+    document.getElementById('title-input').focus();
+  }
+
+  function cancelEditTitle() {
+    document.getElementById('title-display').hidden = false;
+    document.getElementById('title-edit').hidden = true;
+  }
+
+  // ── Modal eliminar ───────────────────────────────────────────────────────
+  function openDeleteModal() {
+    document.getElementById('delete-modal').classList.add('modal--open');
+  }
+
+  function closeDeleteModal() {
+    document.getElementById('delete-modal').classList.remove('modal--open');
+  }
+
+  // ── Modal compartir ──────────────────────────────────────────────────────
+  function openShareModal() {
+    document.getElementById('share-modal').classList.add('modal--open');
+    updateShareUI();
+  }
+
+  function closeShareModal() {
+    document.getElementById('share-modal').classList.remove('modal--open');
+  }
+
+  function updateShareUI() {
+    var options = document.querySelectorAll('.share-option');
+    options.forEach(function(opt) {
+      var radio = opt.querySelector('input[type="radio"]');
+      if (radio && radio.checked) {
+        opt.classList.add('share-option--active');
+      } else {
+        opt.classList.remove('share-option--active');
+      }
+    });
+  }
+
+  // listener para cambios en radio buttons
+  document.querySelectorAll('.share-option input[type="radio"]').forEach(function(radio) {
+    radio.addEventListener('change', updateShareUI);
+  });
+
+  function copyShareLink() {
+    var input = document.getElementById('share-link-input');
+    if (input) {
+      navigator.clipboard.writeText(input.value).then(function() {
+        var btn = document.querySelector('.copy-btn');
+        var orig = btn.textContent;
+        btn.textContent = 'Copiado';
+        setTimeout(function() { btn.textContent = orig; }, 2000);
+      });
+    }
+  }
+
+  // ── Modo avanzado ────────────────────────────────────────────────────────
+  function toggleAdvanced() {
+    var panel = document.getElementById('advanced-panel');
+    var icon = document.getElementById('advanced-icon');
+    if (!panel) return;
+    panel.hidden = !panel.hidden;
+    icon.classList.toggle('advanced-icon--open', !panel.hidden);
+  }
+
+  function setView(mode) {
+    var styled = document.getElementById('view-styled');
+    var raw = document.getElementById('view-raw');
+    if (!styled || !raw) return;
+    styled.hidden = (mode === 'raw');
+    raw.hidden = (mode === 'styled');
+    document.getElementById('btn-styled').classList.toggle('view-btn--active', mode === 'styled');
+    document.getElementById('btn-raw').classList.toggle('view-btn--active', mode === 'raw');
+  }
+
+  // ── Intensidad ───────────────────────────────────────────────────────────
+  function confirmRepairCoherence(form) {
+    var ok = window.confirm('La IA local revisara el MINI contra la transcripcion. Si no ve incoherencias, lo dejara igual. ¿Continuar?');
+    if (!ok) return false;
+    var btn = form.querySelector('button[type="submit"]');
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Revisando coherencia...';
+    }
+    return true;
+  }
+
+  function confirmRepairTranscript(form) {
+    var ok = window.confirm('La IA local corregira la transcripcion usando el contexto de la clase. Si cambia algo, los items actuales se invalidan y el pipeline se vuelve a generar desde el texto corregido. ¿Continuar?');
+    if (!ok) return false;
+    var btn = form.querySelector('button[type="submit"]');
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Corrigiendo transcripcion...';
+    }
+    return true;
+  }
+
+  document.querySelectorAll('.intensity-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.intensity-btn').forEach(function(b) { 
+        b.classList.remove('intensity-btn--active'); 
+      });
+      btn.classList.add('intensity-btn--active');
+      var radio = btn.querySelector('input[type="radio"]');
+      if (radio) radio.checked = true;
+    });
+  });
+
+  // ── Init ─────────────────────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', function() {
+    updateShareUI();
+    var queueStatus = document.querySelector('.queue-status');
+    if (queueStatus) {
+      var statusUrl = queueStatus.dataset.statusUrl;
+      var stageEl = document.getElementById('queue-stage');
+      var logEl = document.getElementById('queue-log');
+      setInterval(function() {
+        fetch(statusUrl, { headers: { 'X-Requested-With': 'fetch' } })
+          .then(function(res) { return res.json(); })
+          .then(function(data) {
+            if (stageEl && data.processing_stage) stageEl.textContent = data.processing_stage;
+            if (logEl && data.processing_log) logEl.textContent = data.processing_log;
+            if (data.status !== 'queued' && data.status !== 'processing') {
+              window.location.reload();
+            }
+          })
+          .catch(function() {});
+      }, 5000);
+    }
+  });
+</script>
+
+{% endblock %}

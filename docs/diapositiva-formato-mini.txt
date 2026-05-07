@@ -1,0 +1,33 @@
+FORMATO MINI — Serialización compacta para evaluaciones IRT
+───────────────────────────────────────────────────────────
+
+¿QUÉ ES?
+Un formato de texto plano diseñado para transmitir evaluaciones
+psicométricas completas usando la menor cantidad de tokens posible.
+Una línea de cabecera + una línea por pregunta. Sin llaves, sin etiquetas.
+
+EJEMPLO REAL (2 preguntas):
+  a|m=IRT3PL|d=20260503|n=2|l=es|t=fotosíntesis|bd=1,1,0,0,0,0|cat=0,-3,3,0.3,10,SH
+  i1|L1|Organelo|La fotosíntesis ocurre en ____|raíces,cloroplastos*,flores,tallo|0.9,-1.2,0.25|1|Fund,0.2,low
+  i2|L4|Análisis|Sin luz, la planta ____|muere a largo plazo*,crece más,vive igual,produce más O₂|2.1,1.2,0.25|4|Eval,0.2,high
+
+  → La opción correcta lleva * al final. Sin más marcas.
+
+¿POR QUÉ EXISTE?
+Los modelos de IA cobran por token. JSON equivalente de esas
+2 preguntas ocupa ~3× más tokens. Con 30 preguntas la diferencia
+es significativa en costo y en velocidad de respuesta.
+
+¿QUÉ CONTIENE CADA LÍNEA?
+  a|  →  metadatos del assessment: modelo IRT, fecha, total, idioma,
+          tema, distribución Bloom, parámetros CAT
+  i   →  nivel Bloom · tema · enunciado · 4 opciones (correcta con *)
+          · parámetros IRT (a, b, c) · dificultad · área y demanda cognitiva
+
+¿PARA QUÉ SIRVE?
+  • La IA generadora produce los ítems en este formato
+  • La IA verificadora detecta errores y los reporta en el mismo formato
+  • La IA correctora aplica los fixes y devuelve el bloque final
+  • El backend parsea una línea por ítem y lo guarda en base de datos
+  • El motor CAT lee los parámetros a/b/c directamente para seleccionar
+    el siguiente ítem óptimo según la habilidad del estudiante

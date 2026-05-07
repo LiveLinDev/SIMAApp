@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load learning_extras %}
+{% block title %}Planes - SIMA{% endblock %}
+{% block content %}
+<section class="page-head">
+  <p class="eyebrow">Elige ritmo</p>
+  <h1>Planes mensuales</h1>
+</section>
+<form method="post">
+  {% csrf_token %}
+  <div class="plan-grid">
+    {% for value, label in form.plan.field.choices %}
+      {% with plan=plans|get_item:value %}
+      <label class="plan-card selectable">
+        <input type="radio" name="plan" value="{{ value }}" {% if form.plan.value == value %}checked{% endif %}>
+        <span class="plan-badge">{{ plan.label }}</span>
+        <h2>${{ plan.price }}<small>/mes</small></h2>
+        {% if value == "free" %}
+          <p>Sin API Claude. Sin transcripcion. Generas prompts y pegas respuestas manualmente.</p>
+        {% elif value == "unlimited" %}
+          <p>Clases API infinitas con Claude y transcripcion local Whisper.</p>
+        {% else %}
+          <p>{{ plan.classes }} clases API con Claude y transcripcion local Whisper.</p>
+        {% endif %}
+      </label>
+      {% endwith %}
+    {% endfor %}
+  </div>
+  <button class="primary-button full" type="submit">Guardar plan</button>
+</form>
+{% endblock %}

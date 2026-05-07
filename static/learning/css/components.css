@@ -1,0 +1,375 @@
+.eyebrow,
+.section-label {
+  margin: 0 0 10px;
+  color: var(--acid);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.muted,
+.helptext,
+.card-label,
+.progress-label {
+  color: var(--muted);
+}
+
+.center {
+  text-align: center;
+}
+
+.primary-button,
+.secondary-button,
+.nav-pill,
+.link-button,
+.lesson-cta,
+.copy-btn,
+.view-btn,
+.advanced-btn,
+.icon-btn {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: var(--radius-sm);
+  font-weight: 900;
+  letter-spacing: 0;
+  cursor: pointer;
+  transition: transform 0.18s, border-color 0.18s, background 0.18s, color 0.18s, box-shadow 0.18s;
+}
+
+.primary-button,
+.lesson-cta {
+  border: 1px solid var(--acid);
+  background: var(--acid);
+  color: var(--black);
+  padding: 14px 18px;
+  box-shadow: 0 0 24px var(--glow);
+}
+
+.secondary-button,
+.nav-pill,
+.link-button,
+.copy-btn,
+.view-btn,
+.advanced-btn,
+.icon-btn {
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--gray-200);
+  padding: 12px 16px;
+}
+
+.primary-button:hover,
+.lesson-cta:hover,
+.secondary-button:hover,
+.nav-pill:hover,
+.link-button:hover,
+.copy-btn:hover,
+.view-btn:hover,
+.advanced-btn:hover,
+.icon-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--acid);
+  box-shadow: 0 0 28px var(--glow);
+}
+
+.link-button {
+  min-height: auto;
+  padding: 9px 10px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+}
+
+.full {
+  width: 100%;
+  margin-top: 16px;
+}
+
+.messages {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.message,
+.plan-card,
+.form-card,
+.step-card,
+.output-block,
+.status-card,
+.lesson-row,
+.empty-state,
+.lesson-card,
+.stat-card,
+.history-card,
+.ranking-card,
+.intensity-card,
+.advanced-panel,
+.modal-content,
+.study-meta-card,
+.phone-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.012)), var(--surface);
+  color: var(--ink);
+  box-shadow: 0 18px 50px var(--shadow);
+}
+
+.message {
+  padding: 12px 14px;
+  font-weight: 800;
+}
+
+.message.success {
+  border-color: rgba(212, 255, 0, 0.48);
+}
+
+.message.warning {
+  border-color: rgba(255, 200, 0, 0.52);
+}
+
+form {
+  margin: 0;
+}
+
+.form-card {
+  display: grid;
+  gap: 14px;
+  padding: clamp(16px, 4vw, 24px);
+}
+
+.form-card p {
+  margin: 0;
+  display: grid;
+  gap: 7px;
+}
+
+label {
+  color: var(--gray-200);
+  font-weight: 900;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 13px;
+  background: rgba(10, 10, 8, 0.72);
+  color: var(--ink);
+  outline: none;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--acid);
+  box-shadow: 0 0 0 3px rgba(212, 255, 0, 0.1);
+}
+
+textarea {
+  min-height: 150px;
+  resize: vertical;
+}
+
+pre,
+.mini-raw {
+  max-height: 460px;
+  margin: 0;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  border: 1px solid rgba(212, 255, 0, 0.12);
+  border-radius: var(--radius-md);
+  background: var(--black);
+  color: var(--gray-200);
+  padding: 14px;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.65;
+}
+
+.progress,
+.progress-bar {
+  height: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--gray-700);
+}
+
+.progress span,
+.progress-fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--acid), var(--blue));
+}
+
+.plan-badge,
+.study-badge,
+.visibility-badge,
+.streak {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(212, 255, 0, 0.22);
+  border-radius: 999px;
+  background: rgba(212, 255, 0, 0.08);
+  color: var(--acid);
+  padding: 5px 10px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.step-number,
+.step-num {
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--acid);
+  color: var(--black);
+  font-family: var(--font-mono);
+  font-weight: 900;
+}
+
+.error-note {
+  border-left: 4px solid var(--red);
+  border-radius: var(--radius-md);
+  background: rgba(255, 95, 87, 0.1);
+  padding: 12px;
+}
+
+.view-btn--active,
+.dash-tab--active {
+  border-color: var(--acid) !important;
+  color: var(--black) !important;
+  background: var(--acid) !important;
+}
+
+.stat-card--fire,
+.stat-card--xp,
+.intensity-btn--active,
+.output-block--success,
+.share-option--active,
+.study-badge--verified {
+  border-color: rgba(212, 255, 0, 0.48) !important;
+  background: rgba(212, 255, 0, 0.08) !important;
+  color: var(--acid) !important;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+
+.modal.modal--open {
+  display: flex;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(8px);
+}
+
+.modal-content {
+  position: relative;
+  z-index: 1;
+  width: min(520px, 100%);
+  padding: 24px;
+}
+
+.mini-viewer {
+  display: grid;
+  gap: 12px;
+}
+
+.mini-meta,
+.mini-irt,
+.study-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.mini-meta {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}
+
+.mini-item {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  padding: 15px;
+}
+
+.mini-item-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 9px;
+}
+
+.mini-id,
+.mini-topic,
+.mini-diff {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}
+
+.mini-bloom {
+  border-radius: 999px;
+  color: var(--black);
+  padding: 2px 8px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.mini-diff {
+  margin-left: auto;
+  color: var(--muted);
+}
+
+.mini-statement {
+  margin: 0 0 10px;
+  font-weight: 700;
+}
+
+.mini-options {
+  margin: 0 0 10px;
+  padding-left: 24px;
+}
+
+.mini-options li {
+  margin: 5px 0;
+  color: var(--gray-200);
+}
+
+.mini-opt-correct {
+  color: var(--acid) !important;
+  font-weight: 900;
+}
+
+.mini-irt {
+  border-top: 1px solid rgba(212, 255, 0, 0.12);
+  padding-top: 9px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+}

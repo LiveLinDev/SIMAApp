@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Login - SIMA{% endblock %}
+{% block content %}
+<section class="auth-panel">
+  <div>
+    <p class="eyebrow">Vuelve a practicar</p>
+    <h1>Entra a tu cuenta</h1>
+  </div>
+  <form method="post" class="form-card">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="primary-button" type="submit">Entrar</button>
+  </form>
+  <p class="muted center">No tienes cuenta? <a href="{% url 'register' %}">Crear una gratis</a></p>
+</section>
+{% endblock %}

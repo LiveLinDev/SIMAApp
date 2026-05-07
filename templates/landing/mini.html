@@ -1,0 +1,2009 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>.mini — Formato de Evaluación Adaptativa</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Mono:wght@400;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --lime-50: #f7ffe0;
+    --lime-100: #ecfca3;
+    --lime-200: #d9f852;
+    --lime-300: #c4f014;
+    --lime-400: #a8d900;
+    --lime-500: #85b000;
+    --lime-600: #638500;
+    --acid: #d4ff00;
+    --acid-hot: #aaff00;
+    --black: #0a0a08;
+    --gray-900: #111110;
+    --gray-800: #1c1c1a;
+    --gray-700: #2a2a27;
+    --gray-500: #5a5a54;
+    --gray-400: #8a8a82;
+    --gray-200: #d4d4cc;
+    --white: #fafaf5;
+    --font-display: 'Syne', sans-serif;
+    --font-mono: 'Space Mono', monospace;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: var(--font-body);
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* CUSTOM CURSOR */
+  .cursor {
+    width: 12px; height: 12px;
+    background: var(--acid);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.1s ease;
+    mix-blend-mode: difference;
+  }
+  .cursor-trail {
+    width: 40px; height: 40px;
+    border: 1px solid var(--acid);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9998;
+    transition: all 0.15s ease;
+    opacity: 0.4;
+  }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.5;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 3rem;
+    border-bottom: 1px solid rgba(212,255,0,0.08);
+    background: rgba(10,10,8,0.75);
+    backdrop-filter: blur(18px);
+  }
+
+  .nav-logo {
+    font-family: var(--font-mono);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--acid);
+    letter-spacing: 0;
+  }
+  .nav-logo span { color: var(--gray-400); font-weight: 400; }
+
+  .nav-links {
+    display: flex;
+    gap: 2.5rem;
+    list-style: none;
+  }
+  .nav-links a {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--gray-400);
+    text-decoration: none;
+    letter-spacing: 0;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--acid); }
+
+  .nav-badge {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--black);
+    background: var(--acid);
+    padding: 0.35rem 0.9rem;
+    border-radius: 100px;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(212,255,0,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(212,255,0,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  .hero-bg-orb {
+    position: absolute;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(196,240,20,0.15) 0%, transparent 70%);
+    top: -100px; right: -100px;
+    pointer-events: none;
+  }
+  .hero-bg-orb2 {
+    position: absolute;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(212,255,0,0.08) 0%, transparent 70%);
+    bottom: 100px; left: -80px;
+    pointer-events: none;
+  }
+
+  .hero-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 8rem 4rem 4rem 5rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--acid);
+    letter-spacing: 0;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+  }
+  .hero-eyebrow::before {
+    content: '';
+    display: block;
+    width: 24px; height: 1px;
+    background: var(--acid);
+  }
+
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(4rem, 7vw, 7.5rem);
+    font-weight: 800;
+    line-height: 0.92;
+    letter-spacing: 0;
+    margin-bottom: 0.5rem;
+  }
+  .hero-title .dot {
+    color: var(--acid);
+    font-style: italic;
+  }
+  .hero-title .word-mini {
+    display: block;
+    -webkit-text-stroke: 2px var(--acid);
+    color: transparent;
+    font-size: clamp(5rem, 9vw, 10rem);
+  }
+
+  .hero-subtitle {
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    font-weight: 300;
+    color: var(--gray-400);
+    line-height: 1.7;
+    max-width: 420px;
+    margin-top: 2rem;
+    margin-bottom: 3rem;
+  }
+  .hero-subtitle strong { color: var(--white); font-weight: 500; }
+
+  .hero-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--black);
+    background: var(--acid);
+    padding: 1rem 2.2rem;
+    border-radius: 4px;
+    text-decoration: none;
+    letter-spacing: 0;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-primary::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.2);
+    transform: translateX(-101%);
+    transition: transform 0.3s ease;
+  }
+  .btn-primary:hover::after { transform: translateX(0); }
+
+  .btn-ghost {
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--gray-200);
+    padding: 1rem 2rem;
+    border: 1px solid var(--gray-700);
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .btn-ghost:hover {
+    border-color: var(--acid);
+    color: var(--acid);
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 3rem;
+    margin-top: 4rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid var(--gray-800);
+  }
+  .stat-item {}
+  .stat-num {
+    font-family: var(--font-mono);
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--acid);
+    display: block;
+  }
+  .stat-label {
+    font-size: 0.78rem;
+    color: var(--gray-500);
+    letter-spacing: 0;
+    text-transform: uppercase;
+    margin-top: 0.25rem;
+  }
+
+  /* HERO RIGHT — code terminal */
+  .hero-right {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8rem 4rem 4rem 2rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  .terminal {
+    width: 100%;
+    max-width: 520px;
+    background: var(--gray-900);
+    border: 1px solid var(--gray-700);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(212,255,0,0.05);
+    animation: float 6s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+
+  .terminal-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.2rem;
+    background: var(--gray-800);
+    border-bottom: 1px solid var(--gray-700);
+  }
+  .t-dot { width: 11px; height: 11px; border-radius: 50%; }
+  .t-dot.red { background: #ff5f57; }
+  .t-dot.yellow { background: #febc2e; }
+  .t-dot.green { background: #28c840; }
+  .terminal-title {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--gray-500);
+    margin-left: auto;
+  }
+
+  .terminal-body {
+    padding: 1.5rem 1.4rem 2rem;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    line-height: 1.8;
+    overflow: hidden;
+  }
+
+  .t-comment { color: var(--gray-500); }
+  .t-key { color: var(--acid); }
+  .t-pipe { color: var(--gray-500); }
+  .t-val { color: #7dd3fc; }
+  .t-correct { color: #4ade80; font-weight: 700; }
+  .t-num { color: #f9a8d4; }
+  .t-dim { color: var(--gray-600, #444); }
+  .t-header { color: var(--lime-200); }
+  .t-line {
+    display: block;
+    white-space: pre;
+    overflow: hidden;
+    opacity: 0;
+    animation: reveal 0.05s forwards;
+  }
+  /* staggered reveal */
+  .t-line:nth-child(1)  { animation-delay: 0.3s }
+  .t-line:nth-child(2)  { animation-delay: 0.55s }
+  .t-line:nth-child(3)  { animation-delay: 0.8s }
+  .t-line:nth-child(4)  { animation-delay: 1.05s }
+  .t-line:nth-child(5)  { animation-delay: 1.3s }
+  .t-line:nth-child(6)  { animation-delay: 1.55s }
+  .t-line:nth-child(7)  { animation-delay: 1.8s }
+  .t-line:nth-child(8)  { animation-delay: 2.05s }
+  .t-line:nth-child(9)  { animation-delay: 2.3s }
+  .t-line:nth-child(10) { animation-delay: 2.55s }
+  .t-line:nth-child(11) { animation-delay: 2.8s }
+
+  @keyframes reveal {
+    to { opacity: 1; }
+  }
+
+  .cursor-blink {
+    display: inline-block;
+    width: 7px; height: 14px;
+    background: var(--acid);
+    vertical-align: middle;
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  /* ── SECTION SHARED ── */
+  section { position: relative; z-index: 1; }
+
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--acid);
+    letter-spacing: 0;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 1.5rem;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    max-width: 60px;
+    height: 1px;
+    background: var(--acid);
+    opacity: 0.4;
+  }
+
+  .section-title {
+    font-family: var(--font-display);
+    font-size: clamp(2.2rem, 4vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: 0;
+    margin-bottom: 1rem;
+  }
+
+  /* ── WHY SECTION ── */
+  .why-section {
+    padding: 8rem 5rem;
+    background: var(--gray-900);
+    border-top: 1px solid var(--gray-800);
+  }
+
+  .why-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 6rem;
+    align-items: start;
+    margin-top: 4rem;
+  }
+
+  .why-left {}
+  .why-desc {
+    font-size: 1.05rem;
+    font-weight: 300;
+    color: var(--gray-400);
+    line-height: 1.8;
+    margin-bottom: 2.5rem;
+  }
+  .why-desc strong { color: var(--white); font-weight: 500; }
+
+  .origin-card {
+    background: var(--gray-800);
+    border: 1px solid var(--gray-700);
+    border-left: 3px solid var(--acid);
+    border-radius: 6px;
+    padding: 1.5rem 1.8rem;
+  }
+  .origin-card p {
+    font-size: 0.88rem;
+    color: var(--gray-400);
+    line-height: 1.7;
+    font-style: italic;
+  }
+  .origin-card cite {
+    display: block;
+    margin-top: 0.8rem;
+    font-size: 0.75rem;
+    color: var(--acid);
+    font-family: var(--font-mono);
+    font-style: normal;
+  }
+
+  .why-right {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .problem-item {
+    display: grid;
+    grid-template-columns: 50px 1fr;
+    gap: 1.5rem;
+    padding: 2rem 0;
+    border-bottom: 1px solid var(--gray-800);
+    align-items: start;
+  }
+  .problem-item:last-child { border-bottom: none; }
+
+  .prob-icon {
+    width: 44px; height: 44px;
+    border-radius: 8px;
+    background: rgba(212,255,0,0.06);
+    border: 1px solid rgba(212,255,0,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .prob-icon svg { width: 20px; height: 20px; }
+
+  .prob-text h4 {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 0.4rem;
+  }
+  .prob-text p {
+    font-size: 0.87rem;
+    color: var(--gray-500);
+    line-height: 1.65;
+  }
+
+  /* ── COMPARISON ── */
+  .compare-section {
+    padding: 8rem 5rem;
+    background: var(--black);
+  }
+
+  .compare-section .section-title { margin-bottom: 0.5rem; }
+  .compare-lead {
+    font-size: 1.05rem;
+    color: var(--gray-500);
+    margin-bottom: 4rem;
+    font-weight: 300;
+    max-width: 600px;
+  }
+
+  .compare-table-wrap {
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1px solid var(--gray-800);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+  }
+
+  thead {
+    background: var(--gray-900);
+    border-bottom: 2px solid var(--gray-700);
+  }
+  thead th {
+    padding: 1.1rem 1.5rem;
+    text-align: left;
+    font-weight: 700;
+    color: var(--gray-400);
+    letter-spacing: 0;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+  }
+  thead th.col-mini {
+    color: var(--acid);
+    background: rgba(212,255,0,0.04);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--gray-800);
+    transition: background 0.15s;
+  }
+  tbody tr:hover { background: rgba(255,255,255,0.02); }
+  tbody tr:last-child { border-bottom: none; }
+
+  td {
+    padding: 1rem 1.5rem;
+    color: var(--gray-400);
+    vertical-align: middle;
+  }
+  td:first-child {
+    color: var(--gray-200);
+    font-weight: 700;
+    font-size: 0.78rem;
+  }
+  td.col-mini {
+    background: rgba(212,255,0,0.03);
+    color: var(--acid);
+    font-weight: 700;
+  }
+
+  .check { color: #4ade80; }
+  .cross { color: #f87171; }
+  .partial { color: #fbbf24; }
+
+  /* efficiency bar */
+  .eff-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+  .eff-fill {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--gray-700);
+    min-width: 60px;
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+  .eff-fill::after {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    background: var(--acid);
+    width: var(--pct);
+    border-radius: 3px;
+    transition: width 1s ease;
+  }
+  .eff-fill.json::after { background: var(--gray-500); }
+  .eff-fill.yaml::after { background: var(--gray-600); }
+  .eff-fill.xml::after  { background: var(--gray-700); }
+  .eff-fill.toon::after { background: #60a5fa; }
+
+  /* ── FORMAT ANATOMY ── */
+  .anatomy-section {
+    padding: 8rem 5rem;
+    background: var(--gray-900);
+    border-top: 1px solid var(--gray-800);
+  }
+
+  .anatomy-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    margin-top: 4rem;
+  }
+
+  .anatomy-block {
+    background: var(--black);
+    border: 1px solid var(--gray-800);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .anatomy-header {
+    padding: 1rem 1.5rem;
+    background: var(--gray-800);
+    border-bottom: 1px solid var(--gray-700);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--gray-400);
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+  .anatomy-header .tag {
+    background: rgba(212,255,0,0.1);
+    color: var(--acid);
+    padding: 0.2rem 0.6rem;
+    border-radius: 3px;
+    font-weight: 700;
+  }
+
+  .anatomy-code {
+    padding: 1.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    line-height: 1.9;
+    overflow-x: auto;
+  }
+
+  .anno-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    padding: 1.5rem;
+  }
+
+  .anno-item {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  .anno-tag {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--black);
+    background: var(--acid);
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .anno-desc {
+    font-size: 0.84rem;
+    color: var(--gray-400);
+    line-height: 1.5;
+  }
+  .anno-desc strong { color: var(--white); }
+
+  /* ── BENCHMARK ── */
+  .bench-section {
+    padding: 8rem 5rem;
+    background: var(--black);
+  }
+
+  .bench-intro {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    margin-bottom: 5rem;
+    align-items: start;
+  }
+
+  .bench-desc {
+    font-size: 1.05rem;
+    color: var(--gray-400);
+    line-height: 1.8;
+    font-weight: 300;
+  }
+  .bench-desc strong { color: var(--white); font-weight: 500; }
+
+  .bench-highlight {
+    background: rgba(212,255,0,0.04);
+    border: 1px solid rgba(212,255,0,0.15);
+    border-radius: 10px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .bh-metric {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(212,255,0,0.08);
+  }
+  .bh-metric:last-child { border-bottom: none; padding-bottom: 0; }
+  .bh-label { font-size: 0.82rem; color: var(--gray-500); }
+  .bh-value { font-family: var(--font-mono); font-size: 1.3rem; color: var(--acid); font-weight: 700; }
+  .bh-value span { font-size: 0.8rem; color: var(--gray-500); font-weight: 400; }
+
+  .bench-bars { display: flex; flex-direction: column; gap: 1.5rem; }
+
+  .bar-row {
+    display: grid;
+    grid-template-columns: 80px 1fr 100px;
+    gap: 1.2rem;
+    align-items: center;
+  }
+  .bar-name {
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    color: var(--gray-400);
+    text-align: right;
+  }
+  .bar-name.highlight { color: var(--acid); font-weight: 700; }
+
+  .bar-track {
+    height: 10px;
+    background: var(--gray-800);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 5px;
+    background: var(--gray-600);
+    width: 0;
+    animation: growBar 1.2s ease forwards;
+    animation-delay: var(--delay, 0s);
+  }
+  .bar-fill.is-mini { background: var(--acid); }
+  @keyframes growBar {
+    to { width: var(--w); }
+  }
+
+  .bar-val {
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    color: var(--gray-500);
+  }
+  .bar-val.highlight { color: var(--acid); font-weight: 700; }
+
+  /* ── HOW IT WORKS ── */
+  .how-section {
+    padding: 8rem 5rem;
+    background: var(--gray-900);
+    border-top: 1px solid var(--gray-800);
+  }
+
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    margin-top: 4rem;
+    background: var(--gray-800);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--gray-800);
+  }
+
+  .step-card {
+    background: var(--gray-900);
+    padding: 2.5rem 2rem;
+    position: relative;
+    transition: background 0.2s;
+  }
+  .step-card:hover { background: var(--black); }
+
+  .step-num {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--acid);
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0;
+  }
+
+  .step-icon {
+    width: 44px; height: 44px;
+    margin-bottom: 1.5rem;
+    background: rgba(212,255,0,0.06);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(212,255,0,0.1);
+  }
+  .step-icon svg { width: 20px; height: 20px; }
+
+  .step-card h3 {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+    color: var(--white);
+  }
+  .step-card p {
+    font-size: 0.85rem;
+    color: var(--gray-500);
+    line-height: 1.6;
+  }
+
+  /* ── IRT SECTION ── */
+  .irt-section {
+    padding: 8rem 5rem;
+    background: var(--black);
+  }
+
+  .irt-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    margin-top: 4rem;
+    align-items: start;
+  }
+
+  .irt-params { display: flex; flex-direction: column; gap: 1.5rem; }
+  .param-card {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 1.4rem;
+    align-items: start;
+    padding: 1.5rem;
+    background: var(--gray-900);
+    border: 1px solid var(--gray-800);
+    border-radius: 8px;
+    transition: border-color 0.2s;
+  }
+  .param-card:hover { border-color: rgba(212,255,0,0.25); }
+
+  .param-letter {
+    width: 48px; height: 48px;
+    background: rgba(212,255,0,0.08);
+    border: 1px solid rgba(212,255,0,0.2);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--acid);
+    flex-shrink: 0;
+  }
+  .param-info h4 {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 0.35rem;
+  }
+  .param-info p {
+    font-size: 0.83rem;
+    color: var(--gray-500);
+    line-height: 1.55;
+  }
+  .param-range {
+    margin-top: 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--acid);
+    background: rgba(212,255,0,0.07);
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 3px;
+  }
+
+  .bloom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+  }
+
+  .bloom-card {
+    padding: 1.2rem 1.3rem;
+    background: var(--gray-900);
+    border: 1px solid var(--gray-800);
+    border-radius: 8px;
+    transition: all 0.2s;
+    cursor: default;
+  }
+  .bloom-card:hover {
+    border-color: rgba(212,255,0,0.2);
+    transform: translateY(-2px);
+  }
+  .bloom-level {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--acid);
+    font-weight: 700;
+    letter-spacing: 0;
+    margin-bottom: 0.4rem;
+  }
+  .bloom-name {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 0.3rem;
+  }
+  .bloom-desc {
+    font-size: 0.78rem;
+    color: var(--gray-500);
+    line-height: 1.4;
+  }
+
+  /* PLAYGROUND */
+  .playground-section {
+    padding: 8rem 5rem;
+    background: var(--black);
+    border-top: 1px solid var(--gray-800);
+  }
+
+  .playground-head {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 2rem;
+    align-items: end;
+    margin-bottom: 2rem;
+  }
+
+  .playground-copy {
+    max-width: 700px;
+    color: var(--gray-400);
+    font-size: 1rem;
+    line-height: 1.75;
+    font-weight: 300;
+  }
+
+  .mode-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.9rem;
+    border: 1px solid rgba(212,255,0,0.16);
+    border-radius: 999px;
+    background: var(--gray-900);
+    padding: 0.55rem 0.8rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--gray-400);
+    white-space: nowrap;
+  }
+
+  .mode-switch input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .switch-track {
+    width: 58px;
+    height: 30px;
+    border: 1px solid rgba(212,255,0,0.35);
+    border-radius: 999px;
+    background: rgba(212,255,0,0.08);
+    padding: 3px;
+    transition: background 0.2s;
+  }
+
+  .switch-thumb {
+    display: block;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--acid);
+    box-shadow: 0 0 20px rgba(212,255,0,0.35);
+    transition: transform 0.2s ease;
+  }
+
+  .mode-switch input:checked + .switch-track .switch-thumb {
+    transform: translateX(28px);
+  }
+
+  .playground-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .play-panel {
+    border: 1px solid var(--gray-800);
+    border-radius: 12px;
+    background: var(--gray-900);
+    overflow: hidden;
+    min-width: 0;
+  }
+
+  .play-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid var(--gray-800);
+    background: var(--gray-800);
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    color: var(--gray-400);
+  }
+
+  .play-panel-header strong {
+    color: var(--acid);
+  }
+
+  .playground-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    margin-top: 1rem;
+  }
+
+  .playground-actions button {
+    border: 1px solid rgba(212,255,0,0.24);
+    border-radius: 4px;
+    background: rgba(212,255,0,0.08);
+    color: var(--acid);
+    padding: 0.8rem 1rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .playground-actions button:hover {
+    background: var(--acid);
+    color: var(--black);
+  }
+
+  .playground-textarea {
+    width: 100%;
+    min-height: 430px;
+    border: 0;
+    outline: 0;
+    resize: vertical;
+    background: var(--black);
+    color: var(--gray-200);
+    padding: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    line-height: 1.65;
+  }
+
+  .playground-textarea.output {
+    color: var(--lime-100);
+  }
+
+  .playground-status {
+    min-height: 1.4rem;
+    margin-top: 0.8rem;
+    color: var(--gray-500);
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+  }
+
+  /* ── CREATORS ── */
+  .creators-section {
+    padding: 8rem 5rem;
+    background: var(--gray-900);
+    border-top: 1px solid var(--gray-800);
+  }
+
+  .creators-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    margin-top: 4rem;
+    max-width: 800px;
+  }
+
+  .creator-card {
+    background: var(--black);
+    border: 1px solid var(--gray-800);
+    border-radius: 10px;
+    padding: 2.2rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .creator-card:hover {
+    border-color: rgba(212,255,0,0.3);
+    transform: translateY(-4px);
+  }
+
+  .creator-avatar {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: rgba(212,255,0,0.08);
+    border: 2px solid rgba(212,255,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--acid);
+    margin-bottom: 1.2rem;
+  }
+
+  .creator-name {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 0.3rem;
+  }
+  .creator-role {
+    font-size: 0.8rem;
+    color: var(--acid);
+    font-family: var(--font-mono);
+    margin-bottom: 0.8rem;
+  }
+  .creator-bio {
+    font-size: 0.84rem;
+    color: var(--gray-500);
+    line-height: 1.6;
+  }
+
+  .context-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(212,255,0,0.07);
+    border: 1px solid rgba(212,255,0,0.15);
+    border-radius: 100px;
+    padding: 0.4rem 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--acid);
+    margin-top: 3rem;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 3rem 5rem;
+    background: var(--black);
+    border-top: 1px solid var(--gray-800);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+  }
+
+  .footer-logo {
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--acid);
+  }
+
+  .footer-credits {
+    font-size: 0.82rem;
+    color: var(--gray-600);
+    text-align: center;
+  }
+
+  .footer-sima {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--gray-600);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .footer-sima span { color: var(--acid); }
+
+  /* ── SCROLL ANIMATION ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 1100px) {
+    .hero { grid-template-columns: 1fr; }
+    .hero-right { display: none; }
+    .why-grid, .anatomy-grid, .bench-intro, .irt-grid, .playground-head, .playground-grid, .compare-section .grid { grid-template-columns: 1fr; }
+    .steps-grid { grid-template-columns: 1fr 1fr; }
+    nav { padding: 1rem 1.5rem; }
+    .hero-left, .why-section, .compare-section, .anatomy-section, .bench-section, .how-section, .irt-section, .playground-section, .creators-section { padding-left: 1.5rem; padding-right: 1.5rem; }
+  }
+  @media (max-width: 640px) {
+    .steps-grid { grid-template-columns: 1fr; }
+    .creators-grid, .bloom-grid { grid-template-columns: 1fr; }
+    .hero-stats { gap: 2rem; }
+    footer { flex-direction: column; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-trail" id="cursorTrail"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo"><span>//</span> .mini</div>
+  <ul class="nav-links">
+    <li><a href="#why">Por qué</a></li>
+    <li><a href="#formato">Formato</a></li>
+    <li><a href="#playground">Playground</a></li>
+    <li><a href="#benchmark">Benchmarks</a></li>
+    <li><a href="#irt">IRT & Bloom</a></li>
+  </ul>
+  <div class="nav-badge">v1.0 SIMA</div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg-grid"></div>
+  <div class="hero-bg-orb"></div>
+  <div class="hero-bg-orb2"></div>
+
+  <div class="hero-left">
+    <div class="hero-eyebrow">Formato de Evaluación Adaptativa</div>
+    <h1 class="hero-title">
+      El formato
+      <span class="word-mini">.mini</span>
+    </h1>
+    <p class="hero-subtitle">
+      Una cabecera. Una línea por pregunta. Evaluaciones psicométricas con IRT, Bloom y CAT generadas por IA sin pagar el impuesto de la sintaxis repetida.
+    </p>
+    <div class="hero-actions">
+      <a href="#playground" class="btn-primary">Probar playground</a>
+      <a href="#formato" class="btn-ghost">Ver el formato</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <span class="stat-num">~60%</span>
+        <div class="stat-label">Menos tokens vs JSON</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">3PL</span>
+        <div class="stat-label">Modelo IRT nativo</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">6</span>
+        <div class="stat-label">Niveles Bloom</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="t-dot red"></div>
+        <div class="t-dot yellow"></div>
+        <div class="t-dot green"></div>
+        <div class="terminal-title">output.mini</div>
+      </div>
+      <div class="terminal-body">
+        <span class="t-line"><span class="t-comment">// Línea de cabecera</span></span>
+        <span class="t-line"><span class="t-header">a|</span><span class="t-key">m=</span><span class="t-val">IRT3PL</span><span class="t-pipe">|</span><span class="t-key">d=</span><span class="t-val">20260506</span><span class="t-pipe">|</span><span class="t-key">n=</span><span class="t-num">25</span><span class="t-pipe">|</span><span class="t-key">l=</span><span class="t-val">es</span></span>
+        <span class="t-line"><span class="t-pipe">|</span><span class="t-key">t=</span><span class="t-val">fotosíntesis</span><span class="t-pipe">|</span><span class="t-key">bd=</span><span class="t-val">1,1,1,0,0,0</span></span>
+        <span class="t-line"><span class="t-pipe">|</span><span class="t-key">cat=</span><span class="t-val">0,-3,3,0.3,10,SH</span></span>
+        <span class="t-line">&nbsp;</span>
+        <span class="t-line"><span class="t-comment">// Ítem L1 — Recordar</span></span>
+        <span class="t-line"><span class="t-header">i1|</span><span class="t-key">L1</span><span class="t-pipe">|</span><span class="t-val">Organelo</span><span class="t-pipe">|</span>La fotosíntesis ocurre en ____</span>
+        <span class="t-line"><span class="t-pipe">|</span>raíces,<span class="t-correct">cloroplastos*</span>,flores,tallo</span>
+        <span class="t-line"><span class="t-pipe">|</span><span class="t-num">0.9</span>,<span class="t-num">-1.2</span>,<span class="t-num">0.25</span><span class="t-pipe">|</span><span class="t-key">1</span><span class="t-pipe">|</span>Fund,0.2,low</span>
+        <span class="t-line">&nbsp;</span>
+        <span class="t-line"><span class="t-comment">// Ítem L3 — Aplicar</span></span>
+        <span class="t-line"><span class="t-header">i2|</span><span class="t-key">L3</span><span class="t-pipe">|</span><span class="t-val">Presión</span><span class="t-pipe">|</span>Al aumentar presión...</span>
+        <span class="t-line"><span class="t-pipe">|</span><span class="t-correct">aumenta*</span>,disminuye,no cambia,desaparece</span>
+        <span class="t-line"><span class="t-pipe">|</span><span class="t-num">1.5</span>,<span class="t-num">0.3</span>,<span class="t-num">0.25</span><span class="t-pipe">|</span><span class="t-key">3</span><span class="t-pipe">|</span>Física,0.2,medium <span class="cursor-blink"></span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY SECTION -->
+<section class="why-section" id="why">
+  <div class="section-label">El problema</div>
+  <div class="section-title reveal">Por qué nació .mini</div>
+
+  <div class="why-grid">
+    <div class="why-left reveal">
+      <p class="why-desc">
+        SIMA convierte contenido educativo real en evaluaciones adaptativas. Para hacerlo bien, la IA no necesitaba decorar datos: necesitaba un recipiente mínimo, estable y barato de generar.
+      </p>
+      <div class="origin-card">
+        <p>
+          "Queríamos la claridad de JSON sin su peso. Queríamos que la IA extrajera lo importante de una clase y lo entregara en un formato que pudiera vivir en producción, no solo en una demo."
+        </p>
+        <cite>— Adrián Palma & Erick Palomino, creadores de .mini</cite>
+      </div>
+    </div>
+
+    <div class="why-right reveal">
+      <div class="problem-item">
+        <div class="prob-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#d4ff00" stroke-width="1.8">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <div class="prob-text">
+          <h4>JSON es demasiado verboso</h4>
+          <p>Cada campo repite su nombre en cada registro. Para 45 preguntas con 4 opciones, el costo en tokens se vuelve prohibitivo en producción.</p>
+        </div>
+      </div>
+      <div class="problem-item">
+        <div class="prob-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#d4ff00" stroke-width="1.8">
+            <polygon points="12 2 22 20 2 20"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
+        <div class="prob-text">
+          <h4>.toon falla en contenido largo</h4>
+          <p>En transcripciones extensas, .toon exige más estructura de la que la IA mantiene de forma consistente. .mini reduce la superficie de error.</p>
+        </div>
+      </div>
+      <div class="problem-item">
+        <div class="prob-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#d4ff00" stroke-width="1.8">
+            <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+          </svg>
+        </div>
+        <div class="prob-text">
+          <h4>.mini resuelve ambos problemas</h4>
+          <p>Una línea de cabecera + N líneas de ítems. Lo bastante humano para auditarlo. Lo bastante pequeño para producirlo miles de veces.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BENCHMARK VS TOON -->
+<section class="compare-section" id="benchmark">
+  <div class="section-label">Eficiencia de tokens</div>
+  <h2 class="section-title reveal">.mini vs los demás formatos</h2>
+  <p class="compare-lead reveal">Comparativa de tokens consumidos para representar los mismos datos psicométricos.</p>
+
+  <div class="compare-table-wrap reveal">
+    <table>
+      <thead>
+        <tr>
+          <th>Formato</th>
+          <th class="col-mini">.mini</th>
+          <th>JSON</th>
+          <th>JSON compact</th>
+          <th>YAML</th>
+          <th>.toon</th>
+          <th>XML</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Tokens relativos</td>
+          <td class="col-mini">
+            <div class="eff-bar">
+              <div class="eff-fill" style="--pct:38%"></div>
+              38%
+            </div>
+          </td>
+          <td>
+            <div class="eff-bar">
+              <div class="eff-fill json" style="--pct:100%"></div>
+              100%
+            </div>
+          </td>
+          <td>
+            <div class="eff-bar">
+              <div class="eff-fill json" style="--pct:60%"></div>
+              60%
+            </div>
+          </td>
+          <td>
+            <div class="eff-bar">
+              <div class="eff-fill yaml" style="--pct:80%"></div>
+              80%
+            </div>
+          </td>
+          <td>
+            <div class="eff-bar">
+              <div class="eff-fill toon" style="--pct:55%"></div>
+              ~55%
+            </div>
+          </td>
+          <td>
+            <div class="eff-bar">
+              <div class="eff-fill xml" style="--pct:116%"></div>
+              116%
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>Generación fiable por IA</td>
+          <td class="col-mini"><span class="check">Óptima</span></td>
+          <td><span class="check">Alta</span></td>
+          <td><span class="check">Alta</span></td>
+          <td><span class="check">Alta</span></td>
+          <td><span class="cross">Falla en textos largos</span></td>
+          <td><span class="partial">Media</span></td>
+        </tr>
+        <tr>
+          <td>IRT nativo</td>
+          <td class="col-mini"><span class="check">Sí</span></td>
+          <td><span class="cross">No</span></td>
+          <td><span class="cross">No</span></td>
+          <td><span class="cross">No</span></td>
+          <td><span class="cross">No</span></td>
+          <td><span class="cross">No</span></td>
+        </tr>
+        <tr>
+          <td>Taxonomía Bloom integrada</td>
+          <td class="col-mini"><span class="check">Sí</span></td>
+          <td><span class="cross">No</span></td>
+          <td><span class="cross">No</span></td>
+          <td><span class="cross">No</span></td>
+          <td><span class="cross">No</span></td>
+          <td><span class="cross">No</span></td>
+        </tr>
+        <tr>
+          <td>Validación integrada</td>
+          <td class="col-mini"><span class="check">Reporte de errores</span></td>
+          <td><span class="partial">Schema externo</span></td>
+          <td><span class="partial">Schema externo</span></td>
+          <td><span class="partial">Schema externo</span></td>
+          <td><span class="partial">[N] length</span></td>
+          <td><span class="partial">XSD externo</span></td>
+        </tr>
+        <tr>
+          <td>Parseo determinista</td>
+          <td class="col-mini"><span class="check">Split por pipe</span></td>
+          <td><span class="check">JSON.parse</span></td>
+          <td><span class="check">JSON.parse</span></td>
+          <td><span class="partial">Librería YAML</span></td>
+          <td><span class="partial">Parser propio</span></td>
+          <td><span class="partial">XML parser</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ANATOMY -->
+<section class="anatomy-section" id="formato">
+  <div class="section-label">Anatomía del formato</div>
+  <h2 class="section-title reveal">Cada byte cuenta</h2>
+
+  <div class="anatomy-grid reveal">
+    <div>
+      <div class="anatomy-block">
+        <div class="anatomy-header">
+          <span class="tag">a|</span> Línea de cabecera
+        </div>
+        <div class="anatomy-code">
+<span style="color:#d4ff00">a|</span><span style="color:#7dd3fc">m=</span><span style="color:#f9a8d4">IRT3PL</span><span style="color:#555">|</span><span style="color:#7dd3fc">d=</span><span style="color:#f9a8d4">20260506</span><span style="color:#555">|</span><span style="color:#7dd3fc">n=</span><span style="color:#4ade80">25</span><span style="color:#555">|</span><span style="color:#7dd3fc">l=</span><span style="color:#f9a8d4">es</span>
+<span style="color:#555">|</span><span style="color:#7dd3fc">t=</span><span style="color:#f9a8d4">fotosíntesis</span><span style="color:#555">|</span><span style="color:#7dd3fc">bd=</span><span style="color:#4ade80">1,1,1,0,0,0</span>
+<span style="color:#555">|</span><span style="color:#7dd3fc">cat=</span><span style="color:#4ade80">0,-3,3,0.3,10,SH</span>
+        </div>
+      </div>
+
+      <div class="anno-wrap" style="margin-top:1.5rem">
+        <div class="anno-item">
+          <div class="anno-tag">m=</div>
+          <div class="anno-desc"><strong>Modelo IRT</strong> — 1PL, 2PL o 3PL</div>
+        </div>
+        <div class="anno-item">
+          <div class="anno-tag">d=</div>
+          <div class="anno-desc"><strong>Fecha</strong> YYYYMMDD de generación</div>
+        </div>
+        <div class="anno-item">
+          <div class="anno-tag">n=</div>
+          <div class="anno-desc"><strong>Total de ítems</strong> en la evaluación</div>
+        </div>
+        <div class="anno-item">
+          <div class="anno-tag">t=</div>
+          <div class="anno-desc"><strong>Tema principal</strong> extraído del contenido</div>
+        </div>
+        <div class="anno-item">
+          <div class="anno-tag">bd=</div>
+          <div class="anno-desc"><strong>Bloom Distribution</strong> — L1 a L6 (1=presente, 0=ausente)</div>
+        </div>
+        <div class="anno-item">
+          <div class="anno-tag">cat=</div>
+          <div class="anno-desc"><strong>Parámetros CAT</strong> — theta init, min, max, SE stop, max items, exposure control</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="anatomy-block">
+        <div class="anatomy-header">
+          <span class="tag">i|</span> Línea de ítem
+        </div>
+        <div class="anatomy-code">
+<span style="color:#d4ff00">i1</span><span style="color:#555">|</span><span style="color:#fbbf24">L1</span><span style="color:#555">|</span><span style="color:#7dd3fc">Organelo</span><span style="color:#555">|</span>La fotosíntesis
+ocurre en ____<span style="color:#555">|</span>raíces,<span style="color:#4ade80">cloroplastos*</span>,
+flores,tallo<span style="color:#555">|</span><span style="color:#f9a8d4">0.9,-1.2,0.25</span><span style="color:#555">|</span><span style="color:#d4ff00">1</span><span style="color:#555">|</span>Fund,0.2,low
+        </div>
+      </div>
+
+      <div class="anno-wrap" style="margin-top:1.5rem">
+        <div class="anno-item">
+          <div class="anno-tag">i&lt;N&gt;</div>
+          <div class="anno-desc"><strong>Identificador</strong> secuencial del ítem</div>
+        </div>
+        <div class="anno-item">
+          <div class="anno-tag">L1–L6</div>
+          <div class="anno-desc"><strong>Nivel Bloom</strong> — del más simple al más complejo</div>
+        </div>
+        <div class="anno-item">
+          <div class="anno-tag">topic</div>
+          <div class="anno-desc"><strong>Subtema</strong> exacto del contenido de clase</div>
+        </div>
+        <div class="anno-item">
+          <div class="anno-tag">A*</div>
+          <div class="anno-desc"><strong>Opción correcta</strong> marcada con <code style="color:#4ade80">*</code> al final del texto</div>
+        </div>
+        <div class="anno-item">
+          <div class="anno-tag">a,b,c</div>
+          <div class="anno-desc"><strong>Parámetros IRT</strong> — discriminación, dificultad, pseudo-azar</div>
+        </div>
+        <div class="anno-item">
+          <div class="anno-tag">diff</div>
+          <div class="anno-desc"><strong>Nivel de dificultad</strong> del 1 (fácil) al 5 (muy difícil)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PLAYGROUND -->
+<section class="playground-section" id="playground">
+  <div class="playground-head">
+    <div>
+      <div class="section-label">Playground</div>
+      <h2 class="section-title reveal">Convierte .mini ⇄ JSON</h2>
+      <p class="playground-copy reveal">
+        El formato es pequeño, pero no cerrado. Prueba el ejemplo, edítalo y cambia el deslizador:
+        de .mini a JSON para integraciones, o de JSON a .mini para volver al formato compacto que la IA puede emitir sin ruido.
+      </p>
+    </div>
+    <label class="mode-switch" for="miniModeSwitch">
+      <span>.mini → JSON</span>
+      <input id="miniModeSwitch" type="checkbox">
+      <span class="switch-track"><span class="switch-thumb"></span></span>
+      <span>JSON → .mini</span>
+    </label>
+  </div>
+
+  <div class="playground-grid reveal">
+    <div class="play-panel">
+      <div class="play-panel-header">
+        <strong id="playInputTitle">Entrada .mini</strong>
+        <span>editable</span>
+      </div>
+      <textarea class="playground-textarea" id="miniPlayInput" spellcheck="false"></textarea>
+    </div>
+    <div class="play-panel">
+      <div class="play-panel-header">
+        <strong id="playOutputTitle">Salida JSON</strong>
+        <span>generada en vivo</span>
+      </div>
+      <textarea class="playground-textarea output" id="miniPlayOutput" spellcheck="false" readonly></textarea>
+    </div>
+  </div>
+
+  <div class="playground-actions reveal">
+    <button type="button" id="convertMiniBtn">Convertir ahora</button>
+    <button type="button" id="loadMiniExampleBtn">Cargar ejemplo .mini</button>
+    <button type="button" id="swapMiniBtn">Usar salida como entrada</button>
+  </div>
+  <div class="playground-status" id="miniPlayStatus"></div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section">
+  <div class="section-label">Flujo de trabajo</div>
+  <h2 class="section-title reveal">De la clase a la evaluación</h2>
+
+  <div class="steps-grid reveal">
+    <div class="step-card">
+      <div class="step-num">PASO 01</div>
+      <div class="step-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#d4ff00" stroke-width="1.8">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+      </div>
+      <h3>Scan de contenido</h3>
+      <p>La IA identifica conceptos esenciales de la transcripción. Descarta anécdotas y ejemplos no evaluables.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">PASO 02</div>
+      <div class="step-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#d4ff00" stroke-width="1.8">
+          <polygon points="12 2 22 20 2 20"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+      <h3>Clasificación Bloom</h3>
+      <p>Cada concepto se clasifica en L1–L6. Se garantiza distribución uniforme por dificultad.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">PASO 03</div>
+      <div class="step-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#d4ff00" stroke-width="1.8">
+          <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+        </svg>
+      </div>
+      <h3>Calibración IRT</h3>
+      <p>Asignación de parámetros a, b, c según nivel cognitivo. Discriminación desde 0.8 hasta 2.5.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">PASO 04</div>
+      <div class="step-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#d4ff00" stroke-width="1.8">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <h3>Output .mini</h3>
+      <p>Una cabecera + N líneas. Parseable con un simple split por pipe. Sin overhead sintáctico.</p>
+    </div>
+  </div>
+</section>
+
+<!-- IRT & BLOOM -->
+<section class="irt-section" id="irt">
+  <div class="section-label">Psicometría integrada</div>
+  <h2 class="section-title reveal">IRT 3PL + Taxonomía de Bloom</h2>
+
+  <div class="irt-grid reveal">
+    <div>
+      <p style="color:var(--gray-500);font-size:0.9rem;margin-bottom:2rem;line-height:1.7">
+        El modelo IRT de 3 parámetros permite calibrar cada ítem de manera precisa. Los parámetros se asignan automáticamente según el nivel cognitivo de Bloom.
+      </p>
+      <div class="irt-params">
+        <div class="param-card">
+          <div class="param-letter">a</div>
+          <div class="param-info">
+            <h4>Discriminación</h4>
+            <p>Qué tan bien distingue el ítem entre estudiantes con diferente nivel de dominio.</p>
+            <div class="param-range">L1: 0.8–1.0 → L6: 2.0–2.5</div>
+          </div>
+        </div>
+        <div class="param-card">
+          <div class="param-letter">b</div>
+          <div class="param-info">
+            <h4>Dificultad</h4>
+            <p>Nivel de habilidad theta donde la probabilidad de respuesta correcta es 50%.</p>
+            <div class="param-range">L1: -1.5 a -0.5 → L6: 1.5 a 2.0</div>
+          </div>
+        </div>
+        <div class="param-card">
+          <div class="param-letter">c</div>
+          <div class="param-info">
+            <h4>Pseudo-azar</h4>
+            <p>Probabilidad mínima de acertar por azar. Base 1/num_opciones para 4 alternativas.</p>
+            <div class="param-range">Base: 0.25 — Máximo: 0.35</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <p style="color:var(--gray-500);font-size:0.9rem;margin-bottom:2rem;line-height:1.7">
+        Cada ítem se etiqueta con un nivel de la Taxonomía de Bloom revisada, garantizando cobertura cognitiva completa.
+      </p>
+      <div class="bloom-grid">
+        <div class="bloom-card">
+          <div class="bloom-level">L1</div>
+          <div class="bloom-name">Recordar</div>
+          <div class="bloom-desc">Recuperar hechos y conceptos básicos de la memoria.</div>
+        </div>
+        <div class="bloom-card">
+          <div class="bloom-level">L2</div>
+          <div class="bloom-name">Comprender</div>
+          <div class="bloom-desc">Explicar ideas o conceptos con palabras propias.</div>
+        </div>
+        <div class="bloom-card">
+          <div class="bloom-level">L3</div>
+          <div class="bloom-name">Aplicar</div>
+          <div class="bloom-desc">Usar información en nuevas situaciones.</div>
+        </div>
+        <div class="bloom-card">
+          <div class="bloom-level">L4</div>
+          <div class="bloom-name">Analizar</div>
+          <div class="bloom-desc">Descomponer información en partes y establecer relaciones.</div>
+        </div>
+        <div class="bloom-card">
+          <div class="bloom-level">L5</div>
+          <div class="bloom-name">Evaluar</div>
+          <div class="bloom-desc">Justificar una decisión o acción con criterios.</div>
+        </div>
+        <div class="bloom-card">
+          <div class="bloom-level">L6</div>
+          <div class="bloom-name">Crear</div>
+          <div class="bloom-desc">Producir trabajo nuevo combinando elementos.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CREATORS -->
+<section class="creators-section">
+  <div class="section-label">El equipo</div>
+  <h2 class="section-title reveal">Creado para SIMA</h2>
+
+  <div class="creators-grid reveal">
+    <div class="creator-card">
+      <div class="creator-avatar">AP</div>
+      <div class="creator-name">Adrián Palma</div>
+      <div class="creator-role">Co-creador de .mini</div>
+      <div class="creator-bio">Diseñó la arquitectura del formato y los criterios de esencialidad para extracción de conocimiento desde contenido educativo.</div>
+    </div>
+    <div class="creator-card">
+      <div class="creator-avatar">EP</div>
+      <div class="creator-name">Erick Palomino</div>
+      <div class="creator-role">Co-creador de .mini</div>
+      <div class="creator-bio">Desarrolló el sistema de calibración IRT automática y la integración con la Taxonomía de Bloom para el motor de evaluación adaptativa.</div>
+    </div>
+  </div>
+
+  <div class="context-badge reveal" style="margin-top:3rem">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4ff00" stroke-width="2">
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.99 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.92 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+    </svg>
+    Desarrollado en el contexto de SIMA — App de transcripción de clase con IA
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">.mini</div>
+  <div class="footer-credits">Formato de evaluación adaptativa psicométrica &nbsp;·&nbsp; SIMA 2026</div>
+  <div class="footer-sima">Parte de <span>SIMA</span></div>
+</footer>
+
+<script>
+  const MINI_EXAMPLE = `a|m=IRT3PL|d=20260504|n=12|l=es|t=Norma APA 7ma edición|bd=2,3,2,2,2,1|cat=0,-3,3,0.3,12,SH
+i1|L1|Portada|En la portada de un trabajo estudiantil según APA 7ma ed., ¿cuál de los siguientes elementos NO debe aparecer?|Nombre del autor,Nombre del curso,Nombre de la institución,Fecha*|0.9,-1.4,0.25|1|Estructura,0.2,low
+i2|L1|Resumen|Según APA 7ma edición, el resumen debe tener como máximo ____ palabras.|250*,150,100,300|0.9,-1.1,0.25|1|Resumen,0.2,low
+i3|L2|Palabras_clave|¿Cómo se escriben correctamente las palabras clave en formato APA 7ma edición?|En mayúsculas y entre comillas,Solo la primera en mayúscula,En minúsculas separadas por comas*,En negrita y centradas|1.1,-0.4,0.25|2|Resumen,0.2,medium
+i4|L2|Niveles_título|¿Cuál es la diferencia entre el título de nivel 1 y el de nivel 2 en APA 7ma edición?|Ambos van centrados pero distinto tamaño,El nivel 1 va centrado en negrita y el nivel 2 alineado a la izquierda en negrita*,El nivel 1 va en cursiva y el nivel 2 en negrita,Solo el nivel 2 va en negrita|1.2,-0.3,0.25|2|Estructura,0.2,medium
+i5|L2|Referencias|¿Cómo se ordena la lista de referencias en APA 7ma edición?|Por fecha de publicación de más reciente a más antigua,Por orden de aparición en el texto,Alfabéticamente por el apellido del primer autor*,Por tipo de fuente (libros, artículos, sitios web)|1.1,-0.2,0.25|2|Referencias,0.2,medium
+i6|L3|Sangría_francesa|En la lista de referencias APA 7ma ed., la sangría francesa implica que ____.|la primera línea de cada referencia está sangrada y las siguientes van al margen,la primera línea va al margen y las siguientes están sangradas*,todas las líneas están igualmente sangradas,solo se aplica sangría cuando la referencia ocupa más de dos líneas|1.4,0.1,0.25|3|Referencias,0.2,medium
+i7|L3|Paráfrasis|Un estudiante resume con sus propias palabras la idea de García (2021) en mitad de una oración. ¿Cuál es el formato de cita correcto?|García (2021) al inicio o (García, 2021) al final*,(García: 2021) entre paréntesis,García, 2021 sin paréntesis,"García [2021], p. 1" al final|1.4,0.2,0.25|3|Citas,0.2,medium
+i8|L3|Cita_directa_corta|Una cita directa de 38 palabras tomadas del autor García (2021) en la página 25 debe escribirse ____.|en un bloque separado con sangría de 1.27 cm,entre comillas en el párrafo con García (2021, p. 25) al final*,entre comillas y con el número de página solo en la bibliografía,en cursiva dentro del párrafo sin número de página|1.5,0.3,0.25|3|Citas,0.2,medium
+i9|L4|Cita_bloque|Una cita directa de 55 palabras debe presentarse como bloque. ¿En qué se diferencia del formato de cita corta en cuanto al paréntesis de cierre?|El paréntesis va inmediatamente después de las comillas de cierre,El paréntesis va antes del punto final igual que en citas cortas,El paréntesis con autor, año y página va después del punto final*,No se incluye número de página en las citas de bloque|1.7,0.6,0.25|4|Citas,0.2,high
+i10|L4|Norma_institucional|La docente afirma que el uso de APA 7ma edición es de carácter obligatorio en la institución. ¿Qué implica esto para los trabajos que usen una versión anterior?|Pueden usar APA 6ta con una nota aclaratoria,Se aceptan siempre que citen correctamente,No se aceptan porque la norma vigente institucional es APA 7ma*,Depende del criterio de cada docente|1.6,0.7,0.25|4|Normativa,0.2,high
+i11|L5|Evaluación_citas|Un estudiante escribe: García (2021) afirmó "el aprendizaje activo mejora la retención de conocimientos en un 40 por ciento" y no incluye número de página. Según APA 7ma ed., ¿qué error cometió?|Omitió el número de página obligatorio en citas directas*,Usó la palabra "afirmó" en lugar de "señaló",Debió poner el año entre corchetes en lugar de paréntesis,La cita debía ir en bloque por superar 40 palabras|1.9,1.1,0.25|5|Citas,0.15,high
+i12|L5|Evaluación_formato|Especificar que cada elemento listado debe evaluarse como correcto/incorrecto según norma APA 7ma|Uno,Dos,Tres*,Cuatro|2.1,1.3,0.25|5|Normativa,0.15,high`;
+
+  function splitCsvLine(value) {
+    const out = [];
+    let current = '';
+    let quoted = false;
+    for (let index = 0; index < value.length; index++) {
+      const char = value[index];
+      const next = value[index + 1];
+      if (char === '"' && quoted && next === '"') {
+        current += '"';
+        index += 1;
+      } else if (char === '"') {
+        quoted = !quoted;
+      } else if (char === ',' && !quoted) {
+        out.push(current);
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    out.push(current);
+    return out;
+  }
+
+  function csvValue(value) {
+    const text = String(value ?? '');
+    if (/[",\n]/.test(text)) {
+      return '"' + text.replace(/"/g, '""') + '"';
+    }
+    return text;
+  }
+
+  function numberOrText(value) {
+    const numeric = Number(value);
+    return Number.isFinite(numeric) && String(value).trim() !== '' ? numeric : value;
+  }
+
+  function parseMiniHeader(line) {
+    const meta = {};
+    line.replace(/^a\|/, '').split('|').forEach(part => {
+      const at = part.indexOf('=');
+      if (at > -1) meta[part.slice(0, at)] = part.slice(at + 1);
+    });
+    const cat = splitCsvLine(meta.cat || '');
+    return {
+      model: meta.m || '',
+      generated_at: meta.d || '',
+      language: meta.l || '',
+      topic: meta.t || '',
+      bloom_distribution: meta.bd ? splitCsvLine(meta.bd).map(numberOrText) : [],
+      cat_params: {
+        theta_init: numberOrText(cat[0] ?? ''),
+        theta_min: numberOrText(cat[1] ?? ''),
+        theta_max: numberOrText(cat[2] ?? ''),
+        se_stop: numberOrText(cat[3] ?? ''),
+        max_items: numberOrText(cat[4] ?? ''),
+        exposure_control: cat[5] || ''
+      },
+      raw: meta
+    };
+  }
+
+  function miniToObject(text) {
+    const lines = text.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+    const header = lines.find(line => line.startsWith('a|')) || '';
+    const meta = parseMiniHeader(header);
+    const items = lines.filter(line => /^i\d+\|/.test(line)).map(line => {
+      const parts = line.split('|');
+      const irt = splitCsvLine(parts[5] || '');
+      const cat = splitCsvLine(parts[7] || '');
+      return {
+        id: parts[0] || '',
+        bloom_level: parts[1] || '',
+        topic: parts[2] || '',
+        statement: parts[3] || '',
+        options: splitCsvLine(parts[4] || '').map(option => ({
+          text: option.endsWith('*') ? option.slice(0, -1) : option,
+          correct: option.endsWith('*')
+        })),
+        irt: {
+          a: numberOrText(irt[0] ?? ''),
+          b: numberOrText(irt[1] ?? ''),
+          c: numberOrText(irt[2] ?? '')
+        },
+        difficulty_level: numberOrText(parts[6] || ''),
+        cat_meta: {
+          content_area: cat[0] || '',
+          exposure_cap: numberOrText(cat[1] ?? ''),
+          cognitive_demand: cat[2] || ''
+        }
+      };
+    });
+    meta.total_items = items.length;
+    return { assessment: { meta, items } };
+  }
+
+  function objectToMini(data) {
+    const assessment = data.assessment || data;
+    const meta = assessment.meta || {};
+    const raw = meta.raw || {};
+    const items = assessment.items || [];
+    const cat = meta.cat_params || {};
+    const bloom = Array.isArray(meta.bloom_distribution)
+      ? meta.bloom_distribution.join(',')
+      : (raw.bd || meta.bloom_distribution || '');
+    const catLine = typeof cat === 'string'
+      ? cat
+      : [
+          cat.theta_init ?? 0,
+          cat.theta_min ?? -3,
+          cat.theta_max ?? 3,
+          cat.se_stop ?? 0.3,
+          cat.max_items ?? items.length,
+          cat.exposure_control ?? 'SH'
+        ].join(',');
+    const lines = [
+      `a|m=${meta.model || raw.m || 'IRT3PL'}|d=${meta.generated_at || raw.d || ''}|n=${items.length}|l=${meta.language || raw.l || 'es'}|t=${meta.topic || raw.t || 'Evaluación'}|bd=${bloom}|cat=${catLine}`
+    ];
+
+    items.forEach((item, index) => {
+      const irt = item.irt || {};
+      const catMeta = item.cat_meta || {};
+      const options = (item.options || []).map(option => {
+        const text = String(option.text ?? '');
+        return csvValue(option.correct ? `${text}*` : text);
+      }).join(',');
+      lines.push([
+        item.id || `i${index + 1}`,
+        item.bloom_level || item.bloom || 'L1',
+        item.topic || '',
+        item.statement || '',
+        options,
+        [irt.a ?? 1, irt.b ?? 0, irt.c ?? 0.25].join(','),
+        item.difficulty_level ?? item.difficulty ?? 1,
+        [
+          csvValue(catMeta.content_area || item.area || ''),
+          catMeta.exposure_cap ?? item.exposure_cap ?? 0.2,
+          catMeta.cognitive_demand || item.demand || 'medium'
+        ].join(',')
+      ].join('|'));
+    });
+    return lines.join('\n');
+  }
+
+  function convertMiniPlayground() {
+    const input = document.getElementById('miniPlayInput');
+    const output = document.getElementById('miniPlayOutput');
+    const status = document.getElementById('miniPlayStatus');
+    const jsonToMini = document.getElementById('miniModeSwitch').checked;
+    try {
+      if (jsonToMini) {
+        output.value = objectToMini(JSON.parse(input.value));
+      } else {
+        output.value = JSON.stringify(miniToObject(input.value), null, 2);
+      }
+      status.textContent = jsonToMini ? 'JSON convertido a .mini.' : '.mini convertido a JSON.';
+    } catch (error) {
+      output.value = '';
+      status.textContent = 'No se pudo convertir: ' + error.message;
+    }
+  }
+
+  function setMiniPlaygroundMode(jsonToMini, preserveOutput) {
+    const toggle = document.getElementById('miniModeSwitch');
+    const input = document.getElementById('miniPlayInput');
+    const output = document.getElementById('miniPlayOutput');
+    toggle.checked = jsonToMini;
+    document.getElementById('playInputTitle').textContent = jsonToMini ? 'Entrada JSON' : 'Entrada .mini';
+    document.getElementById('playOutputTitle').textContent = jsonToMini ? 'Salida .mini' : 'Salida JSON';
+    if (preserveOutput && output.value.trim()) {
+      input.value = output.value;
+    } else {
+      input.value = jsonToMini ? JSON.stringify(miniToObject(MINI_EXAMPLE), null, 2) : MINI_EXAMPLE;
+    }
+    convertMiniPlayground();
+  }
+
+  function initMiniPlayground() {
+    const input = document.getElementById('miniPlayInput');
+    if (!input) return;
+    input.value = MINI_EXAMPLE;
+    convertMiniPlayground();
+    input.addEventListener('input', convertMiniPlayground);
+    document.getElementById('convertMiniBtn').addEventListener('click', convertMiniPlayground);
+    document.getElementById('loadMiniExampleBtn').addEventListener('click', () => setMiniPlaygroundMode(false, false));
+    document.getElementById('swapMiniBtn').addEventListener('click', () => setMiniPlaygroundMode(!document.getElementById('miniModeSwitch').checked, true));
+    document.getElementById('miniModeSwitch').addEventListener('change', event => setMiniPlaygroundMode(event.target.checked, true));
+  }
+
+  // CURSOR
+  const cursor = document.getElementById('cursor');
+  const trail = document.getElementById('cursorTrail');
+  let mx = 0, my = 0, tx = 0, ty = 0;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.left = mx - 6 + 'px';
+    cursor.style.top  = my - 6 + 'px';
+  });
+
+  function animTrail() {
+    tx += (mx - tx) * 0.12;
+    ty += (my - ty) * 0.12;
+    trail.style.left = tx - 20 + 'px';
+    trail.style.top  = ty - 20 + 'px';
+    requestAnimationFrame(animTrail);
+  }
+  animTrail();
+
+  document.addEventListener('mousedown', () => { cursor.style.transform = 'scale(1.8)'; });
+  document.addEventListener('mouseup',   () => { cursor.style.transform = 'scale(1)'; });
+
+  // SCROLL REVEAL
+  const reveals = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        e.target.style.transitionDelay = (i * 0.05) + 's';
+        e.target.classList.add('visible');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  reveals.forEach(el => io.observe(el));
+
+  // BAR ANIMATION ON SCROLL
+  const barIo = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.querySelectorAll('.bar-fill').forEach((b, i) => {
+          b.style.animationDelay = (0.2 + i * 0.15) + 's';
+        });
+      }
+    });
+  }, { threshold: 0.3 });
+  document.querySelectorAll('.bench-bars').forEach(el => barIo.observe(el));
+
+  initMiniPlayground();
+</script>
+</body>
+</html>

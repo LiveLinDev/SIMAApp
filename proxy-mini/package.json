@@ -1,0 +1,8 @@
+{
+  "name": "sima-mini-proxy",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node server.js"
+  }
+}

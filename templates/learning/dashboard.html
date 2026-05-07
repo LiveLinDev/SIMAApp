@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+{% block title %}Inicio - SIMA{% endblock %}
+{% block content %}
+
+{# ── HEADER CON RACHA Y XP ────────────────────────────────────────── #}
+<section class="dash-header">
+  <div>
+    <p class="eyebrow">Hola, {{ user.username }}</p>
+    <h1>Tu espacio de estudio</h1>
+    <a class="mini-header-link" href="{% url 'mini_landing' %}">
+      <span>.mini lab</span>
+      Playground para convertir evaluaciones entre MINI y JSON
+    </a>
+  </div>
+  <div class="dash-stats">
+    <div class="stat-card stat-card--fire">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff9600" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c0 6-8 8-8 14a8 8 0 0 0 16 0c0-6-8-8-8-14z"/><path d="M12 12c0 3-2 4-2 6a2 2 0 0 0 4 0c0-2-2-3-2-6z"/></svg>
+      <strong>{{ profile.current_streak }}</strong>
+      <small>días seguidos</small>
+    </div>
+    <div class="stat-card stat-card--xp">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#58cc02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      <strong>Nivel {{ profile.level }}</strong>
+      <small>{{ profile.total_xp }} XP</small>
+    </div>
+    <div class="stat-card">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1cb0f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      <strong>{{ profile.remaining_classes }}</strong>
+      <small>clases API</small>
+    </div>
+  </div>
+</section>
+
+{# ── TABS: MIS CLASES | EXPLORAR | GUARDADAS ──────────────────────── #}
+<div class="dash-tabs">
+  <button class="dash-tab {% if active_tab == 'mis-clases' %}dash-tab--active{% endif %}" data-tab="mis-clases">Mis clases</button>
+  <button class="dash-tab {% if active_tab == 'explorar' %}dash-tab--active{% endif %}" data-tab="explorar">Explorar</button>
+  <button class="dash-tab" data-tab="guardadas">Guardadas</button>
+</div>
+
+{# ══════════════════════════════════════════════════════════════════ #}
+{# TAB: MIS CLASES                                                    #}
+{# ══════════════════════════════════════════════════════════════════ #}
+<div class="dash-panel" id="panel-mis-clases" {% if active_tab != 'mis-clases' %}hidden{% endif %}>
+  
+  <div class="panel-actions">
+    <a class="primary-button" href="{% url 'api_lesson' %}">+ Nueva clase</a>
+    <a class="secondary-button" href="{% url 'free_lesson' %}">+ Clase manual</a>
+  </div>
+
+  {% if jobs %}
+  <div class="lesson-grid">
+    {% for job in jobs %}
+    <article class="lesson-card">
+      <div class="lesson-card-header">
+        <h3>{{ job.title }}</h3>
+        <div class="lesson-card-actions">
+          {% if job.visibility == 'public' %}
+            <span class="visibility-badge visibility-badge--public" title="Pública">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            </span>
+          {% elif job.visibility == 'shared' %}
+            <span class="visibility-badge visibility-badge--shared" title="Compartida con link">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            </span>
+          {% else %}
+            <span class="visibility-badge" title="Privada">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+          {% endif %}
+          <form method="post" action="{% url 'delete_lesson' job.pk %}" style="display: inline;" onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta clase? Esta acción no se puede deshacer.')">
+            {% csrf_token %}
+            <button type="submit" class="delete-button" title="Eliminar clase">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#dc3545" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+          </form>
+        </div>
+      </div>
+      
+      <p class="lesson-meta">{{ job.updated_at|date:"d M Y" }} · {{ job.get_status_display }}</p>
+      {% if job.tag_list %}
+      <div class="lesson-tags">
+        {% for tag in job.tag_list %}
+        <span class="tag-chip">{{ tag }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if job.corrected_output or job.toon_output %}
+        <div class="lesson-progress">
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 0%"></div>
+          </div>
+          <p class="progress-label">0 de X preguntas completadas</p>
+        </div>
+        <a class="lesson-cta" href="{% url 'lesson_detail' job.pk %}">Estudiar ahora</a>
+      {% else %}
+      <p class="lesson-status">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        En proceso de generación
+      </p>
+        <a class="lesson-cta lesson-cta--secondary" href="{% url 'lesson_detail' job.pk %}">Ver pipeline</a>
+      {% endif %}
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    <h3>Aún no tienes clases</h3>
+    <p>Crea tu primera clase subiendo el audio de una grabación o pegando tus apuntes.</p>
+    <a class="primary-button" href="{% url 'api_lesson' %}">Crear primera clase</a>
+  </div>
+  {% endif %}
+
+</div>
+
+{# ══════════════════════════════════════════════════════════════════ #}
+{# TAB: EXPLORAR                                                      #}
+{# ══════════════════════════════════════════════════════════════════ #}
+<div class="dash-panel" id="panel-explorar" {% if active_tab != 'explorar' %}hidden{% endif %}>
+  
+  <div class="explore-header">
+    <h2>Clases públicas de la comunidad</h2>
+    <form method="get" class="explore-search">
+      <input type="search" name="q" value="{{ explore_query }}" placeholder="Buscar por tema, tag o contenido..." class="search-input">
+      {% if explore_tag %}<input type="hidden" name="tag" value="{{ explore_tag }}">{% endif %}
+      <button class="secondary-button" type="submit">Buscar</button>
+    </form>
+  </div>
+
+  {% if popular_tags %}
+  <div class="tag-cloud">
+    <a class="tag-chip {% if not explore_tag %}tag-chip--active{% endif %}" href="{% url 'dashboard' %}?q={{ explore_query|urlencode }}">Todos</a>
+    {% for tag in popular_tags %}
+      <a class="tag-chip {% if explore_tag == tag %}tag-chip--active{% endif %}" href="{% url 'dashboard' %}?tag={{ tag|urlencode }}{% if explore_query %}&q={{ explore_query|urlencode }}{% endif %}">{{ tag }}</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if public_jobs %}
+  <div class="lesson-grid explore-grid">
+    {% for job in public_jobs %}
+    <article class="lesson-card explore-card">
+      <div class="lesson-card-header">
+        <h3>{{ job.title }}</h3>
+        <span class="visibility-badge visibility-badge--public" title="Publica">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </span>
+      </div>
+      <p class="lesson-meta">Por {{ job.user.username }} · {{ job.updated_at|date:"d M Y" }}</p>
+      {% if job.tag_list %}
+      <div class="lesson-tags">
+        {% for tag in job.tag_list %}
+        <a href="{% url 'dashboard' %}?tag={{ tag|urlencode }}" class="tag-chip">{{ tag }}</a>
+        {% endfor %}
+      </div>
+      {% endif %}
+      <a class="lesson-cta" href="{% url 'lesson_detail' job.pk %}">Ver clase</a>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+    <h3>No hay clases publicas para esa busqueda</h3>
+    <p>Cuando una clase se marque como publica, aparecera aqui con sus tags.</p>
+  </div>
+  {% endif %}
+
+</div>
+
+{# ══════════════════════════════════════════════════════════════════ #}
+{# TAB: GUARDADAS                                                     #}
+{# ══════════════════════════════════════════════════════════════════ #}
+<div class="dash-panel" id="panel-guardadas" hidden>
+  
+  <div class="empty-state">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    <h3>No tienes clases guardadas</h3>
+    <p>Cuando explores clases públicas, podrás guardarlas aquí para estudiar más tarde.</p>
+  </div>
+
+</div>
+
+{# ── ESTILOS ──────────────────────────────────────────────────────── #}
+<style>
+  /* header */
+  .dash-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px; margin-bottom: 24px; }
+  .dash-header h1 { margin: 4px 0 0; font-size: 2rem; }
+  .dash-stats { display: flex; gap: 12px; flex-wrap: wrap; }
+  .stat-card {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-width: 100px; padding: 12px 16px; border-radius: 16px;
+    background: var(--surface); border: 2px solid var(--line);
+  }
+  .stat-card--fire { border-color: #ff9600; background: #fff8f0; }
+  .stat-card--xp { border-color: var(--green); background: #f0fce8; }
+  .stat-icon { font-size: 1.5rem; margin-bottom: 4px; }
+  .stat-card strong { font-size: 1.3rem; font-weight: 800; margin: 0; }
+  .stat-card small { font-size: .75rem; color: var(--muted); margin-top: 2px; }
+
+  /* tabs */
+  .dash-tabs { display: flex; gap: 4px; margin: 20px 0 0; border-bottom: 2px solid var(--line); }
+  .dash-tab {
+    padding: 10px 24px; border: none; background: none; cursor: pointer;
+    font-size: .95rem; font-weight: 600; color: var(--muted);
+    border-bottom: 3px solid transparent; margin-bottom: -2px;
+  }
+  .dash-tab--active { color: var(--ink); border-bottom-color: var(--green); }
+  .dash-panel { padding-top: 24px; }
+
+  /* panel actions */
+  .panel-actions { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+
+  /* lesson grid */
+  .lesson-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .lesson-card {
+    padding: 18px 20px; border-radius: 16px; border: 2px solid var(--line);
+    background: var(--surface); transition: all .2s;
+  }
+  .lesson-card:hover { border-color: var(--green); box-shadow: 0 4px 12px rgba(88,204,2,.1); }
+  .lesson-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+  .lesson-card h3 { margin: 0; font-size: 1.1rem; }
+  .lesson-card-actions { display: flex; align-items: center; gap: 8px; }
+  .visibility-badge { font-size: 1rem; opacity: .5; }
+  .visibility-badge--public { opacity: 1; }
+  .visibility-badge--shared { opacity: .8; }
+  .delete-button {
+    background: none; border: none; cursor: pointer; padding: 4px; border-radius: 4px;
+    transition: all .2s; display: flex; align-items: center; justify-content: center;
+  }
+  .delete-button:hover { background: rgba(220, 53, 69, 0.1); }
+  .delete-button:active { transform: scale(0.95); }
+  .lesson-meta { margin: 0 0 12px; font-size: .8rem; color: var(--muted); }
+  .lesson-progress { margin: 12px 0; }
+  .progress-bar { height: 8px; border-radius: 999px; background: var(--line); overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--green); transition: width .3s; }
+  .progress-label { margin: 6px 0 0; font-size: .75rem; color: var(--muted); }
+  .lesson-status { margin: 12px 0; font-size: .85rem; color: var(--muted); }
+  .lesson-cta {
+    display: inline-block; margin-top: 12px; padding: 8px 16px; border-radius: 8px;
+    background: var(--green); color: #fff; font-weight: 600; font-size: .9rem;
+    text-decoration: none; transition: all .2s;
+  }
+  .lesson-cta:hover { background: var(--green-dark); }
+  .lesson-cta--secondary { background: var(--soft); color: var(--ink); }
+  .lesson-cta--secondary:hover { background: var(--line); }
+
+  /* empty state */
+  .empty-state {
+    text-align: center; padding: 60px 20px;
+    border: 2px dashed var(--line); border-radius: 16px; background: var(--soft);
+  }
+  .empty-icon { font-size: 3rem; display: block; margin-bottom: 12px; }
+  .empty-state h3 { margin: 0 0 8px; }
+  .empty-state p { margin: 0 0 20px; color: var(--muted); }
+
+  /* explore */
+  .explore-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+  .explore-header h2 { margin: 0; font-size: 1.3rem; }
+  .explore-search { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .search-input {
+    padding: 8px 16px; border-radius: 8px; border: 2px solid var(--line);
+    font-size: .9rem; min-width: 240px;
+  }
+  .search-input:focus { outline: none; border-color: var(--green); }
+  .tag-cloud, .lesson-tags { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 16px; }
+  .lesson-tags { margin: 12px 0 4px; }
+  .tag-chip {
+    display: inline-flex; align-items: center; padding: 5px 10px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--soft); color: var(--muted);
+    font-size: .78rem; font-weight: 700; text-decoration: none;
+  }
+  .tag-chip:hover, .tag-chip--active { border-color: var(--green); color: var(--green-dark); background: #f0fce8; }
+  .explore-card .lesson-cta { margin-top: 14px; }
+
+  @media (max-width: 640px) {
+    .dash-header { flex-direction: column; }
+    .dash-stats { width: 100%; justify-content: space-between; }
+    .stat-card { flex: 1; min-width: 90px; }
+    .lesson-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+{# ── JS ───────────────────────────────────────────────────────────── #}
+<script>
+  document.querySelectorAll('.dash-tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.dash-tab').forEach(function(t) { t.classList.remove('dash-tab--active'); });
+      document.querySelectorAll('.dash-panel').forEach(function(p) { p.hidden = true; });
+      tab.classList.add('dash-tab--active');
+      document.getElementById('panel-' + tab.dataset.tab).hidden = false;
+    });
+  });
+</script>
+
+{% endblock %}

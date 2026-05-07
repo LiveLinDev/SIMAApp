@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}SIMA — Aprende más en menos tiempo{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <div class="hero-copy">
+    <p class="eyebrow">Para estudiantes universitarios</p>
+    <h1>Convierte tus clases en material de estudio listo para repasar</h1>
+    <p>Pega el texto de tus apuntes o sube el audio de una clase y SIMA genera resúmenes, preguntas de práctica y tarjetas de repaso en segundos.</p>
+    <div class="action-row">
+      <a class="primary-button" href="{% url 'register' %}">Empezar gratis</a>
+      <a class="secondary-button" href="{% url 'login' %}">Ya tengo cuenta</a>
+    </div>
+  </div>
+  <div class="lesson-preview" aria-hidden="true">
+    <div class="phone-card">
+      <span class="streak">12 días seguidos</span>
+      <h2>Fotosíntesis</h2>
+      <p class="card-label">Biología — Semana 4</p>
+      <div class="progress"><span style="width: 68%"></span></div>
+      <p class="progress-label">68% completado</p>
+      <button>Generar resumen</button>
+      <button class="ghost">Ver preguntas</button>
+    </div>
+  </div>
+</section>
+
+<section class="how-it-works">
+  <h2>¿Cómo funciona?</h2>
+  <ol class="steps">
+    <li>
+      <span class="step-num">1</span>
+      <div>
+        <strong>Sube tu clase</strong>
+        <p>Pega el texto de tus apuntes o sube el audio de la grabación.</p>
+      </div>
+    </li>
+    <li>
+      <span class="step-num">2</span>
+      <div>
+        <strong>SIMA lo procesa</strong>
+        <p>La IA genera un resumen, preguntas de práctica y tarjetas de repaso adaptadas al tema.</p>
+      </div>
+    </li>
+    <li>
+      <span class="step-num">3</span>
+      <div>
+        <strong>Estudia a tu ritmo</strong>
+        <p>Repasa desde el celular en sesiones cortas, cuando y donde quieras.</p>
+      </div>
+    </li>
+  </ol>
+</section>
+
+<section class="plan-grid compact">
+  <h2>Planes</h2>
+  <div class="plan-cards">
+    {% for key, plan in plans.items %}
+      <article class="plan-card {% if key == 'pro' %}plan-card--featured{% endif %}">
+        <span class="plan-badge">{{ plan.label }}</span>
+        <p class="plan-price">${{ plan.price }}<small>/mes</small></p>
+        {% if key == "free" %}
+          <p>Sube tus apuntes y genera material de estudio tú mismo, sin IA automática.</p>
+          <p class="plan-note">Ideal para empezar sin costo.</p>
+        {% elif key == "basic" %}
+          <p>{{ plan.classes }} clases procesadas con IA al mes.</p>
+          <p class="plan-note">Para estudiantes con pocas materias.</p>
+        {% elif key == "pro" %}
+          <p>{{ plan.classes }} clases procesadas con IA al mes.</p>
+          <p class="plan-note">El más elegido por universitarios.</p>
+        {% elif key == "unlimited" %}
+          <p>Clases ilimitadas procesadas con IA.</p>
+          <p class="plan-note">Para quienes estudian sin parar.</p>
+        {% endif %}
+        <a class="primary-button" href="{% url 'register' %}">Elegir plan</a>
+      </article>
+    {% endfor %}
+  </div>
+</section>
+
+{% endblock %}

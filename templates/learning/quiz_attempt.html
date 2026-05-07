@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Quiz - {{ job.title }}{% endblock %}
+{% block content %}
+
+<section class="ld-header">
+  <div class="ld-title-group">
+    <a href="{% url 'lesson_detail' job.pk %}" class="back-link">‹ Volver a la clase</a>
+    <h1>Quiz adaptativo</h1>
+    <p class="ld-meta">{{ job.title }} · θ {{ attempt.theta|floatformat:2 }} · SE {{ attempt.standard_error|floatformat:2 }}</p>
+  </div>
+  <div class="dash-stats">
+    <div class="stat-card"><strong>{{ attempt.correct_count }}/{{ attempt.answered_count }}</strong><small>Correctas</small></div>
+    <div class="stat-card"><strong>{{ attempt.accuracy }}%</strong><small>Precisión</small></div>
+    <div class="stat-card"><strong>{{ attempt.target_count }}</strong><small>Objetivo</small></div>
+  </div>
+</section>
+
+<div class="quiz-shell">
+  <div class="progress quiz-progress"><span style="width: {{ progress_pct }}%"></span></div>
+
+  {% if attempt.is_complete %}
+  <section class="quiz-panel quiz-panel--result">
+    <p class="eyebrow">Intento completado</p>
+    <h2>Resultado adaptativo</h2>
+    <div class="result-grid">
+      <div><strong>{{ attempt.theta|floatformat:2 }}</strong><span>Habilidad estimada θ</span></div>
+      <div><strong>{{ attempt.standard_error|floatformat:2 }}</strong><span>Error estándar</span></div>
+      <div><strong>{{ attempt.correct_count }}/{{ attempt.answered_count }}</strong><span>Respuestas correctas</span></div>
+    </div>
+    <div class="bloom-strip">
+      {% for stat in bloom_progress %}
+        <span class="study-badge">{{ stat.level }} {{ stat.label }}: {{ stat.count }}</span>
+      {% empty %}
+        <span class="study-badge">Sin respuestas por Bloom</span>
+      {% endfor %}
+    </div>
+    <a class="primary-button" href="{% url 'lesson_detail' job.pk %}">Ver historial</a>
+  </section>
+  {% elif item %}
+  <section class="quiz-panel">
+    <div class="quiz-item-head">
+      <span class="study-badge">{{ item.bloom }} {{ item_bloom_label }}</span>
+      <span class="study-badge">a={{ item.irt_a }} · b={{ item.irt_b }} · c={{ item.irt_c }}</span>
+      <span class="study-badge">{{ item.demand }}</span>
+    </div>
+    <h2>{{ item.statement }}</h2>
+    <form method="post" action="{% url 'answer_quiz' job.pk attempt.pk %}" class="answer-form">
+      {% csrf_token %}
+      {% for option in item.options %}
+      <label class="answer-option">
+        <input type="radio" name="option" value="{{ forloop.counter0 }}" required>
+        <span>{{ option.text }}</span>
+      </label>
+      {% endfor %}
+      <button class="primary-button full" type="submit">Responder y adaptar</button>
+    </form>
+  </section>
+  {% endif %}
+
+  <section class="quiz-panel">
+    <h3>Ruta CAT</h3>
+    {% if responses %}
+    <div class="response-list">
+      {% for response in responses %}
+      <div class="response-row {% if response.is_correct %}response-row--ok{% else %}response-row--bad{% endif %}">
+        <strong>{{ response.item_id }} · {{ response.item_bloom }}</strong>
+        <span>{{ response.item_topic }}</span>
+        <small>θ {{ response.theta_before|floatformat:2 }} → {{ response.theta_after|floatformat:2 }}</small>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+      <p class="muted">Aún no hay respuestas. La primera pregunta parte de θ inicial y luego se adapta.</p>
+    {% endif %}
+  </section>
+</div>
+
+<style>
+  .quiz-shell { max-width: 860px; margin: 0 auto; display: grid; gap: 16px; }
+  .quiz-progress { margin-bottom: 4px; }
+  .quiz-panel {
+    border: 1px solid var(--line); border-radius: var(--radius-lg);
+    background: var(--surface); padding: 22px; box-shadow: 0 18px 50px var(--shadow);
+  }
+  .quiz-panel h2 { margin: 12px 0 18px; color: var(--white); line-height: 1.25; }
+  .quiz-panel h3 { margin: 0 0 12px; color: var(--white); }
+  .quiz-item-head, .bloom-strip { display: flex; flex-wrap: wrap; gap: 8px; }
+  .answer-form { display: grid; gap: 10px; }
+  .answer-option {
+    display: flex; align-items: flex-start; gap: 12px; padding: 14px;
+    border: 1px solid var(--line); border-radius: var(--radius-md);
+    background: rgba(255,255,255,.02); cursor: pointer;
+  }
+  .answer-option:hover { border-color: var(--acid); }
+  .answer-option input { width: 18px; min-width: 18px; margin-top: 3px; accent-color: var(--acid); }
+  .answer-option span { color: var(--gray-200); font-weight: 700; line-height: 1.45; }
+  .result-grid {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 16px 0;
+  }
+  .result-grid div, .response-row {
+    border: 1px solid var(--line); border-radius: var(--radius-md);
+    background: rgba(255,255,255,.02); padding: 14px;
+  }
+  .result-grid strong { display: block; color: var(--acid); font-family: var(--font-mono); font-size: 1.6rem; }
+  .result-grid span, .response-row span, .response-row small { display: block; color: var(--muted); }
+  .response-list { display: grid; gap: 8px; }
+  .response-row--ok { border-color: rgba(212,255,0,.45); }
+  .response-row--bad { border-color: rgba(255,95,87,.45); }
+  @media (max-width: 640px) { .result-grid { grid-template-columns: 1fr; } }
+</style>
+
+{% endblock %}

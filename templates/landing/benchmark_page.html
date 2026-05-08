@@ -1,0 +1,379 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Benchmark de formatos — Fuentes y metodología</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Mono:wght@400;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --acid: #d4ff00;
+    --black: #0a0a08;
+    --gray-900: #111110;
+    --gray-800: #1c1c1a;
+    --gray-700: #2a2a27;
+    --gray-500: #5a5a54;
+    --gray-400: #8a8a82;
+    --gray-200: #d4d4cc;
+    --white: #fafaf5;
+    --font-display: 'Syne', sans-serif;
+    --font-mono: 'Space Mono', monospace;
+    --font-body: 'DM Sans', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+  a { color: var(--acid); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code, pre {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+  }
+  pre {
+    background: var(--gray-900);
+    border: 1px solid var(--gray-700);
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    line-height: 1.55;
+  }
+  code:not(pre code) {
+    background: var(--gray-800);
+    border: 1px solid var(--gray-700);
+    border-radius: 4px;
+    padding: 0.1em 0.4em;
+    color: var(--acid);
+  }
+
+  /* Layout */
+  .page-wrap {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 6rem;
+  }
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--gray-400);
+    margin-bottom: 2.5rem;
+    letter-spacing: 0.04em;
+  }
+  .back-link:hover { color: var(--white); text-decoration: none; }
+
+  /* Header */
+  .page-header { margin-bottom: 3rem; }
+  .page-label {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--acid);
+    margin-bottom: 0.75rem;
+  }
+  .page-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+  }
+  .page-subtitle {
+    color: var(--gray-400);
+    font-size: 1.05rem;
+    max-width: 600px;
+  }
+
+  /* Sections */
+  .doc-section {
+    margin-bottom: 3.5rem;
+  }
+  .doc-section h2 {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--gray-800);
+  }
+  .doc-section h3 {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--acid);
+    margin: 1.5rem 0 0.6rem;
+  }
+  .doc-section p {
+    color: var(--gray-200);
+    margin-bottom: 0.9rem;
+  }
+  .doc-section ul {
+    color: var(--gray-200);
+    padding-left: 1.4rem;
+    margin-bottom: 0.9rem;
+  }
+  .doc-section ul li { margin-bottom: 0.35rem; }
+
+  /* Pros/cons table */
+  .format-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  .format-card {
+    background: var(--gray-900);
+    border: 1px solid var(--gray-700);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+  }
+  .format-card .fc-name {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--acid);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+  .format-card .fc-pro { color: #86efac; font-size: 0.88rem; }
+  .format-card .fc-con { color: #fca5a5; font-size: 0.88rem; }
+  .format-card ul { padding-left: 1.1rem; margin: 0.3rem 0 0.6rem; }
+  .format-card ul li { margin-bottom: 0.2rem; }
+
+  /* Algorithm steps */
+  .algo-steps {
+    counter-reset: step;
+    list-style: none;
+    padding: 0;
+  }
+  .algo-steps li {
+    counter-increment: step;
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    color: var(--gray-200);
+  }
+  .algo-steps li::before {
+    content: counter(step);
+    flex-shrink: 0;
+    width: 1.8rem;
+    height: 1.8rem;
+    background: var(--gray-800);
+    border: 1px solid var(--gray-700);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--acid);
+    margin-top: 0.1rem;
+  }
+
+  /* Divider */
+  hr.section-divider {
+    border: none;
+    border-top: 1px solid var(--gray-800);
+    margin: 3rem 0;
+  }
+
+  /* Benchmark embed */
+  .benchmark-embed-wrap {
+    margin-top: 1.5rem;
+  }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <a class="back-link" href="{% url 'mini_landing' %}">← volver a .mini</a>
+
+  <header class="page-header">
+    <p class="page-label">Metodología y fuentes</p>
+    <h1 class="page-title">Benchmark de eficiencia de tokens</h1>
+    <p class="page-subtitle">Cómo se midió, qué datos se usaron y qué revelan los resultados reales de cada formato.</p>
+  </header>
+
+  <!-- METODOLOGÍA -->
+  <section class="doc-section">
+    <h2>Metodología de conteo</h2>
+    <p>El benchmark mide la cantidad de tokens que consume cada formato al representar exactamente los mismos datos psicométricos. El conteo se hace con el tokenizador <code>cl100k_base</code> de OpenAI (usado por GPT-4 y GPT-4o), que es el estándar de facto para evaluar eficiencia en contextos de LLM.</p>
+
+    <h3>Algoritmo paso a paso</h3>
+    <ol class="algo-steps">
+      <li>Se toma un cuestionario de referencia con 12 ítems de opción múltiple, parámetros IRT (a, b, c) y metadatos CAT completos.</li>
+      <li>El mismo cuestionario se serializa en cada formato: JSON, MINI, TOON, YAML y XML, sin omitir ningún campo.</li>
+      <li>Cada representación se pasa por <code>tiktoken</code> con el encoding <code>cl100k_base</code> para obtener el conteo exacto de tokens.</li>
+      <li>Se calcula el ratio de reducción de cada formato respecto a JSON (la línea base), usando la fórmula: <code>ratio = (json_tokens - format_tokens) / json_tokens × 100</code>.</li>
+      <li>Los resultados se grafican en el componente embebido de abajo, que ejecuta el mismo cálculo en el navegador usando la librería <code>Chart.js 4.4.1</code>.</li>
+    </ol>
+
+    <h3>Herramientas usadas</h3>
+    <ul>
+      <li><code>tiktoken</code> — tokenizador oficial de OpenAI (<a href="https://github.com/openai/tiktoken" target="_blank" rel="noopener">github.com/openai/tiktoken</a>)</li>
+      <li><code>cl100k_base</code> — encoding de GPT-4 / GPT-4o / text-embedding-3</li>
+      <li><code>Chart.js 4.4.1</code> — visualización en el navegador</li>
+    </ul>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- TEXTO PROBADO -->
+  <section class="doc-section">
+    <h2>Texto probado — cuestionario de referencia</h2>
+    <p>El mismo cuestionario APA 7ma edición con 12 ítems, parámetros IRT 3PL y configuración CAT completa. Este es el dato exacto que se serializa en cada formato para el conteo.</p>
+
+    <h3>Descripción del dataset</h3>
+    <ul>
+      <li>Tema: Norma APA 7ma edición</li>
+      <li>12 ítems de opción múltiple (4 opciones cada uno)</li>
+      <li>Niveles Bloom: L1 a L5</li>
+      <li>Parámetros IRT 3PL por ítem: discriminación (a), dificultad (b), pseudo-azar (c)</li>
+      <li>Metadatos CAT: área de contenido, exposure cap, demanda cognitiva</li>
+      <li>Configuración global CAT: theta_init, theta_min, theta_max, se_stop, max_items, exposure_control</li>
+    </ul>
+
+    <h3>Representación en MINI (formato más eficiente)</h3>
+    <pre>a|m=IRT3PL|d=20260504|n=12|l=es|t=Norma APA 7ma edición|bd=2,3,2,2,2,1|cat=0,-3,3,0.3,12,SH
+i1|L1|Portada|En la portada de un trabajo estudiantil según APA 7ma ed., ¿cuál de los siguientes elementos NO debe aparecer?|Nombre del autor,Nombre del curso,Nombre de la institución,Fecha*|0.9,-1.4,0.25|1|Estructura,0.2,low
+i2|L1|Resumen|Según APA 7ma edición, el resumen debe tener como máximo ____ palabras.|250*,150,100,300|0.9,-1.1,0.25|1|Resumen,0.2,low
+i3|L2|Palabras_clave|¿Cómo se escriben correctamente las palabras clave en formato APA 7ma edición?|En mayúsculas y entre comillas,Solo la primera en mayúscula,En minúsculas separadas por comas*,En negrita y centradas|1.1,-0.4,0.25|2|Resumen,0.2,medium
+i4|L2|Niveles_título|¿Cuál es la diferencia entre el título de nivel 1 y el de nivel 2 en APA 7ma edición?|Ambos van centrados pero distinto tamaño,El nivel 1 va centrado en negrita y el nivel 2 alineado a la izquierda en negrita*,El nivel 1 va en cursiva y el nivel 2 en negrita,Solo el nivel 2 va en negrita|1.2,-0.3,0.25|2|Estructura,0.2,medium
+i5|L2|Referencias|¿Cómo se ordena la lista de referencias en APA 7ma edición?|Por fecha de publicación de más reciente a más antigua,Por orden de aparición en el texto,Alfabéticamente por el apellido del primer autor*,Por tipo de fuente (libros, artículos, sitios web)|1.1,-0.2,0.25|2|Referencias,0.2,medium
+i6|L3|Sangría_francesa|En la lista de referencias APA 7ma ed., la sangría francesa implica que ____.|la primera línea de cada referencia está sangrada y las siguientes van al margen,la primera línea va al margen y las siguientes están sangradas*,todas las líneas están igualmente sangradas,solo se aplica sangría cuando la referencia ocupa más de dos líneas|1.4,0.1,0.25|3|Referencias,0.2,medium
+i7|L3|Paráfrasis|Un estudiante resume con sus propias palabras la idea de García (2021) en mitad de una oración. ¿Cuál es el formato de cita correcto?|García (2021) al inicio o (García, 2021) al final*,(García: 2021) entre paréntesis,García, 2021 sin paréntesis,"García [2021], p. 1 al final"|1.4,0.2,0.25|3|Citas,0.2,medium
+i8|L3|Cita_directa_corta|Una cita directa de 38 palabras tomadas del autor García (2021) en la página 25 debe escribirse ____.|en un bloque separado con sangría de 1.27 cm,entre comillas en el párrafo con García (2021, p. 25) al final*,entre comillas y con el número de página solo en la bibliografía,en cursiva dentro del párrafo sin número de página|1.5,0.3,0.25|3|Citas,0.2,medium
+i9|L4|Cita_bloque|Una cita directa de 55 palabras debe presentarse como bloque. ¿En qué se diferencia del formato de cita corta en cuanto al paréntesis de cierre?|El paréntesis va inmediatamente después de las comillas de cierre,El paréntesis va antes del punto final igual que en citas cortas,El paréntesis con autor, año y página va después del punto final*,No se incluye número de página en las citas de bloque|1.7,0.6,0.25|4|Citas,0.2,high
+i10|L4|Norma_institucional|La docente afirma que el uso de APA 7ma edición es de carácter obligatorio en la institución. ¿Qué implica esto para los trabajos que usen una versión anterior?|Pueden usar APA 6ta con una nota aclaratoria,Se aceptan siempre que citen correctamente,No se aceptan porque la norma vigente institucional es APA 7ma*,Depende del criterio de cada docente|1.6,0.7,0.25|4|Normativa,0.2,high
+i11|L5|Evaluación_citas|Un estudiante escribe: García (2021) afirmó "el aprendizaje activo mejora la retención de conocimientos en un 40 por ciento" y no incluye número de página. Según APA 7ma ed., ¿qué error cometió?|Omitió el número de página obligatorio en citas directas*,Usó la palabra afirmó en lugar de señaló,Debió poner el año entre corchetes en lugar de paréntesis,La cita debía ir en bloque por superar 40 palabras|1.9,1.1,0.25|5|Citas,0.15,high
+i12|L5|Evaluación_formato|Especificar que cada elemento listado debe evaluarse como correcto/incorrecto según norma APA 7ma|Uno,Dos,Tres*,Cuatro|2.1,1.3,0.25|5|Normativa,0.15,high</pre>
+
+    <h3>Convenciones del formato MINI</h3>
+    <ul>
+      <li>Primera línea: cabecera con <code>a|</code> seguida de pares <code>clave=valor</code> separados por <code>|</code></li>
+      <li>Cada ítem en una línea: <code>id|bloom|tema|enunciado|opciones|irt|dificultad|meta_cat</code></li>
+      <li>La opción correcta se marca con <code>*</code> al final del texto, sin campo separado</li>
+      <li>Parámetros IRT como tripleta <code>a,b,c</code> en un solo campo</li>
+      <li>Meta CAT como tripleta <code>area,exposure_cap,demanda</code></li>
+    </ul>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- VENTAJAS Y DESVENTAJAS REALES -->
+  <section class="doc-section">
+    <h2>Ventajas y desventajas reales por formato</h2>
+    <p>Basadas en los resultados del benchmark con este dataset específico. No son afirmaciones genéricas — son consecuencias directas de cómo cada formato representa los mismos datos.</p>
+
+    <div class="format-grid">
+      <div class="format-card">
+        <div class="fc-name">MINI</div>
+        <p class="fc-pro">✓ Ventajas</p>
+        <ul class="fc-pro">
+          <li>Menor conteo de tokens del grupo</li>
+          <li>Sin delimitadores redundantes (llaves, corchetes, etiquetas)</li>
+          <li>La respuesta correcta va inline con <code>*</code>, no en campo separado</li>
+          <li>Ideal para contextos de LLM con límite de tokens</li>
+        </ul>
+        <p class="fc-con">✗ Desventajas</p>
+        <ul class="fc-con">
+          <li>Requiere parser propio — no hay librerías estándar</li>
+          <li>Frágil ante caracteres <code>|</code> o <code>,</code> en el contenido</li>
+          <li>Sin validación de esquema nativa</li>
+          <li>Difícil de leer sin herramientas</li>
+        </ul>
+      </div>
+
+      <div class="format-card">
+        <div class="fc-name">JSON</div>
+        <p class="fc-pro">✓ Ventajas</p>
+        <ul class="fc-pro">
+          <li>Soporte nativo en todos los lenguajes</li>
+          <li>Fácil de validar con JSON Schema</li>
+          <li>Legible y predecible</li>
+          <li>Estándar de facto para APIs</li>
+        </ul>
+        <p class="fc-con">✗ Desventajas</p>
+        <ul class="fc-con">
+          <li>Mayor conteo de tokens del grupo</li>
+          <li>Mucha repetición de claves en arrays de objetos</li>
+          <li>Comillas y llaves añaden overhead significativo</li>
+        </ul>
+      </div>
+
+      <div class="format-card">
+        <div class="fc-name">YAML</div>
+        <p class="fc-pro">✓ Ventajas</p>
+        <ul class="fc-pro">
+          <li>Más legible que JSON para humanos</li>
+          <li>Sin comillas en la mayoría de valores</li>
+          <li>Soporte amplio en herramientas DevOps</li>
+        </ul>
+        <p class="fc-con">✗ Desventajas</p>
+        <ul class="fc-con">
+          <li>La indentación añade tokens extra</li>
+          <li>Más tokens que JSON en datasets con muchos campos anidados</li>
+          <li>Sensible a errores de indentación</li>
+          <li>Comportamiento sorpresivo con tipos (ej. <code>true</code>, fechas)</li>
+        </ul>
+      </div>
+
+      <div class="format-card">
+        <div class="fc-name">XML</div>
+        <p class="fc-pro">✓ Ventajas</p>
+        <ul class="fc-pro">
+          <li>Atributos permiten comprimir datos en una sola etiqueta</li>
+          <li>Validación con XSD/DTD</li>
+          <li>Estándar maduro con amplio tooling</li>
+        </ul>
+        <p class="fc-con">✗ Desventajas</p>
+        <ul class="fc-con">
+          <li>Etiquetas de apertura y cierre duplican el nombre del campo</li>
+          <li>Segundo formato más costoso en tokens</li>
+          <li>Verboso para datos tabulares</li>
+        </ul>
+      </div>
+
+      <div class="format-card">
+        <div class="fc-name">TOON</div>
+        <p class="fc-pro">✓ Ventajas</p>
+        <ul class="fc-pro">
+          <li>Más compacto que JSON y XML</li>
+          <li>Estructura visual clara con indentación mínima</li>
+        </ul>
+        <p class="fc-con">✗ Desventajas</p>
+        <ul class="fc-con">
+          <li>Formato no estándar — sin ecosistema</li>
+          <li>Menos eficiente que MINI para datos planos</li>
+          <li>Adopción prácticamente nula</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- BENCHMARK INTERACTIVO -->
+  <section class="doc-section">
+    <h2>Resultados del benchmark</h2>
+    <p>Conteo real de tokens con <code>cl100k_base</code> para el cuestionario de referencia descrito arriba.</p>
+    <div class="benchmark-embed-wrap">
+      {% include "landing/token_format_benchmark.html" %}
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

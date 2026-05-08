@@ -514,6 +514,27 @@
     max-width: 600px;
   }
 
+  .benchmark-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .benchmark-head .compare-lead {
+    margin-bottom: 0;
+  }
+
+  .benchmark-direct {
+    flex-shrink: 0;
+  }
+
+  .benchmark-embed {
+    overflow: hidden;
+    margin-bottom: 2.5rem;
+  }
+
   .compare-table-wrap {
     overflow-x: auto;
     border-radius: 10px;
@@ -1200,6 +1221,7 @@
     .hero { grid-template-columns: 1fr; }
     .hero-right { display: none; }
     .why-grid, .anatomy-grid, .bench-intro, .irt-grid, .playground-head, .playground-grid, .compare-section .grid { grid-template-columns: 1fr; }
+    .benchmark-head { align-items: flex-start; flex-direction: column; }
     .steps-grid { grid-template-columns: 1fr 1fr; }
     nav { padding: 1rem 1.5rem; }
     .hero-left, .why-section, .compare-section, .anatomy-section, .bench-section, .how-section, .irt-section, .playground-section, .creators-section { padding-left: 1.5rem; padding-right: 1.5rem; }
@@ -1248,6 +1270,7 @@
     <div class="hero-actions">
       <a href="#playground" class="btn-primary">Probar playground</a>
       <a href="#formato" class="btn-ghost">Ver el formato</a>
+      <a href="{% url 'mini_benchmark' %}" class="btn-ghost">Benchmark completo</a>
     </div>
     <div class="hero-stats">
       <div class="stat-item">
@@ -1355,107 +1378,14 @@
   <h2 class="section-title reveal">.mini vs los demás formatos</h2>
   <p class="compare-lead reveal">Comparativa de tokens consumidos para representar los mismos datos psicométricos.</p>
 
-  <div class="compare-table-wrap reveal">
-    <table>
-      <thead>
-        <tr>
-          <th>Formato</th>
-          <th class="col-mini">.mini</th>
-          <th>JSON</th>
-          <th>JSON compact</th>
-          <th>YAML</th>
-          <th>.toon</th>
-          <th>XML</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Tokens relativos</td>
-          <td class="col-mini">
-            <div class="eff-bar">
-              <div class="eff-fill" style="--pct:38%"></div>
-              38%
-            </div>
-          </td>
-          <td>
-            <div class="eff-bar">
-              <div class="eff-fill json" style="--pct:100%"></div>
-              100%
-            </div>
-          </td>
-          <td>
-            <div class="eff-bar">
-              <div class="eff-fill json" style="--pct:60%"></div>
-              60%
-            </div>
-          </td>
-          <td>
-            <div class="eff-bar">
-              <div class="eff-fill yaml" style="--pct:80%"></div>
-              80%
-            </div>
-          </td>
-          <td>
-            <div class="eff-bar">
-              <div class="eff-fill toon" style="--pct:55%"></div>
-              ~55%
-            </div>
-          </td>
-          <td>
-            <div class="eff-bar">
-              <div class="eff-fill xml" style="--pct:116%"></div>
-              116%
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td>Generación fiable por IA</td>
-          <td class="col-mini"><span class="check">Óptima</span></td>
-          <td><span class="check">Alta</span></td>
-          <td><span class="check">Alta</span></td>
-          <td><span class="check">Alta</span></td>
-          <td><span class="cross">Falla en textos largos</span></td>
-          <td><span class="partial">Media</span></td>
-        </tr>
-        <tr>
-          <td>IRT nativo</td>
-          <td class="col-mini"><span class="check">Sí</span></td>
-          <td><span class="cross">No</span></td>
-          <td><span class="cross">No</span></td>
-          <td><span class="cross">No</span></td>
-          <td><span class="cross">No</span></td>
-          <td><span class="cross">No</span></td>
-        </tr>
-        <tr>
-          <td>Taxonomía Bloom integrada</td>
-          <td class="col-mini"><span class="check">Sí</span></td>
-          <td><span class="cross">No</span></td>
-          <td><span class="cross">No</span></td>
-          <td><span class="cross">No</span></td>
-          <td><span class="cross">No</span></td>
-          <td><span class="cross">No</span></td>
-        </tr>
-        <tr>
-          <td>Validación integrada</td>
-          <td class="col-mini"><span class="check">Reporte de errores</span></td>
-          <td><span class="partial">Schema externo</span></td>
-          <td><span class="partial">Schema externo</span></td>
-          <td><span class="partial">Schema externo</span></td>
-          <td><span class="partial">[N] length</span></td>
-          <td><span class="partial">XSD externo</span></td>
-        </tr>
-        <tr>
-          <td>Parseo determinista</td>
-          <td class="col-mini"><span class="check">Split por pipe</span></td>
-          <td><span class="check">JSON.parse</span></td>
-          <td><span class="check">JSON.parse</span></td>
-          <td><span class="partial">Librería YAML</span></td>
-          <td><span class="partial">Parser propio</span></td>
-          <td><span class="partial">XML parser</span></td>
-        </tr>
-      </tbody>
-    </table>
+  <div class="benchmark-head reveal">
+    <a class="btn-ghost benchmark-direct" href="{% url 'mini_benchmark' %}">Ver fuentes del benchmark</a>
   </div>
+
+  <div class="benchmark-embed reveal">
+    {% include "landing/token_format_benchmark.html" %}
+  </div>
+
 </section>
 
 <!-- ANATOMY -->

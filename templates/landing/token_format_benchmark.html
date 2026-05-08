@@ -1,0 +1,897 @@
+
+<style>
+  .token-benchmark {
+    --color-background-secondary: var(--gray-900, #111110);
+    --color-border-secondary: var(--gray-700, #2a2a27);
+    --color-border-tertiary: var(--gray-800, #1c1c1a);
+    --color-text-primary: var(--white, #fafaf5);
+    --color-text-secondary: var(--gray-400, #9a9a90);
+    --border-radius-md: var(--radius-md, 8px);
+    --border-radius-lg: var(--radius-lg, 10px);
+
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-lg);
+    background: rgba(255, 255, 255, 0.018);
+    padding: clamp(14px, 3vw, 24px);
+  }
+
+  .token-benchmark .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .token-benchmark code {
+    color: var(--acid, #d4ff00);
+    font-family: var(--font-mono, monospace);
+  }
+
+  .token-benchmark canvas {
+    max-width: 100%;
+  }
+</style>
+
+<div class="token-benchmark">
+<h2 class="sr-only">Benchmark de eficiencia de tokens entre formatos JSON, MINI, TOON, YAML y XML para el mismo cuestionario APA 7ma edición</h2>
+
+<div style="padding: 1rem 0;">
+
+<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap:10px; margin-bottom:1.5rem;" id="metric-cards"></div>
+
+<div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:1rem;" id="tab-bar"></div>
+
+<div id="chart-area" style="position:relative; width:100%; height:320px;">
+  <canvas id="mainChart" role="img" aria-label="Gráfico de barras comparando tokens por formato"></canvas>
+</div>
+
+<div style="margin-top:1.5rem;" id="breakdown-area"></div>
+
+<div style="margin-top:1.5rem; background:var(--color-background-secondary); border-radius:var(--border-radius-lg); padding:1rem 1.25rem;" id="verdict-box"></div>
+
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const RAW = {
+  json: `{
+  "assessment": {
+    "meta": {
+      "model": "IRT3PL",
+      "generated_at": "20260504",
+      "language": "es",
+      "topic": "Norma APA 7ma edición",
+      "bloom_distribution": [2,3,2,2,2,1],
+      "cat_params": {"theta_init":0,"theta_min":-3,"theta_max":3,"se_stop":0.3,"max_items":12,"exposure_control":"SH"},
+      "total_items": 12
+    },
+    "items": [
+      {"id":"i1","bloom_level":"L1","topic":"Portada","statement":"En la portada de un trabajo estudiantil según APA 7ma ed., ¿cuál de los siguientes elementos NO debe aparecer?","options":[{"text":"Nombre del autor","correct":false},{"text":"Nombre del curso","correct":false},{"text":"Nombre de la institución","correct":false},{"text":"Fecha","correct":true}],"irt":{"a":0.9,"b":-1.4,"c":0.25},"difficulty_level":1,"cat_meta":{"content_area":"Estructura","exposure_cap":0.2,"cognitive_demand":"low"}},
+      {"id":"i2","bloom_level":"L1","topic":"Resumen","statement":"Según APA 7ma edición, el resumen debe tener como máximo ____ palabras.","options":[{"text":"250","correct":true},{"text":"150","correct":false},{"text":"100","correct":false},{"text":"300","correct":false}],"irt":{"a":0.9,"b":-1.1,"c":0.25},"difficulty_level":1,"cat_meta":{"content_area":"Resumen","exposure_cap":0.2,"cognitive_demand":"low"}},
+      {"id":"i3","bloom_level":"L2","topic":"Palabras_clave","statement":"¿Cómo se escriben correctamente las palabras clave en formato APA 7ma edición?","options":[{"text":"En mayúsculas y entre comillas","correct":false},{"text":"Solo la primera en mayúscula","correct":false},{"text":"En minúsculas separadas por comas","correct":true},{"text":"En negrita y centradas","correct":false}],"irt":{"a":1.1,"b":-0.4,"c":0.25},"difficulty_level":2,"cat_meta":{"content_area":"Resumen","exposure_cap":0.2,"cognitive_demand":"medium"}},
+      {"id":"i4","bloom_level":"L2","topic":"Niveles_título","statement":"¿Cuál es la diferencia entre el título de nivel 1 y el de nivel 2 en APA 7ma edición?","options":[{"text":"Ambos van centrados pero distinto tamaño","correct":false},{"text":"El nivel 1 va centrado en negrita y el nivel 2 alineado a la izquierda en negrita","correct":true},{"text":"El nivel 1 va en cursiva y el nivel 2 en negrita","correct":false},{"text":"Solo el nivel 2 va en negrita","correct":false}],"irt":{"a":1.2,"b":-0.3,"c":0.25},"difficulty_level":2,"cat_meta":{"content_area":"Estructura","exposure_cap":0.2,"cognitive_demand":"medium"}},
+      {"id":"i5","bloom_level":"L2","topic":"Referencias","statement":"¿Cómo se ordena la lista de referencias en APA 7ma edición?","options":[{"text":"Por fecha de publicación de más reciente a más antigua","correct":false},{"text":"Por orden de aparición en el texto","correct":false},{"text":"Alfabéticamente por el apellido del primer autor","correct":true},{"text":"Por tipo de fuente (libros, artículos, sitios web)","correct":false}],"irt":{"a":1.1,"b":-0.2,"c":0.25},"difficulty_level":2,"cat_meta":{"content_area":"Referencias","exposure_cap":0.2,"cognitive_demand":"medium"}},
+      {"id":"i6","bloom_level":"L3","topic":"Sangría_francesa","statement":"En la lista de referencias APA 7ma ed., la sangría francesa implica que ____.","options":[{"text":"la primera línea de cada referencia está sangrada y las siguientes van al margen","correct":false},{"text":"la primera línea va al margen y las siguientes están sangradas","correct":true},{"text":"todas las líneas están igualmente sangradas","correct":false},{"text":"solo se aplica sangría cuando la referencia ocupa más de dos líneas","correct":false}],"irt":{"a":1.4,"b":0.1,"c":0.25},"difficulty_level":3,"cat_meta":{"content_area":"Referencias","exposure_cap":0.2,"cognitive_demand":"medium"}},
+      {"id":"i7","bloom_level":"L3","topic":"Paráfrasis","statement":"Un estudiante resume con sus propias palabras la idea de García (2021) en mitad de una oración. ¿Cuál es el formato de cita correcto?","options":[{"text":"García (2021) al inicio o (García, 2021) al final","correct":true},{"text":"(García: 2021) entre paréntesis","correct":false},{"text":"García, 2021 sin paréntesis","correct":false},{"text":"García [2021], p. 1 al final","correct":false}],"irt":{"a":1.4,"b":0.2,"c":0.25},"difficulty_level":3,"cat_meta":{"content_area":"Citas","exposure_cap":0.2,"cognitive_demand":"medium"}},
+      {"id":"i8","bloom_level":"L3","topic":"Cita_directa_corta","statement":"Una cita directa de 38 palabras tomadas del autor García (2021) en la página 25 debe escribirse ____.","options":[{"text":"en un bloque separado con sangría de 1.27 cm","correct":false},{"text":"entre comillas en el párrafo con García (2021, p. 25) al final","correct":true},{"text":"entre comillas y con el número de página solo en la bibliografía","correct":false},{"text":"en cursiva dentro del párrafo sin número de página","correct":false}],"irt":{"a":1.5,"b":0.3,"c":0.25},"difficulty_level":3,"cat_meta":{"content_area":"Citas","exposure_cap":0.2,"cognitive_demand":"medium"}},
+      {"id":"i9","bloom_level":"L4","topic":"Cita_bloque","statement":"Una cita directa de 55 palabras debe presentarse como bloque. ¿En qué se diferencia del formato de cita corta en cuanto al paréntesis de cierre?","options":[{"text":"El paréntesis va inmediatamente después de las comillas de cierre","correct":false},{"text":"El paréntesis va antes del punto final igual que en citas cortas","correct":false},{"text":"El paréntesis con autor, año y página va después del punto final","correct":true},{"text":"No se incluye número de página en las citas de bloque","correct":false}],"irt":{"a":1.7,"b":0.6,"c":0.25},"difficulty_level":4,"cat_meta":{"content_area":"Citas","exposure_cap":0.2,"cognitive_demand":"high"}},
+      {"id":"i10","bloom_level":"L4","topic":"Norma_institucional","statement":"La docente afirma que el uso de APA 7ma edición es de carácter obligatorio en la institución. ¿Qué implica esto para los trabajos que usen una versión anterior?","options":[{"text":"Pueden usar APA 6ta con una nota aclaratoria","correct":false},{"text":"Se aceptan siempre que citen correctamente","correct":false},{"text":"No se aceptan porque la norma vigente institucional es APA 7ma","correct":true},{"text":"Depende del criterio de cada docente","correct":false}],"irt":{"a":1.6,"b":0.7,"c":0.25},"difficulty_level":4,"cat_meta":{"content_area":"Normativa","exposure_cap":0.2,"cognitive_demand":"high"}},
+      {"id":"i11","bloom_level":"L5","topic":"Evaluación_citas","statement":"Un estudiante escribe: García (2021) afirmó \"el aprendizaje activo mejora la retención de conocimientos en un 40 por ciento\" y no incluye número de página. Según APA 7ma ed., ¿qué error cometió?","options":[{"text":"Omitió el número de página obligatorio en citas directas","correct":true},{"text":"Usó la palabra afirmó en lugar de señaló","correct":false},{"text":"Debió poner el año entre corchetes en lugar de paréntesis","correct":false},{"text":"La cita debía ir en bloque por superar 40 palabras","correct":false}],"irt":{"a":1.9,"b":1.1,"c":0.25},"difficulty_level":5,"cat_meta":{"content_area":"Citas","exposure_cap":0.15,"cognitive_demand":"high"}},
+      {"id":"i12","bloom_level":"L5","topic":"Evaluación_formato","statement":"Especificar que cada elemento listado debe evaluarse como correcto/incorrecto según norma APA 7ma","options":[{"text":"Uno","correct":false},{"text":"Dos","correct":false},{"text":"Tres","correct":true},{"text":"Cuatro","correct":false}],"irt":{"a":2.1,"b":1.3,"c":0.25},"difficulty_level":5,"cat_meta":{"content_area":"Normativa","exposure_cap":0.15,"cognitive_demand":"high"}}
+    ]
+  }
+}`,
+
+  mini: `a|m=IRT3PL|d=20260504|n=12|l=es|t=Norma APA 7ma edición|bd=2,3,2,2,2,1|cat=0,-3,3,0.3,12,SHi1|L1|Portada|En la portada de un trabajo estudiantil según APA 7ma ed., ¿cuál de los siguientes elementos NO debe aparecer?|Nombre del autor,Nombre del curso,Nombre de la institución,Fecha*|0.9,-1.4,0.25|1|Estructura,0.2,lowi2|L1|Resumen|Según APA 7ma edición, el resumen debe tener como máximo ____ palabras.|250*,150,100,300|0.9,-1.1,0.25|1|Resumen,0.2,lowi3|L2|Palabras_clave|¿Cómo se escriben correctamente las palabras clave en formato APA 7ma edición?|En mayúsculas y entre comillas,Solo la primera en mayúscula,En minúsculas separadas por comas*,En negrita y centradas|1.1,-0.4,0.25|2|Resumen,0.2,mediumi4|L2|Niveles_título|¿Cuál es la diferencia entre el título de nivel 1 y el de nivel 2 en APA 7ma edición?|Ambos van centrados pero distinto tamaño,El nivel 1 va centrado en negrita y el nivel 2 alineado a la izquierda en negrita*,El nivel 1 va en cursiva y el nivel 2 en negrita,Solo el nivel 2 va en negrita|1.2,-0.3,0.25|2|Estructura,0.2,mediumi5|L2|Referencias|¿Cómo se ordena la lista de referencias en APA 7ma edición?|Por fecha de publicación de más reciente a más antigua,Por orden de aparición en el texto,Alfabéticamente por el apellido del primer autor*,Por tipo de fuente (libros, artículos, sitios web)|1.1,-0.2,0.25|2|Referencias,0.2,mediumi6|L3|Sangría_francesa|En la lista de referencias APA 7ma ed., la sangría francesa implica que ____.|la primera línea de cada referencia está sangrada y las siguientes van al margen,la primera línea va al margen y las siguientes están sangradas*,todas las líneas están igualmente sangradas,solo se aplica sangría cuando la referencia ocupa más de dos líneas|1.4,0.1,0.25|3|Referencias,0.2,mediumi7|L3|Paráfrasis|Un estudiante resume con sus propias palabras la idea de García (2021) en mitad de una oración. ¿Cuál es el formato de cita correcto?|García (2021) al inicio o (García, 2021) al final*,(García: 2021) entre paréntesis,García, 2021 sin paréntesis,"García [2021], p. 1 al final"|1.4,0.2,0.25|3|Citas,0.2,mediumi8|L3|Cita_directa_corta|Una cita directa de 38 palabras tomadas del autor García (2021) en la página 25 debe escribirse ____.|en un bloque separado con sangría de 1.27 cm,entre comillas en el párrafo con García (2021, p. 25) al final*,entre comillas y con el número de página solo en la bibliografía,en cursiva dentro del párrafo sin número de página|1.5,0.3,0.25|3|Citas,0.2,mediumi9|L4|Cita_bloque|Una cita directa de 55 palabras debe presentarse como bloque. ¿En qué se diferencia del formato de cita corta en cuanto al paréntesis de cierre?|El paréntesis va inmediatamente después de las comillas de cierre,El paréntesis va antes del punto final igual que en citas cortas,El paréntesis con autor, año y página va después del punto final*,No se incluye número de página en las citas de bloque|1.7,0.6,0.25|4|Citas,0.2,highi10|L4|Norma_institucional|La docente afirma que el uso de APA 7ma edición es de carácter obligatorio en la institución. ¿Qué implica esto para los trabajos que usen una versión anterior?|Pueden usar APA 6ta con una nota aclaratoria,Se aceptan siempre que citen correctamente,No se aceptan porque la norma vigente institucional es APA 7ma*,Depende del criterio de cada docente|1.6,0.7,0.25|4|Normativa,0.2,highi11|L5|Evaluación_citas|Un estudiante escribe: García (2021) afirmó "el aprendizaje activo mejora la retención de conocimientos en un 40 por ciento" y no incluye número de página. Según APA 7ma ed., ¿qué error cometió?|Omitió el número de página obligatorio en citas directas*,Usó la palabra afirmó en lugar de señaló,Debió poner el año entre corchetes en lugar de paréntesis,La cita debía ir en bloque por superar 40 palabras|1.9,1.1,0.25|5|Citas,0.15,highi12|L5|Evaluación_formato|Especificar que cada elemento listado debe evaluarse como correcto/incorrecto según norma APA 7ma|Uno,Dos,Tres*,Cuatro|2.1,1.3,0.25|5|Normativa,0.15,high`,
+
+  yaml: `assessment:
+  meta:
+    model: IRT3PL
+    generated_at: "20260504"
+    language: es
+    topic: Norma APA 7ma edición
+    bloom_distribution: [2,3,2,2,2,1]
+    cat_params:
+      theta_init: 0
+      theta_min: -3
+      theta_max: 3
+      se_stop: 0.3
+      max_items: 12
+      exposure_control: SH
+    total_items: 12
+  items:
+    - id: i1
+      bloom_level: L1
+      topic: Portada
+      statement: "En la portada de un trabajo estudiantil según APA 7ma ed., ¿cuál de los siguientes elementos NO debe aparecer?"
+      options:
+        - text: Nombre del autor
+          correct: false
+        - text: Nombre del curso
+          correct: false
+        - text: Nombre de la institución
+          correct: false
+        - text: Fecha
+          correct: true
+      irt: {a: 0.9, b: -1.4, c: 0.25}
+      difficulty_level: 1
+      cat_meta: {content_area: Estructura, exposure_cap: 0.2, cognitive_demand: low}
+    - id: i2
+      bloom_level: L1
+      topic: Resumen
+      statement: "Según APA 7ma edición, el resumen debe tener como máximo ____ palabras."
+      options:
+        - text: "250"
+          correct: true
+        - text: "150"
+          correct: false
+        - text: "100"
+          correct: false
+        - text: "300"
+          correct: false
+      irt: {a: 0.9, b: -1.1, c: 0.25}
+      difficulty_level: 1
+      cat_meta: {content_area: Resumen, exposure_cap: 0.2, cognitive_demand: low}
+    - id: i3
+      bloom_level: L2
+      topic: Palabras_clave
+      statement: "¿Cómo se escriben correctamente las palabras clave en formato APA 7ma edición?"
+      options:
+        - text: En mayúsculas y entre comillas
+          correct: false
+        - text: Solo la primera en mayúscula
+          correct: false
+        - text: En minúsculas separadas por comas
+          correct: true
+        - text: En negrita y centradas
+          correct: false
+      irt: {a: 1.1, b: -0.4, c: 0.25}
+      difficulty_level: 2
+      cat_meta: {content_area: Resumen, exposure_cap: 0.2, cognitive_demand: medium}
+    - id: i4
+      bloom_level: L2
+      topic: Niveles_título
+      statement: "¿Cuál es la diferencia entre el título de nivel 1 y el de nivel 2 en APA 7ma edición?"
+      options:
+        - text: Ambos van centrados pero distinto tamaño
+          correct: false
+        - text: El nivel 1 va centrado en negrita y el nivel 2 alineado a la izquierda en negrita
+          correct: true
+        - text: El nivel 1 va en cursiva y el nivel 2 en negrita
+          correct: false
+        - text: Solo el nivel 2 va en negrita
+          correct: false
+      irt: {a: 1.2, b: -0.3, c: 0.25}
+      difficulty_level: 2
+      cat_meta: {content_area: Estructura, exposure_cap: 0.2, cognitive_demand: medium}
+    - id: i5
+      bloom_level: L2
+      topic: Referencias
+      statement: "¿Cómo se ordena la lista de referencias en APA 7ma edición?"
+      options:
+        - text: Por fecha de publicación de más reciente a más antigua
+          correct: false
+        - text: Por orden de aparición en el texto
+          correct: false
+        - text: Alfabéticamente por el apellido del primer autor
+          correct: true
+        - text: Por tipo de fuente (libros, artículos, sitios web)
+          correct: false
+      irt: {a: 1.1, b: -0.2, c: 0.25}
+      difficulty_level: 2
+      cat_meta: {content_area: Referencias, exposure_cap: 0.2, cognitive_demand: medium}
+    - id: i6
+      bloom_level: L3
+      topic: Sangría_francesa
+      statement: "En la lista de referencias APA 7ma ed., la sangría francesa implica que ____."
+      options:
+        - text: la primera línea de cada referencia está sangrada y las siguientes van al margen
+          correct: false
+        - text: la primera línea va al margen y las siguientes están sangradas
+          correct: true
+        - text: todas las líneas están igualmente sangradas
+          correct: false
+        - text: solo se aplica sangría cuando la referencia ocupa más de dos líneas
+          correct: false
+      irt: {a: 1.4, b: 0.1, c: 0.25}
+      difficulty_level: 3
+      cat_meta: {content_area: Referencias, exposure_cap: 0.2, cognitive_demand: medium}
+    - id: i7
+      bloom_level: L3
+      topic: Paráfrasis
+      statement: "Un estudiante resume con sus propias palabras la idea de García (2021) en mitad de una oración. ¿Cuál es el formato de cita correcto?"
+      options:
+        - text: García (2021) al inicio o (García, 2021) al final
+          correct: true
+        - text: "(García: 2021) entre paréntesis"
+          correct: false
+        - text: García, 2021 sin paréntesis
+          correct: false
+        - text: "García [2021], p. 1 al final"
+          correct: false
+      irt: {a: 1.4, b: 0.2, c: 0.25}
+      difficulty_level: 3
+      cat_meta: {content_area: Citas, exposure_cap: 0.2, cognitive_demand: medium}
+    - id: i8
+      bloom_level: L3
+      topic: Cita_directa_corta
+      statement: "Una cita directa de 38 palabras tomadas del autor García (2021) en la página 25 debe escribirse ____."
+      options:
+        - text: en un bloque separado con sangría de 1.27 cm
+          correct: false
+        - text: entre comillas en el párrafo con García (2021, p. 25) al final
+          correct: true
+        - text: entre comillas y con el número de página solo en la bibliografía
+          correct: false
+        - text: en cursiva dentro del párrafo sin número de página
+          correct: false
+      irt: {a: 1.5, b: 0.3, c: 0.25}
+      difficulty_level: 3
+      cat_meta: {content_area: Citas, exposure_cap: 0.2, cognitive_demand: medium}
+    - id: i9
+      bloom_level: L4
+      topic: Cita_bloque
+      statement: "Una cita directa de 55 palabras debe presentarse como bloque. ¿En qué se diferencia del formato de cita corta en cuanto al paréntesis de cierre?"
+      options:
+        - text: El paréntesis va inmediatamente después de las comillas de cierre
+          correct: false
+        - text: El paréntesis va antes del punto final igual que en citas cortas
+          correct: false
+        - text: El paréntesis con autor, año y página va después del punto final
+          correct: true
+        - text: No se incluye número de página en las citas de bloque
+          correct: false
+      irt: {a: 1.7, b: 0.6, c: 0.25}
+      difficulty_level: 4
+      cat_meta: {content_area: Citas, exposure_cap: 0.2, cognitive_demand: high}
+    - id: i10
+      bloom_level: L4
+      topic: Norma_institucional
+      statement: "La docente afirma que el uso de APA 7ma edición es de carácter obligatorio en la institución. ¿Qué implica esto para los trabajos que usen una versión anterior?"
+      options:
+        - text: Pueden usar APA 6ta con una nota aclaratoria
+          correct: false
+        - text: Se aceptan siempre que citen correctamente
+          correct: false
+        - text: No se aceptan porque la norma vigente institucional es APA 7ma
+          correct: true
+        - text: Depende del criterio de cada docente
+          correct: false
+      irt: {a: 1.6, b: 0.7, c: 0.25}
+      difficulty_level: 4
+      cat_meta: {content_area: Normativa, exposure_cap: 0.2, cognitive_demand: high}
+    - id: i11
+      bloom_level: L5
+      topic: Evaluación_citas
+      statement: "Un estudiante escribe: García (2021) afirmó 'el aprendizaje activo mejora la retención de conocimientos en un 40 por ciento' y no incluye número de página. Según APA 7ma ed., ¿qué error cometió?"
+      options:
+        - text: Omitió el número de página obligatorio en citas directas
+          correct: true
+        - text: Usó la palabra afirmó en lugar de señaló
+          correct: false
+        - text: Debió poner el año entre corchetes en lugar de paréntesis
+          correct: false
+        - text: La cita debía ir en bloque por superar 40 palabras
+          correct: false
+      irt: {a: 1.9, b: 1.1, c: 0.25}
+      difficulty_level: 5
+      cat_meta: {content_area: Citas, exposure_cap: 0.15, cognitive_demand: high}
+    - id: i12
+      bloom_level: L5
+      topic: Evaluación_formato
+      statement: "Especificar que cada elemento listado debe evaluarse como correcto/incorrecto según norma APA 7ma"
+      options:
+        - text: Uno
+          correct: false
+        - text: Dos
+          correct: false
+        - text: Tres
+          correct: true
+        - text: Cuatro
+          correct: false
+      irt: {a: 2.1, b: 1.3, c: 0.25}
+      difficulty_level: 5
+      cat_meta: {content_area: Normativa, exposure_cap: 0.15, cognitive_demand: high}`,
+
+  xml: `<?xml version="1.0" encoding="UTF-8"?>
+<assessment>
+  <meta>
+    <model>IRT3PL</model>
+    <generated_at>20260504</generated_at>
+    <language>es</language>
+    <topic>Norma APA 7ma edición</topic>
+    <bloom_distribution>2,3,2,2,2,1</bloom_distribution>
+    <cat_params>
+      <theta_init>0</theta_init>
+      <theta_min>-3</theta_min>
+      <theta_max>3</theta_max>
+      <se_stop>0.3</se_stop>
+      <max_items>12</max_items>
+      <exposure_control>SH</exposure_control>
+    </cat_params>
+    <total_items>12</total_items>
+  </meta>
+  <items>
+    <item id="i1" bloom_level="L1" topic="Portada" difficulty_level="1">
+      <statement>En la portada de un trabajo estudiantil según APA 7ma ed., ¿cuál de los siguientes elementos NO debe aparecer?</statement>
+      <options>
+        <option correct="false">Nombre del autor</option>
+        <option correct="false">Nombre del curso</option>
+        <option correct="false">Nombre de la institución</option>
+        <option correct="true">Fecha</option>
+      </options>
+      <irt a="0.9" b="-1.4" c="0.25"/>
+      <cat_meta content_area="Estructura" exposure_cap="0.2" cognitive_demand="low"/>
+    </item>
+    <item id="i2" bloom_level="L1" topic="Resumen" difficulty_level="1">
+      <statement>Según APA 7ma edición, el resumen debe tener como máximo ____ palabras.</statement>
+      <options>
+        <option correct="true">250</option>
+        <option correct="false">150</option>
+        <option correct="false">100</option>
+        <option correct="false">300</option>
+      </options>
+      <irt a="0.9" b="-1.1" c="0.25"/>
+      <cat_meta content_area="Resumen" exposure_cap="0.2" cognitive_demand="low"/>
+    </item>
+    <item id="i3" bloom_level="L2" topic="Palabras_clave" difficulty_level="2">
+      <statement>¿Cómo se escriben correctamente las palabras clave en formato APA 7ma edición?</statement>
+      <options>
+        <option correct="false">En mayúsculas y entre comillas</option>
+        <option correct="false">Solo la primera en mayúscula</option>
+        <option correct="true">En minúsculas separadas por comas</option>
+        <option correct="false">En negrita y centradas</option>
+      </options>
+      <irt a="1.1" b="-0.4" c="0.25"/>
+      <cat_meta content_area="Resumen" exposure_cap="0.2" cognitive_demand="medium"/>
+    </item>
+    <item id="i4" bloom_level="L2" topic="Niveles_título" difficulty_level="2">
+      <statement>¿Cuál es la diferencia entre el título de nivel 1 y el de nivel 2 en APA 7ma edición?</statement>
+      <options>
+        <option correct="false">Ambos van centrados pero distinto tamaño</option>
+        <option correct="true">El nivel 1 va centrado en negrita y el nivel 2 alineado a la izquierda en negrita</option>
+        <option correct="false">El nivel 1 va en cursiva y el nivel 2 en negrita</option>
+        <option correct="false">Solo el nivel 2 va en negrita</option>
+      </options>
+      <irt a="1.2" b="-0.3" c="0.25"/>
+      <cat_meta content_area="Estructura" exposure_cap="0.2" cognitive_demand="medium"/>
+    </item>
+    <item id="i5" bloom_level="L2" topic="Referencias" difficulty_level="2">
+      <statement>¿Cómo se ordena la lista de referencias en APA 7ma edición?</statement>
+      <options>
+        <option correct="false">Por fecha de publicación de más reciente a más antigua</option>
+        <option correct="false">Por orden de aparición en el texto</option>
+        <option correct="true">Alfabéticamente por el apellido del primer autor</option>
+        <option correct="false">Por tipo de fuente (libros, artículos, sitios web)</option>
+      </options>
+      <irt a="1.1" b="-0.2" c="0.25"/>
+      <cat_meta content_area="Referencias" exposure_cap="0.2" cognitive_demand="medium"/>
+    </item>
+    <item id="i6" bloom_level="L3" topic="Sangría_francesa" difficulty_level="3">
+      <statement>En la lista de referencias APA 7ma ed., la sangría francesa implica que ____.</statement>
+      <options>
+        <option correct="false">la primera línea de cada referencia está sangrada y las siguientes van al margen</option>
+        <option correct="true">la primera línea va al margen y las siguientes están sangradas</option>
+        <option correct="false">todas las líneas están igualmente sangradas</option>
+        <option correct="false">solo se aplica sangría cuando la referencia ocupa más de dos líneas</option>
+      </options>
+      <irt a="1.4" b="0.1" c="0.25"/>
+      <cat_meta content_area="Referencias" exposure_cap="0.2" cognitive_demand="medium"/>
+    </item>
+    <item id="i7" bloom_level="L3" topic="Paráfrasis" difficulty_level="3">
+      <statement>Un estudiante resume con sus propias palabras la idea de García (2021) en mitad de una oración. ¿Cuál es el formato de cita correcto?</statement>
+      <options>
+        <option correct="true">García (2021) al inicio o (García, 2021) al final</option>
+        <option correct="false">(García: 2021) entre paréntesis</option>
+        <option correct="false">García, 2021 sin paréntesis</option>
+        <option correct="false">García [2021], p. 1 al final</option>
+      </options>
+      <irt a="1.4" b="0.2" c="0.25"/>
+      <cat_meta content_area="Citas" exposure_cap="0.2" cognitive_demand="medium"/>
+    </item>
+    <item id="i8" bloom_level="L3" topic="Cita_directa_corta" difficulty_level="3">
+      <statement>Una cita directa de 38 palabras tomadas del autor García (2021) en la página 25 debe escribirse ____.</statement>
+      <options>
+        <option correct="false">en un bloque separado con sangría de 1.27 cm</option>
+        <option correct="true">entre comillas en el párrafo con García (2021, p. 25) al final</option>
+        <option correct="false">entre comillas y con el número de página solo en la bibliografía</option>
+        <option correct="false">en cursiva dentro del párrafo sin número de página</option>
+      </options>
+      <irt a="1.5" b="0.3" c="0.25"/>
+      <cat_meta content_area="Citas" exposure_cap="0.2" cognitive_demand="medium"/>
+    </item>
+    <item id="i9" bloom_level="L4" topic="Cita_bloque" difficulty_level="4">
+      <statement>Una cita directa de 55 palabras debe presentarse como bloque. ¿En qué se diferencia del formato de cita corta en cuanto al paréntesis de cierre?</statement>
+      <options>
+        <option correct="false">El paréntesis va inmediatamente después de las comillas de cierre</option>
+        <option correct="false">El paréntesis va antes del punto final igual que en citas cortas</option>
+        <option correct="true">El paréntesis con autor, año y página va después del punto final</option>
+        <option correct="false">No se incluye número de página en las citas de bloque</option>
+      </options>
+      <irt a="1.7" b="0.6" c="0.25"/>
+      <cat_meta content_area="Citas" exposure_cap="0.2" cognitive_demand="high"/>
+    </item>
+    <item id="i10" bloom_level="L4" topic="Norma_institucional" difficulty_level="4">
+      <statement>La docente afirma que el uso de APA 7ma edición es de carácter obligatorio en la institución. ¿Qué implica esto para los trabajos que usen una versión anterior?</statement>
+      <options>
+        <option correct="false">Pueden usar APA 6ta con una nota aclaratoria</option>
+        <option correct="false">Se aceptan siempre que citen correctamente</option>
+        <option correct="true">No se aceptan porque la norma vigente institucional es APA 7ma</option>
+        <option correct="false">Depende del criterio de cada docente</option>
+      </options>
+      <irt a="1.6" b="0.7" c="0.25"/>
+      <cat_meta content_area="Normativa" exposure_cap="0.2" cognitive_demand="high"/>
+    </item>
+    <item id="i11" bloom_level="L5" topic="Evaluación_citas" difficulty_level="5">
+      <statement>Un estudiante escribe: García (2021) afirmó "el aprendizaje activo mejora la retención de conocimientos en un 40 por ciento" y no incluye número de página. Según APA 7ma ed., ¿qué error cometió?</statement>
+      <options>
+        <option correct="true">Omitió el número de página obligatorio en citas directas</option>
+        <option correct="false">Usó la palabra afirmó en lugar de señaló</option>
+        <option correct="false">Debió poner el año entre corchetes en lugar de paréntesis</option>
+        <option correct="false">La cita debía ir en bloque por superar 40 palabras</option>
+      </options>
+      <irt a="1.9" b="1.1" c="0.25"/>
+      <cat_meta content_area="Citas" exposure_cap="0.15" cognitive_demand="high"/>
+    </item>
+    <item id="i12" bloom_level="L5" topic="Evaluación_formato" difficulty_level="5">
+      <statement>Especificar que cada elemento listado debe evaluarse como correcto/incorrecto según norma APA 7ma</statement>
+      <options>
+        <option correct="false">Uno</option>
+        <option correct="false">Dos</option>
+        <option correct="true">Tres</option>
+        <option correct="false">Cuatro</option>
+      </options>
+      <irt a="2.1" b="1.3" c="0.25"/>
+      <cat_meta content_area="Normativa" exposure_cap="0.15" cognitive_demand="high"/>
+    </item>
+  </items>
+</assessment>`
+};
+
+RAW.toon = `assessment:
+  meta:
+    model: IRT3PL
+    generated_at: "20260504"
+    language: es
+    topic: Norma APA 7ma edición
+    bloom_distribution[6]: 2,3,2,2,2,1
+    cat_params:
+      theta_init: 0
+      theta_min: -3
+      theta_max: 3
+      se_stop: 0.3
+      max_items: 12
+      exposure_control: SH
+    raw:
+      m: IRT3PL
+      d: "20260504"
+      n: "12"
+      l: es
+      t: Norma APA 7ma edición
+      bd: "2,3,2,2,2,1"
+      cat: "0,-3,3,0.3,12,SH"
+    total_items: 12
+  items[12]:
+    -
+      id: i1
+      bloom_level: L1
+      topic: Portada
+      statement: "En la portada de un trabajo estudiantil según APA 7ma ed., ¿cuál de los siguientes elementos NO debe aparecer?"
+      options[4]{text,correct}:
+        Nombre del autor,false
+        Nombre del curso,false
+        Nombre de la institución,false
+        Fecha,true
+      irt:
+        a: 0.9
+        b: -1.4
+        c: 0.25
+      difficulty_level: 1
+      cat_meta:
+        content_area: Estructura
+        exposure_cap: 0.2
+        cognitive_demand: low
+    -
+      id: i2
+      bloom_level: L1
+      topic: Resumen
+      statement: "Según APA 7ma edición, el resumen debe tener como máximo ____ palabras."
+      options[4]{text,correct}:
+        "250",true
+        "150",false
+        "100",false
+        "300",false
+      irt:
+        a: 0.9
+        b: -1.1
+        c: 0.25
+      difficulty_level: 1
+      cat_meta:
+        content_area: Resumen
+        exposure_cap: 0.2
+        cognitive_demand: low
+    -
+      id: i3
+      bloom_level: L2
+      topic: Palabras_clave
+      statement: ¿Cómo se escriben correctamente las palabras clave en formato APA 7ma edición?
+      options[4]{text,correct}:
+        En mayúsculas y entre comillas,false
+        Solo la primera en mayúscula,false
+        En minúsculas separadas por comas,true
+        En negrita y centradas,false
+      irt:
+        a: 1.1
+        b: -0.4
+        c: 0.25
+      difficulty_level: 2
+      cat_meta:
+        content_area: Resumen
+        exposure_cap: 0.2
+        cognitive_demand: medium
+    -
+      id: i4
+      bloom_level: L2
+      topic: Niveles_título
+      statement: ¿Cuál es la diferencia entre el título de nivel 1 y el de nivel 2 en APA 7ma edición?
+      options[4]{text,correct}:
+        Ambos van centrados pero distinto tamaño,false
+        El nivel 1 va centrado en negrita y el nivel 2 alineado a la izquierda en negrita,true
+        El nivel 1 va en cursiva y el nivel 2 en negrita,false
+        Solo el nivel 2 va en negrita,false
+      irt:
+        a: 1.2
+        b: -0.3
+        c: 0.25
+      difficulty_level: 2
+      cat_meta:
+        content_area: Estructura
+        exposure_cap: 0.2
+        cognitive_demand: medium
+    -
+      id: i5
+      bloom_level: L2
+      topic: Referencias
+      statement: ¿Cómo se ordena la lista de referencias en APA 7ma edición?
+      options[6]{text,correct}:
+        Por fecha de publicación de más reciente a más antigua,false
+        Por orden de aparición en el texto,false
+        Alfabéticamente por el apellido del primer autor,true
+        Por tipo de fuente (libros,false
+        " artículos",false
+        " sitios web)",false
+      irt:
+        a: 1.1
+        b: -0.2
+        c: 0.25
+      difficulty_level: 2
+      cat_meta:
+        content_area: Referencias
+        exposure_cap: 0.2
+        cognitive_demand: medium
+    -
+      id: i6
+      bloom_level: L3
+      topic: Sangría_francesa
+      statement: "En la lista de referencias APA 7ma ed., la sangría francesa implica que ____."
+      options[4]{text,correct}:
+        la primera línea de cada referencia está sangrada y las siguientes van al margen,false
+        la primera línea va al margen y las siguientes están sangradas,true
+        todas las líneas están igualmente sangradas,false
+        solo se aplica sangría cuando la referencia ocupa más de dos líneas,false
+      irt:
+        a: 1.4
+        b: 0.1
+        c: 0.25
+      difficulty_level: 3
+      cat_meta:
+        content_area: Referencias
+        exposure_cap: 0.2
+        cognitive_demand: medium
+    -
+      id: i7
+      bloom_level: L3
+      topic: Paráfrasis
+      statement: Un estudiante resume con sus propias palabras la idea de García (2021) en mitad de una oración. ¿Cuál es el formato de cita correcto?
+      options[6]{text,correct}:
+        García (2021) al inicio o (García,false
+        " 2021) al final",true
+        "(García: 2021) entre paréntesis",false
+        García,false
+        " 2021 sin paréntesis",false
+        "García [2021], p. 1 al final",false
+      irt:
+        a: 1.4
+        b: 0.2
+        c: 0.25
+      difficulty_level: 3
+      cat_meta:
+        content_area: Citas
+        exposure_cap: 0.2
+        cognitive_demand: medium
+    -
+      id: i8
+      bloom_level: L3
+      topic: Cita_directa_corta
+      statement: Una cita directa de 38 palabras tomadas del autor García (2021) en la página 25 debe escribirse ____.
+      options[5]{text,correct}:
+        en un bloque separado con sangría de 1.27 cm,false
+        entre comillas en el párrafo con García (2021,false
+        " p. 25) al final",true
+        entre comillas y con el número de página solo en la bibliografía,false
+        en cursiva dentro del párrafo sin número de página,false
+      irt:
+        a: 1.5
+        b: 0.3
+        c: 0.25
+      difficulty_level: 3
+      cat_meta:
+        content_area: Citas
+        exposure_cap: 0.2
+        cognitive_demand: medium
+    -
+      id: i9
+      bloom_level: L4
+      topic: Cita_bloque
+      statement: Una cita directa de 55 palabras debe presentarse como bloque. ¿En qué se diferencia del formato de cita corta en cuanto al paréntesis de cierre?
+      options[5]{text,correct}:
+        El paréntesis va inmediatamente después de las comillas de cierre,false
+        El paréntesis va antes del punto final igual que en citas cortas,false
+        El paréntesis con autor,false
+        " año y página va después del punto final",true
+        No se incluye número de página en las citas de bloque,false
+      irt:
+        a: 1.7
+        b: 0.6
+        c: 0.25
+      difficulty_level: 4
+      cat_meta:
+        content_area: Citas
+        exposure_cap: 0.2
+        cognitive_demand: high
+    -
+      id: i10
+      bloom_level: L4
+      topic: Norma_institucional
+      statement: La docente afirma que el uso de APA 7ma edición es de carácter obligatorio en la institución. ¿Qué implica esto para los trabajos que usen una versión anterior?
+      options[4]{text,correct}:
+        Pueden usar APA 6ta con una nota aclaratoria,false
+        Se aceptan siempre que citen correctamente,false
+        No se aceptan porque la norma vigente institucional es APA 7ma,true
+        Depende del criterio de cada docente,false
+      irt:
+        a: 1.6
+        b: 0.7
+        c: 0.25
+      difficulty_level: 4
+      cat_meta:
+        content_area: Normativa
+        exposure_cap: 0.2
+        cognitive_demand: high
+    -
+      id: i11
+      bloom_level: L5
+      topic: Evaluación_citas
+      statement: "Un estudiante escribe: García (2021) afirmó \\"el aprendizaje activo mejora la retención de conocimientos en un 40 por ciento\\" y no incluye número de página. Según APA 7ma ed., ¿qué error cometió?"
+      options[4]{text,correct}:
+        Omitió el número de página obligatorio en citas directas,true
+        Usó la palabra afirmó en lugar de señaló,false
+        Debió poner el año entre corchetes en lugar de paréntesis,false
+        La cita debía ir en bloque por superar 40 palabras,false
+      irt:
+        a: 1.9
+        b: 1.1
+        c: 0.25
+      difficulty_level: 5
+      cat_meta:
+        content_area: Citas
+        exposure_cap: 0.15
+        cognitive_demand: high
+    -
+      id: i12
+      bloom_level: L5
+      topic: Evaluación_formato
+      statement: Especificar que cada elemento listado debe evaluarse como correcto/incorrecto según norma APA 7ma
+      options[4]{text,correct}:
+        Uno,false
+        Dos,false
+        Tres,true
+        Cuatro,false
+      irt:
+        a: 2.1
+        b: 1.3
+        c: 0.25
+      difficulty_level: 5
+      cat_meta:
+        content_area: Normativa
+        exposure_cap: 0.15
+        cognitive_demand: high`;
+
+RAW.mini = RAW.mini
+  .replace(/(SH)(i1\|)/, '$1\n$2')
+  .replace(/(low|medium|high)(i\d+\|)/g, '$1\n$2');
+
+function tokenize(text) {
+  const chunks = [];
+  const re = /\s+|[^\s\w]|[\w\u00C0-\u024F\u0300-\u036F]+/g;
+  let m;
+  while ((m = re.exec(text)) !== null) {
+    const t = m[0];
+    if (/\s+/.test(t)) { chunks.push(t); continue; }
+    for (let i = 0; i < t.length; i += 4) chunks.push(t.slice(i, i + 4));
+  }
+  return chunks.filter(c => c.length > 0);
+}
+
+function analyze(key) {
+  const text = RAW[key];
+  const chars = text.length;
+  const tokens = tokenize(text).length;
+  const lines = text.split('\n').length;
+  const structChars = key === 'json'
+    ? (text.match(/[{}\[\]:,"]/g)||[]).length
+    : key === 'xml'
+    ? (text.match(/[<>\/="]/g)||[]).length
+    : key === 'yaml'
+    ? (text.match(/[-:]/g)||[]).length
+    : key === 'toon'
+    ? (text.match(/[\[\]{}:,\-"]/g)||[]).length
+    : (text.match(/[|*,]/g)||[]).length;
+  const contentChars = chars - structChars;
+  const overhead = ((structChars / chars) * 100);
+  return { chars, tokens, lines, structChars, contentChars, overhead: overhead.toFixed(1) };
+}
+
+const formats = ['json','mini','toon','yaml','xml'];
+const labels = { json:'JSON', mini:'MINI', toon:'TOON', yaml:'YAML', xml:'XML' };
+const colors  = { json:'#378ADD', mini:'#1D9E75', toon:'#60A5FA', yaml:'#BA7517', xml:'#D4537E' };
+const stats = {};
+formats.forEach(f => { stats[f] = analyze(f); });
+
+const maxTokens = Math.max(...formats.map(f => stats[f].tokens));
+const cards = document.getElementById('metric-cards');
+formats.forEach(f => {
+  const s = stats[f];
+  const pct = Math.round((s.tokens / maxTokens) * 100);
+  const isMin = s.tokens === Math.min(...formats.map(x => stats[x].tokens));
+  cards.innerHTML += `<div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:1rem;border:${isMin?'2px solid #1D9E75':'0.5px solid var(--color-border-tertiary)'}">
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-weight:500;color:${colors[f]}">${labels[f]}</span>
+      ${isMin?'<span style="font-size:10px;background:#E1F5EE;color:#0F6E56;padding:2px 6px;border-radius:4px">más eficiente</span>':''}
+    </div>
+    <div style="font-size:22px;font-weight:500;color:var(--color-text-primary)">${s.tokens.toLocaleString()}</div>
+    <div style="font-size:11px;color:var(--color-text-secondary)">tokens estimados</div>
+    <div style="margin-top:8px;background:var(--color-border-tertiary);border-radius:4px;height:4px">
+      <div style="width:${pct}%;height:4px;border-radius:4px;background:${colors[f]}"></div>
+    </div>
+    <div style="font-size:11px;color:var(--color-text-secondary);margin-top:4px">${s.chars.toLocaleString()} chars · overhead ${s.overhead}%</div>
+  </div>`;
+});
+
+const tabs = ['tokens','chars','overhead','lines'];
+const tabLabels = { tokens:'Tokens', chars:'Caracteres', overhead:'% Overhead', lines:'Líneas' };
+let activeTab = 'tokens';
+const tabBar = document.getElementById('tab-bar');
+tabs.forEach(t => {
+  const btn = document.createElement('button');
+  btn.textContent = tabLabels[t];
+  btn.dataset.tab = t;
+  btn.style.cssText = `padding:6px 14px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:${t===activeTab?'var(--color-background-secondary)':'transparent'};color:var(--color-text-primary);cursor:pointer;font-size:13px`;
+  btn.onclick = () => switchTab(t);
+  tabBar.appendChild(btn);
+});
+
+let chartInst = null;
+function getDataFor(tab) {
+  return formats.map(f => {
+    if (tab === 'tokens') return stats[f].tokens;
+    if (tab === 'chars') return stats[f].chars;
+    if (tab === 'overhead') return parseFloat(stats[f].overhead);
+    if (tab === 'lines') return stats[f].lines;
+  });
+}
+
+function buildChart(tab) {
+  const chartArea = document.getElementById('chart-area');
+  if (!window.Chart) {
+    chartArea.innerHTML = '<div style="height:100%;display:grid;place-items:center;border:1px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);color:var(--color-text-secondary);font-size:13px">Grafico no disponible sin Chart.js; el desglose queda debajo.</div>';
+    return;
+  }
+  if (chartInst) { chartInst.destroy(); }
+  const ctx = document.getElementById('mainChart');
+  chartInst = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: formats.map(f => labels[f]),
+      datasets: [{
+        label: tabLabels[tab],
+        data: getDataFor(tab),
+        backgroundColor: formats.map(f => colors[f] + 'CC'),
+        borderColor: formats.map(f => colors[f]),
+        borderWidth: 1.5,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { color: '#888', font: { size: 11 } },
+          grid: { color: 'rgba(128,128,128,0.1)' }
+        },
+        x: {
+          ticks: { color: '#888', font: { size: 13, weight: '500' } },
+          grid: { display: false }
+        }
+      }
+    }
+  });
+}
+
+function switchTab(tab) {
+  activeTab = tab;
+  tabBar.querySelectorAll('button').forEach(b => {
+    b.style.background = b.dataset.tab === tab ? 'var(--color-background-secondary)' : 'transparent';
+  });
+  buildChart(tab);
+  buildBreakdown();
+}
+
+function buildBreakdown() {
+  const area = document.getElementById('breakdown-area');
+  const minFmt = formats.reduce((a,b) => stats[a].tokens < stats[b].tokens ? a : b);
+  area.innerHTML = `<div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:10px;font-weight:500">Desglose comparativo</div>
+  <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed">
+    <thead>
+      <tr style="border-bottom:0.5px solid var(--color-border-tertiary)">
+        <th style="text-align:left;padding:6px 8px;color:var(--color-text-secondary);font-weight:500">Formato</th>
+        <th style="text-align:right;padding:6px 8px;color:var(--color-text-secondary);font-weight:500">Tokens</th>
+        <th style="text-align:right;padding:6px 8px;color:var(--color-text-secondary);font-weight:500">Chars</th>
+        <th style="text-align:right;padding:6px 8px;color:var(--color-text-secondary);font-weight:500">Overhead</th>
+        <th style="text-align:right;padding:6px 8px;color:var(--color-text-secondary);font-weight:500">vs MINI</th>
+        <th style="text-align:right;padding:6px 8px;color:var(--color-text-secondary);font-weight:500">Líneas</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${formats.map(f => {
+        const s = stats[f];
+        const ratio = ((stats[f].tokens / stats[minFmt].tokens - 1)*100).toFixed(1);
+        const isMin = f === minFmt;
+        return `<tr style="border-bottom:0.5px solid var(--color-border-tertiary)">
+          <td style="padding:7px 8px"><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:2px;background:${colors[f]};flex-shrink:0"></span><span style="font-weight:500">${labels[f]}</span></span></td>
+          <td style="text-align:right;padding:7px 8px;font-weight:500">${s.tokens.toLocaleString()}</td>
+          <td style="text-align:right;padding:7px 8px">${s.chars.toLocaleString()}</td>
+          <td style="text-align:right;padding:7px 8px">${s.overhead}%</td>
+          <td style="text-align:right;padding:7px 8px;color:${isMin?'#1D9E75':'#D85A30'}">${isMin?'baseline':'+'+ratio+'%'}</td>
+          <td style="text-align:right;padding:7px 8px">${s.lines}</td>
+        </tr>`;
+      }).join('')}
+    </tbody>
+  </table></div>`;
+}
+
+const minFmt = formats.reduce((a,b) => stats[a].tokens < stats[b].tokens ? a : b);
+const maxFmt = formats.reduce((a,b) => stats[a].tokens > stats[b].tokens ? a : b);
+const saving = Math.round((1 - stats[minFmt].tokens / stats[maxFmt].tokens)*100);
+
+document.getElementById('verdict-box').innerHTML = `
+  <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:6px">Veredicto del benchmark</div>
+  <div style="font-size:13px;color:var(--color-text-secondary);line-height:1.7">
+    <strong style="color:#1D9E75">MINI</strong> es el formato más eficiente: <strong>${stats.mini.tokens.toLocaleString()} tokens</strong> frente a 
+    <strong>${stats.json.tokens.toLocaleString()}</strong> de JSON, <strong>${stats.toon.tokens.toLocaleString()}</strong> de TOON, <strong>${stats.yaml.tokens.toLocaleString()}</strong> de YAML y <strong>${stats.xml.tokens.toLocaleString()}</strong> de XML.
+    Ahorra un <strong style="color:#1D9E75">${saving}%</strong> respecto al formato más costoso (${labels[maxFmt]}).
+    Su overhead estructural es de solo <strong>${stats.mini.overhead}%</strong> — los delimitadores <code>|</code>, <code>,</code> y <code>*</code> son mínimos comparados con las etiquetas repetidas de XML o las claves verbosas de JSON.
+  </div>`;
+
+buildChart('tokens');
+buildBreakdown();
+</script>

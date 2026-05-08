@@ -1,0 +1,21 @@
+Watching for file changes with StatReloader
+[07/May/2026 07:39:35] "GET /mini/benchmark/ HTTP/1.1" 200 42166
+[07/May/2026 07:39:35,552] - Broken pipe from ('127.0.0.1', 55177)
+[07/May/2026 07:39:49] "GET /mini/benchmark/ HTTP/1.1" 200 42166
+[07/May/2026 07:39:49,445] - Broken pipe from ('127.0.0.1', 55240)
+[07/May/2026 07:39:57] "GET /mini HTTP/1.1" 200 105660
+[07/May/2026 07:39:57] "GET / HTTP/1.1" 200 4517
+[07/May/2026 07:39:57,478] - Broken pipe from ('127.0.0.1', 55289)
+[07/May/2026 07:39:57,546] - Broken pipe from ('127.0.0.1', 55288)
+[07/May/2026 07:40:31] "GET /mini/benchmark/ HTTP/1.1" 200 42551
+[07/May/2026 07:40:31,236] - Broken pipe from ('127.0.0.1', 55454)
+[07/May/2026 07:40:31] "GET /mini HTTP/1.1" 200 106045
+[07/May/2026 07:40:31,415] - Broken pipe from ('127.0.0.1', 55456)
+E:\PaginasQueHice\SIMAApp\learning\views.py changed, reloading.
+Watching for file changes with StatReloader
+[07/May/2026 07:58:41] "GET /mini HTTP/1.1" 200 110960
+[07/May/2026 07:58:41] "GET /mini/benchmark/ HTTP/1.1" 200 48818
+[07/May/2026 07:58:41,595] - Broken pipe from ('127.0.0.1', 63371)
+[07/May/2026 07:58:41,645] - Broken pipe from ('127.0.0.1', 63372)
+E:\PaginasQueHice\SIMAApp\learning\views.py changed, reloading.
+Watching for file changes with StatReloader

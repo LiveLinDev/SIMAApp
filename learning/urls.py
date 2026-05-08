@@ -8,6 +8,7 @@ urlpatterns = [
     path("", views.home, name="home"),
     path("mini", views.mini_landing, name="mini_landing"),
     path("mini/", views.mini_landing, name="mini_landing_slash"),
+    path("mini/benchmark/", views.mini_benchmark, name="mini_benchmark"),
     path("registro/", views.register, name="register"),
     path("login/", auth_views.LoginView.as_view(template_name="registration/login.html"), name="login"),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),

@@ -60,6 +60,10 @@ def mini_landing(request):
     return render(request, "landing/mini.html")
 
 
+def mini_benchmark(request):
+    return render(request, "landing/benchmark_page.html")
+
+
 def register(request):
     if request.method == "POST":
         form = RegisterForm(request.POST)

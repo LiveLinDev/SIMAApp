@@ -7,3 +7,20 @@ E:\PaginasQueHice\SIMAApp\sima\settings.py changed, reloading.
 Watching for file changes with StatReloader
 E:\PaginasQueHice\SIMAApp\sima\settings.py changed, reloading.
 Watching for file changes with StatReloader
+Not Found: /profesionales/
+[07/May/2026 06:21:59] "GET /profesionales/ HTTP/1.1" 404 9318
+[07/May/2026 06:21:59,728] - Broken pipe from ('127.0.0.1', 32885)
+[07/May/2026 06:22:04] "GET / HTTP/1.1" 200 4388
+[07/May/2026 06:22:04,725] - Broken pipe from ('127.0.0.1', 32906)
+[07/May/2026 06:22:09] "GET / HTTP/1.1" 200 4388
+[07/May/2026 06:22:09,656] - Broken pipe from ('127.0.0.1', 32928)
+[07/May/2026 06:22:17] "GET / HTTP/1.1" 200 4388
+[07/May/2026 06:22:17,250] - Broken pipe from ('127.0.0.1', 32959)
+E:\PaginasQueHice\SIMAApp\learning\views.py changed, reloading.
+Watching for file changes with StatReloader
+E:\PaginasQueHice\SIMAApp\learning\urls.py changed, reloading.
+Watching for file changes with StatReloader
+E:\PaginasQueHice\SIMAApp\learning\views.py changed, reloading.
+Watching for file changes with StatReloader
+E:\PaginasQueHice\SIMAApp\learning\views.py changed, reloading.
+Watching for file changes with StatReloader

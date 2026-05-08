@@ -403,7 +403,7 @@
   }
 </style>
 <script>
-  (function () {
+  function initFormSubmit() {
     var form   = document.getElementById('lesson-form');
     var btn    = document.getElementById('submit-btn');
     var status = document.getElementById('processing-status');
@@ -491,9 +491,9 @@
 
       showProgress(hasAudio, hasText);
     });
-  })();
+  }
 
-  (function initRecorder() {
+  function initRecorder() {
     var audioInput = document.getElementById('id_audio');
     var recorderBox = document.getElementById('mobile-recorder');
     var startBtn = document.getElementById('record-start');
@@ -671,7 +671,7 @@
       stopBtn.disabled = true;
       dot.classList.remove('is-recording');
     });
-  })();
+  }
 
   function updateInputMode() {
     var mode = document.querySelector('input[name="input_mode"]:checked');
@@ -724,6 +724,8 @@
 
   // init on load
   document.addEventListener('DOMContentLoaded', function() {
+    initFormSubmit();
+    initRecorder();
     updateInputMode();
     updateBackendUI();
     updateVerificationUI();

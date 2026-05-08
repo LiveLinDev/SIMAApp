@@ -5,7 +5,7 @@
   <p class="eyebrow">{% if mode == "api" %}Crear clase{% else %}Manual gratis{% endif %}</p>
   <h1>Nueva clase</h1>
   {% if mode == "api" and profile %}
-    <p class="muted">Te quedan {{ profile.remaining_classes }} clases este mes.</p>
+  <p class="muted">Te quedan {{ profile.remaining_classes }} clases este mes.</p>
   {% endif %}
 </section>
 
@@ -32,8 +32,13 @@
       <label class="backend-option" id="lbl-mode-text">
         <input type="radio" name="input_mode" value="text" checked onchange="updateInputMode()">
         <span class="backend-card">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <path d="M14 2v6h6" />
+            <path d="M16 13H8" />
+            <path d="M16 17H8" />
+            <path d="M10 9H8" />
           </svg>
           <span>
             <strong>Texto</strong>
@@ -45,8 +50,11 @@
       <label class="backend-option" id="lbl-mode-audio">
         <input type="radio" name="input_mode" value="audio" onchange="updateInputMode()">
         <span class="backend-card">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+            <path d="M12 19v3" />
           </svg>
           <span>
             <strong>Audio</strong>
@@ -80,19 +88,23 @@
       <div class="recorder-actions">
         <button class="recorder-btn recorder-btn--record" type="button" id="record-start">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <circle cx="12" cy="12" r="7"/>
+            <circle cx="12" cy="12" r="7" />
           </svg>
           Grabar
         </button>
         <button class="recorder-btn" type="button" id="record-stop" disabled>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="7" y="7" width="10" height="10" rx="1.5"/>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="7" y="7" width="10" height="10" rx="1.5" />
           </svg>
           Detener
         </button>
         <button class="recorder-btn" type="button" id="record-clear" disabled>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 6h18" />
+            <path d="M8 6V4h8v2" />
+            <path d="M19 6l-1 14H6L5 6" />
           </svg>
           Limpiar
         </button>
@@ -104,106 +116,119 @@
 
   <details class="advanced-settings">
     <summary class="advanced-summary">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5z"/>
-        <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.03-1.56 1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 8a1.7 1.7 0 0 0-.34-1.88l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 8.97 3.6 1.7 1.7 0 0 0 10 2.04V2a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 8c.22.63.8 1.03 1.47 1.03H21a2 2 0 1 1 0 4h-.09A1.7 1.7 0 0 0 19.4 15z"/>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5z" />
+        <path
+          d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.03-1.56 1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 8a1.7 1.7 0 0 0-.34-1.88l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 8.97 3.6 1.7 1.7 0 0 0 10 2.04V2a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 8c.22.63.8 1.03 1.47 1.03H21a2 2 0 1 1 0 4h-.09A1.7 1.7 0 0 0 19.4 15z" />
       </svg>
       Ajustes
     </summary>
     <div class="advanced-settings__body">
-  <fieldset class="backend-selector">
-    <legend class="backend-label">Generador</legend>
-    <p class="backend-note">Solo cambia esto si quieres elegir el servicio.</p>
-    <div class="backend-options">
+      <fieldset class="backend-selector">
+        <legend class="backend-label">Generador</legend>
+        <p class="backend-note">Solo cambia esto si quieres elegir el servicio.</p>
+        <div class="backend-options">
 
-      <label class="backend-option {% if not backends.anthropic %}backend-option--disabled{% endif %}" id="lbl-anthropic">
-        <input type="radio" name="backend" value="anthropic"
-          {% if backends.default == 'anthropic' %}checked{% endif %}
-          {% if not backends.anthropic %}disabled{% endif %}
-          onchange="updateBackendUI()">
-        <span class="backend-card">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
-          </svg>
-          <span>
-            <strong>Anthropic Claude</strong>
-            {% if backends.anthropic %}
-              <small>Disponible</small>
-            {% else %}
-              <small class="disabled-note">No configurado</small>
-            {% endif %}
-          </span>
-        </span>
-      </label>
+          <label class="backend-option {% if not backends.anthropic %}backend-option--disabled{% endif %}"
+            id="lbl-anthropic">
+            <input type="radio" name="backend" value="anthropic" {% if backends.default=='anthropic' %}checked{% endif
+              %} {% if not backends.anthropic %}disabled{% endif %} onchange="updateBackendUI()">
+            <span class="backend-card">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                <path d="M2 17l10 5 10-5" />
+                <path d="M2 12l10 5 10-5" />
+              </svg>
+              <span>
+                <strong>Anthropic Claude</strong>
+                {% if backends.anthropic %}
+                <small>Disponible</small>
+                {% else %}
+                <small class="disabled-note">No configurado</small>
+                {% endif %}
+              </span>
+            </span>
+          </label>
 
-      <label class="backend-option" id="lbl-local">
-        <input type="radio" name="backend" value="local"
-          {% if backends.default == 'local' %}checked{% endif %}
-          onchange="updateBackendUI()">
-        <span class="backend-card">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/>
-          </svg>
-          <span>
-            <strong>Equipo local</strong>
-            <small>Usar configuracion local</small>
-          </span>
-        </span>
-      </label>
+          <label class="backend-option" id="lbl-local">
+            <input type="radio" name="backend" value="local" {% if backends.default=='local' %}checked{% endif %}
+              onchange="updateBackendUI()">
+            <span class="backend-card">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2" />
+                <path d="M8 21h8" />
+                <path d="M12 17v4" />
+              </svg>
+              <span>
+                <strong>Equipo local</strong>
+                <small>Usar configuracion local</small>
+              </span>
+            </span>
+          </label>
 
-    </div>
-  </fieldset>
+        </div>
+      </fieldset>
 
-  <fieldset class="backend-selector" id="verification-selector">
-    <legend class="backend-label">Revision final</legend>
-    <p class="backend-note">Controla como se revisan las preguntas antes de guardar.</p>
-    <div class="backend-options">
-      <label class="backend-option" id="lbl-verify-web">
-        <input type="radio" name="verification_mode" value="web"
-          {% if verification_default_mode == 'web' %}checked{% endif %}
-          onchange="updateVerificationUI()">
-        <span class="backend-card">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 0 20"/><path d="M12 2a15.3 15.3 0 0 0 0 20"/>
-          </svg>
-          <span>
-            <strong>Fuentes web</strong>
-            <small>Usa lo actual: URLs configuradas y contexto externo.</small>
-          </span>
-        </span>
-      </label>
+      <fieldset class="backend-selector" id="verification-selector">
+        <legend class="backend-label">Revision final</legend>
+        <p class="backend-note">Controla como se revisan las preguntas antes de guardar.</p>
+        <div class="backend-options">
+          <label class="backend-option" id="lbl-verify-web">
+            <input type="radio" name="verification_mode" value="web" {% if verification_default_mode=='web' %}checked{%
+              endif %} onchange="updateVerificationUI()">
+            <span class="backend-card">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M2 12h20" />
+                <path d="M12 2a15.3 15.3 0 0 1 0 20" />
+                <path d="M12 2a15.3 15.3 0 0 0 0 20" />
+              </svg>
+              <span>
+                <strong>Fuentes web</strong>
+                <small>Usa lo actual: URLs configuradas y contexto externo.</small>
+              </span>
+            </span>
+          </label>
 
-      <label class="backend-option" id="lbl-verify-eduqg">
-        <input type="radio" name="verification_mode" value="eduqg"
-          {% if verification_default_mode == 'eduqg' %}checked{% endif %}
-          onchange="updateVerificationUI()">
-        <span class="backend-card">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"/>
-          </svg>
-          <span>
-            <strong>Material local</strong>
-            <small>Usa archivos de referencia del equipo.</small>
-          </span>
-        </span>
-      </label>
+          <label class="backend-option" id="lbl-verify-eduqg">
+            <input type="radio" name="verification_mode" value="eduqg" {% if verification_default_mode=='eduqg'
+              %}checked{% endif %} onchange="updateVerificationUI()">
+            <span class="backend-card">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                <path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z" />
+              </svg>
+              <span>
+                <strong>Material local</strong>
+                <small>Usa archivos de referencia del equipo.</small>
+              </span>
+            </span>
+          </label>
 
-      <label class="backend-option" id="lbl-verify-hybrid">
-        <input type="radio" name="verification_mode" value="hybrid"
-          {% if verification_default_mode == 'hybrid' %}checked{% endif %}
-          onchange="updateVerificationUI()">
-        <span class="backend-card">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2v20"/><path d="M2 12h20"/><path d="m4.93 4.93 14.14 14.14"/><path d="m19.07 4.93-14.14 14.14"/>
-          </svg>
-          <span>
-            <strong>Mixto</strong>
-            <small>Combina web y material local.</small>
-          </span>
-        </span>
-      </label>
-    </div>
-  </fieldset>
+          <label class="backend-option" id="lbl-verify-hybrid">
+            <input type="radio" name="verification_mode" value="hybrid" {% if verification_default_mode=='hybrid'
+              %}checked{% endif %} onchange="updateVerificationUI()">
+            <span class="backend-card">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v20" />
+                <path d="M2 12h20" />
+                <path d="m4.93 4.93 14.14 14.14" />
+                <path d="m19.07 4.93-14.14 14.14" />
+              </svg>
+              <span>
+                <strong>Mixto</strong>
+                <small>Combina web y material local.</small>
+              </span>
+            </span>
+          </label>
+        </div>
+      </fieldset>
     </div>
   </details>
   {% else %}
@@ -217,7 +242,9 @@
   {% if mode == "api" %}
   <div id="processing-status" hidden>
     <p class="processing-label">Preparando tu clase...</p>
-    <div class="processing-bar"><div class="processing-bar__fill"></div></div>
+    <div class="processing-bar">
+      <div class="processing-bar__fill"></div>
+    </div>
     <p class="processing-steps" id="processing-step">Revisando contenido...</p>
   </div>
   {% endif %}
@@ -225,33 +252,125 @@
 
 {% if mode == "api" %}
 <style>
-  .backend-selector { margin: 20px 0; border: none; padding: 0; }
-  .input-mode-selector { margin: 6px 0 10px; border: none; padding: 0; }
-  .backend-label { font-weight: 600; margin: 0 0 4px; font-size: .9rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; display: block; }
-  .backend-note { margin: 0 0 12px; font-size: .8rem; color: var(--muted); padding: 8px 12px; background: var(--soft); border-radius: 8px; border-left: 3px solid var(--blue); }
-  .field-hint { display: block; margin-top: 5px; color: var(--muted); font-size: .78rem; }
-  .backend-options { display: flex; gap: 12px; flex-wrap: wrap; }
-  .backend-option { flex: 1; min-width: 200px; cursor: pointer; }
-  .backend-option input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
-  .backend-card {
-    display: flex; align-items: center; gap: 12px;
-    padding: 14px 16px; border-radius: 12px; border: 2px solid var(--line);
-    background: var(--surface); transition: all .2s;
+  .backend-selector {
+    margin: 20px 0;
+    border: none;
+    padding: 0;
   }
-  .backend-option input:checked + .backend-card { border-color: var(--green); background: #f0fce8; }
-  .backend-card:hover { border-color: var(--green); }
-  .backend-card svg { flex-shrink: 0; color: var(--muted); }
-  .backend-option input:checked + .backend-card svg { color: var(--green-dark); }  .backend-card strong { display: block; font-size: .95rem; }
-  .backend-card small { display: block; font-size: .78rem; color: var(--muted); margin-top: 2px; }
-  .backend-option--disabled { opacity: .5; cursor: not-allowed; }
-  .backend-option--disabled .backend-card:hover { border-color: var(--line); }
-  .disabled-note { color: var(--red) !important; }
+
+  .input-mode-selector {
+    margin: 6px 0 10px;
+    border: none;
+    padding: 0;
+  }
+
+  .backend-label {
+    font-weight: 600;
+    margin: 0 0 4px;
+    font-size: .9rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    display: block;
+  }
+
+  .backend-note {
+    margin: 0 0 12px;
+    font-size: .8rem;
+    color: var(--muted);
+    padding: 8px 12px;
+    background: var(--soft);
+    border-radius: 8px;
+    border-left: 3px solid var(--blue);
+  }
+
+  .field-hint {
+    display: block;
+    margin-top: 5px;
+    color: var(--muted);
+    font-size: .78rem;
+  }
+
+  .backend-options {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .backend-option {
+    flex: 1;
+    min-width: 200px;
+    cursor: pointer;
+  }
+
+  .backend-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .backend-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 2px solid var(--line);
+    background: var(--surface);
+    transition: all .2s;
+  }
+
+  .backend-option input:checked+.backend-card {
+    border-color: var(--green);
+    background: #f0fce8;
+  }
+
+  .backend-card:hover {
+    border-color: var(--green);
+  }
+
+  .backend-card svg {
+    flex-shrink: 0;
+    color: var(--muted);
+  }
+
+  .backend-option input:checked+.backend-card svg {
+    color: var(--green-dark);
+  }
+
+  .backend-card strong {
+    display: block;
+    font-size: .95rem;
+  }
+
+  .backend-card small {
+    display: block;
+    font-size: .78rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .backend-option--disabled {
+    opacity: .5;
+    cursor: not-allowed;
+  }
+
+  .backend-option--disabled .backend-card:hover {
+    border-color: var(--line);
+  }
+
+  .disabled-note {
+    color: var(--red) !important;
+  }
+
   .advanced-settings {
     margin: 12px 0 18px;
     border: 1px solid var(--line);
     border-radius: 8px;
     background: rgba(255, 255, 255, .025);
   }
+
   .advanced-summary {
     min-height: 44px;
     display: inline-flex;
@@ -264,34 +383,71 @@
     font-weight: 900;
     list-style: none;
   }
+
   .advanced-summary::-webkit-details-marker {
     display: none;
   }
+
   .advanced-settings[open] .advanced-summary {
     border-bottom: 1px solid var(--line);
   }
+
   .advanced-settings__body {
     padding: 14px;
   }
+
   .advanced-settings .backend-selector {
     margin: 0 0 16px;
   }
+
   .advanced-settings .backend-selector:last-child {
     margin-bottom: 0;
   }
 
-  .processing-label { margin: 16px 0 8px; font-weight: 600; color: var(--ink); }
-  .processing-bar { width: 100%; height: 10px; border-radius: 999px; background: var(--line); overflow: hidden; }
+  .processing-label {
+    margin: 16px 0 8px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .processing-bar {
+    width: 100%;
+    height: 10px;
+    border-radius: 999px;
+    background: var(--line);
+    overflow: hidden;
+  }
+
   .processing-bar__fill {
-    height: 100%; width: 0%; background: var(--green); border-radius: 999px;
+    height: 100%;
+    width: 0%;
+    background: var(--green);
+    border-radius: 999px;
     animation: indeterminate 2s ease-in-out infinite;
   }
+
   @keyframes indeterminate {
-    0%   { width: 0%;  margin-left: 0%; }
-    50%  { width: 60%; margin-left: 20%; }
-    100% { width: 0%;  margin-left: 100%; }
+    0% {
+      width: 0%;
+      margin-left: 0%;
+    }
+
+    50% {
+      width: 60%;
+      margin-left: 20%;
+    }
+
+    100% {
+      width: 0%;
+      margin-left: 100%;
+    }
   }
-  .processing-steps { margin: 6px 0 0; font-size: .85rem; color: var(--muted); }
+
+  .processing-steps {
+    margin: 6px 0 0;
+    font-size: .85rem;
+    color: var(--muted);
+  }
 
   .mobile-recorder {
     display: grid;
@@ -302,37 +458,51 @@
     background: rgba(10, 10, 8, .54);
     padding: 14px;
   }
+
   .recorder-topline {
     display: grid;
     grid-template-columns: 12px minmax(0, 1fr) auto;
     align-items: center;
     gap: 10px;
   }
+
   .record-dot {
     width: 10px;
     height: 10px;
     border-radius: 50%;
     background: var(--muted);
   }
+
   .record-dot.is-recording {
     background: var(--red);
     box-shadow: 0 0 0 6px rgba(255, 95, 87, .14);
     animation: recordPulse 1.2s ease-in-out infinite;
   }
+
   @keyframes recordPulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.35); }
+
+    0%,
+    100% {
+      transform: scale(1);
+    }
+
+    50% {
+      transform: scale(1.35);
+    }
   }
+
   .record-time {
     color: var(--acid);
     font-family: var(--font-mono);
     font-weight: 900;
   }
+
   .recorder-actions {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
   }
+
   .recorder-btn {
     min-height: 48px;
     display: inline-flex;
@@ -346,17 +516,21 @@
     font-weight: 900;
     cursor: pointer;
   }
+
   .recorder-btn--record {
     border-color: rgba(255, 95, 87, .5);
     color: var(--white);
   }
+
   .recorder-btn:disabled {
     opacity: .45;
     cursor: not-allowed;
   }
+
   .mobile-recorder audio {
     width: 100%;
   }
+
   .recorder-hint {
     margin: 0;
     color: var(--muted);
@@ -371,28 +545,35 @@
       border-right: 0;
       padding: 16px 12px 22px;
     }
+
     .backend-options {
       display: grid;
       grid-template-columns: 1fr;
       gap: 10px;
     }
+
     .backend-option {
       min-width: 0;
     }
+
     .backend-card {
       min-height: 64px;
       padding: 13px 12px;
     }
+
     .recorder-actions {
       grid-template-columns: 1fr;
     }
+
     .recorder-btn {
       min-height: 54px;
       font-size: 1rem;
     }
+
     textarea {
       min-height: 180px;
     }
+
     #submit-btn {
       position: sticky;
       bottom: 10px;
@@ -404,8 +585,8 @@
 </style>
 <script>
   function initFormSubmit() {
-    var form   = document.getElementById('lesson-form');
-    var btn    = document.getElementById('submit-btn');
+    var form = document.getElementById('lesson-form');
+    var btn = document.getElementById('submit-btn');
     var status = document.getElementById('processing-status');
     var stepEl = document.getElementById('processing-step');
     var originalText = btn ? (btn.textContent || 'Crear clase').trim() : 'Crear clase';
@@ -449,42 +630,33 @@
 
     form.addEventListener('submit', function (event) {
       var audioInput = form.querySelector('input[type="file"]');
-      var recordedAudio = window.simaRecordedAudioFile || null;
+      var recordedBlob = window.simaRecordedBlob || null;
       var hasSelectedAudio = audioInput && audioInput.files && audioInput.files.length > 0;
-      var hasAudio = hasSelectedAudio || !!recordedAudio;
+      var hasAudio = hasSelectedAudio || !!recordedBlob;
       var sourceText = form.querySelector('textarea[name="source_text"], input[name="source_text"]');
       var hasText = sourceText && sourceText.value.trim().length > 0;
 
-      // Si hay audio grabado, siempre usar fetch para evitar que el browser
-      // abra el selector de archivos o ignore el blob grabado
-      if (recordedAudio && audioInput && window.fetch && window.FormData) {
+      // Audio grabado: enviar via fetch con el blob
+      if (recordedBlob && audioInput && window.fetch && window.FormData) {
         event.preventDefault();
         showProgress(true, false);
-
-        // Deshabilitar el file input para que FormData no lo incluya vacío
         audioInput.disabled = true;
         var formData = new FormData(form);
         audioInput.disabled = false;
-        formData.set(audioInput.name, recordedAudio, recordedAudio.name);
-
+        formData.set(audioInput.name, recordedBlob, 'grabacion-' + Date.now() + '.webm');
         window.fetch(form.action || window.location.href, {
-          method: (form.method || 'POST').toUpperCase(),
+          method: 'POST',
           body: formData,
           credentials: 'same-origin'
-        }).then(function (response) {
-          if (response.redirected) {
-            window.location.href = response.url;
-            return '';
-          }
-          if (!response.ok) throw new Error('upload-failed');
-          return response.text();
+        }).then(function (r) {
+          if (r.redirected) { window.location.href = r.url; return ''; }
+          if (!r.ok) throw new Error('error');
+          return r.text();
         }).then(function (html) {
           if (!html) return;
-          document.open();
-          document.write(html);
-          document.close();
+          document.open(); document.write(html); document.close();
         }).catch(function () {
-          restoreSubmit('No se pudo subir la grabacion. Prueba otra vez o usa el campo de audio.');
+          restoreSubmit('No se pudo subir la grabación. Intenta de nuevo.');
         });
         return;
       }
@@ -495,181 +667,100 @@
 
   function initRecorder() {
     var audioInput = document.getElementById('id_audio');
-    var recorderBox = document.getElementById('mobile-recorder');
     var startBtn = document.getElementById('record-start');
     var stopBtn = document.getElementById('record-stop');
     var clearBtn = document.getElementById('record-clear');
     var preview = document.getElementById('record-preview');
-    var status = document.getElementById('record-status');
-    var hint = document.getElementById('record-hint');
+    var statusEl = document.getElementById('record-status');
+    var hintEl = document.getElementById('record-hint');
     var dot = document.getElementById('record-dot');
     var timeEl = document.getElementById('record-time');
-    var recorder = null;
-    var stream = null;
+
+    var mediaRecorder = null;
     var chunks = [];
+    var timerInterval = null;
     var startedAt = 0;
-    var timer = null;
-    var lastUrl = '';
-    var canRecord = !!(window.MediaRecorder && navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
-    window.simaRecordedAudioFile = null;
+    window.simaRecordedBlob = null;
 
-    if (!recorderBox || !audioInput || !startBtn || !stopBtn || !clearBtn || !preview || !status || !hint || !dot || !timeEl) {
-      return;
+    // Actualizar cronómetro
+    function tick() {
+      var s = Math.floor((Date.now() - startedAt) / 1000);
+      timeEl.textContent = String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
     }
 
-    function preferredMime() {
-      var types = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus'];
-      for (var i = 0; i < types.length; i++) {
-        if (MediaRecorder.isTypeSupported(types[i])) return types[i];
-      }
-      return '';
-    }
-
-    function extensionFor(type) {
-      if (type.indexOf('mp4') >= 0) return 'm4a';
-      if (type.indexOf('ogg') >= 0) return 'ogg';
-      return 'webm';
-    }
-
-    function setTime(seconds) {
-      var mins = Math.floor(seconds / 60).toString().padStart(2, '0');
-      var secs = Math.floor(seconds % 60).toString().padStart(2, '0');
-      timeEl.textContent = mins + ':' + secs;
-    }
-
-    function clearTimer() {
-      if (timer) {
-        window.clearInterval(timer);
-        timer = null;
-      }
-    }
-
-    function stopTracks() {
-      if (stream) {
-        stream.getTracks().forEach(function(track) { track.stop(); });
-        stream = null;
-      }
-    }
-
-    function revokePreviewUrl() {
-      if (lastUrl) URL.revokeObjectURL(lastUrl);
-      lastUrl = '';
-    }
-
-    function showPreview(blobOrFile) {
-      revokePreviewUrl();
-      lastUrl = URL.createObjectURL(blobOrFile);
-      preview.src = lastUrl;
-      preview.hidden = false;
-    }
-
-    function resetRecorderUi() {
-      clearTimer();
-      audioInput.value = '';
-      window.simaRecordedAudioFile = null;
-      preview.removeAttribute('src');
+    // Limpiar todo
+    clearBtn.addEventListener('click', function () {
+      window.simaRecordedBlob = null;
+      preview.src = '';
       preview.hidden = true;
-      clearBtn.disabled = true;
-      stopBtn.disabled = true;
-      startBtn.disabled = false;
+      audioInput.value = '';
+      statusEl.textContent = 'Listo para grabar';
+      hintEl.textContent = '';
       dot.classList.remove('is-recording');
-      setTime(0);
-      status.textContent = canRecord ? 'Listo para grabar' : 'Listo para audio';
-      hint.textContent = canRecord
-        ? 'Al detener, el audio queda listo para subir.'
-        : 'Toca Grabar para elegir o grabar un audio desde tu dispositivo.';
-      revokePreviewUrl();
-      stopTracks();
-    }
-
-    function markAudioReady(file, assignedToInput) {
-      window.simaRecordedAudioFile = assignedToInput ? null : file;
-      showPreview(file);
-      clearBtn.disabled = false;
-      status.textContent = 'Audio listo';
-      hint.textContent = assignedToInput ? 'Listo para subir.' : 'Listo para subir al crear la clase.';
-    }
-
-    audioInput.addEventListener('change', function () {
-      var file = audioInput.files && audioInput.files[0];
-      window.simaRecordedAudioFile = null;
-      if (!file) {
-        resetRecorderUi();
-        return;
-      }
-      showPreview(file);
-      clearBtn.disabled = false;
-      status.textContent = 'Audio listo';
-      hint.textContent = file.name + ' listo para subir.';
+      timeEl.textContent = '00:00';
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+      clearBtn.disabled = true;
     });
 
-    clearBtn.addEventListener('click', resetRecorderUi);
-
-    if (!canRecord) {
-      status.textContent = 'Listo para audio';
-      hint.textContent = 'Toca Grabar para elegir o grabar un audio desde tu dispositivo.';
-      startBtn.addEventListener('click', function () {
-        audioInput.click();
-      });
-      return;
-    }
-
+    // Grabar
     startBtn.addEventListener('click', async function () {
       try {
+        var stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         chunks = [];
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        var mimeType = preferredMime();
-        recorder = new MediaRecorder(stream, mimeType ? { mimeType: mimeType } : undefined);
-        recorder.addEventListener('dataavailable', function (event) {
-          if (event.data && event.data.size > 0) chunks.push(event.data);
-        });
-        recorder.addEventListener('stop', function () {
-          clearTimer();
-          var type = recorder.mimeType || mimeType || 'audio/webm';
-          var blob = new Blob(chunks, { type: type });
-          var file = new File([blob], 'grabacion-sima-' + Date.now() + '.' + extensionFor(type), { type: type });
-          var assignedToInput = false;
-          try {
-            var transfer = new DataTransfer();
-            transfer.items.add(file);
-            audioInput.files = transfer.files;
-            assignedToInput = audioInput.files && audioInput.files.length > 0;
-          } catch (err) {
-          }
-          markAudioReady(file, assignedToInput);
-          stopTracks();
-          recorder = null;
-        });
-        recorder.start();
+        mediaRecorder = new MediaRecorder(stream);
+
+        mediaRecorder.ondataavailable = function (e) {
+          if (e.data.size > 0) chunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = function () {
+          stream.getTracks().forEach(function (t) { t.stop(); });
+          clearInterval(timerInterval);
+          var blob = new Blob(chunks, { type: 'audio/webm' });
+          window.simaRecordedBlob = blob;
+          preview.src = URL.createObjectURL(blob);
+          preview.hidden = false;
+          statusEl.textContent = 'Audio listo';
+          hintEl.textContent = 'Escúchalo y luego dale a Crear clase.';
+          dot.classList.remove('is-recording');
+          startBtn.disabled = false;
+          stopBtn.disabled = true;
+          clearBtn.disabled = false;
+        };
+
+        mediaRecorder.start();
         startedAt = Date.now();
-        setTime(0);
-        clearTimer();
-        timer = window.setInterval(function () {
-          setTime((Date.now() - startedAt) / 1000);
-        }, 500);
+        timerInterval = setInterval(tick, 500);
+        statusEl.textContent = 'Grabando...';
+        dot.classList.add('is-recording');
         startBtn.disabled = true;
         stopBtn.disabled = false;
         clearBtn.disabled = true;
-        dot.classList.add('is-recording');
-        status.textContent = 'Grabando';
-        hint.textContent = 'Manten esta pagina abierta mientras grabas.';
+
       } catch (err) {
-        clearTimer();
-        startBtn.disabled = false;
-        stopBtn.disabled = true;
-        dot.classList.remove('is-recording');
-        status.textContent = 'No se pudo usar el microfono';
-        hint.textContent = 'Activa el permiso o toca el campo de audio para subir uno.';
-        stopTracks();
+        statusEl.textContent = 'Sin acceso al micrófono';
+        hintEl.textContent = 'Permite el acceso en el navegador o sube un archivo de audio.';
       }
     });
 
+    // Detener
     stopBtn.addEventListener('click', function () {
-      if (recorder && recorder.state !== 'inactive') recorder.stop();
-      clearTimer();
-      startBtn.disabled = false;
-      stopBtn.disabled = true;
-      dot.classList.remove('is-recording');
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+      }
+    });
+
+    // Si selecciona archivo manualmente
+    audioInput.addEventListener('change', function () {
+      var file = audioInput.files && audioInput.files[0];
+      if (!file) return;
+      window.simaRecordedBlob = null;
+      preview.src = URL.createObjectURL(file);
+      preview.hidden = false;
+      statusEl.textContent = 'Audio listo';
+      hintEl.textContent = file.name;
+      clearBtn.disabled = false;
     });
   }
 
@@ -688,7 +779,7 @@
       audioInput.disabled = !isAudio;
       if (!isAudio) audioInput.value = '';
     }
-    ['text', 'audio'].forEach(function(val) {
+    ['text', 'audio'].forEach(function (val) {
       var radio = document.querySelector('input[name="input_mode"][value="' + val + '"]');
       var lbl = document.getElementById('lbl-mode-' + val);
       if (!radio || !lbl) return;
@@ -698,7 +789,7 @@
   }
 
   function updateBackendUI() {
-    ['anthropic', 'local'].forEach(function(val) {
+    ['anthropic', 'local'].forEach(function (val) {
       var radio = document.querySelector('input[name="backend"][value="' + val + '"]');
       var lbl = document.getElementById('lbl-' + val);
       if (!radio || !lbl) return;
@@ -713,7 +804,7 @@
   }
 
   function updateVerificationUI() {
-    ['web', 'eduqg', 'hybrid'].forEach(function(val) {
+    ['web', 'eduqg', 'hybrid'].forEach(function (val) {
       var radio = document.querySelector('input[name="verification_mode"][value="' + val + '"]');
       var lbl = document.getElementById('lbl-verify-' + val);
       if (!radio || !lbl) return;
@@ -723,7 +814,7 @@
   }
 
   // init on load
-  document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function () {
     initFormSubmit();
     initRecorder();
     updateInputMode();

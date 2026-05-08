@@ -92,6 +92,15 @@
           </svg>
           Grabar
         </button>
+        <button class="recorder-btn" type="button" id="record-pick">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 16V4" />
+            <path d="m7 9 5-5 5 5" />
+            <path d="M20 16.5v1a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5v-1" />
+          </svg>
+          Seleccionar
+        </button>
         <button class="recorder-btn" type="button" id="record-stop" disabled>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -132,7 +141,7 @@
 
           <label class="backend-option {% if not backends.anthropic %}backend-option--disabled{% endif %}"
             id="lbl-anthropic">
-            <input type="radio" name="backend" value="anthropic" {% if backends.default=='anthropic' %}checked{% endif
+            <input type="radio" name="backend" value="anthropic" {% if backends.default == 'anthropic' %}checked{% endif
               %} {% if not backends.anthropic %}disabled{% endif %} onchange="updateBackendUI()">
             <span class="backend-card">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -153,7 +162,7 @@
           </label>
 
           <label class="backend-option" id="lbl-local">
-            <input type="radio" name="backend" value="local" {% if backends.default=='local' %}checked{% endif %}
+            <input type="radio" name="backend" value="local" {% if backends.default == 'local' %}checked{% endif %}
               onchange="updateBackendUI()">
             <span class="backend-card">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -177,7 +186,7 @@
         <p class="backend-note">Controla como se revisan las preguntas antes de guardar.</p>
         <div class="backend-options">
           <label class="backend-option" id="lbl-verify-web">
-            <input type="radio" name="verification_mode" value="web" {% if verification_default_mode=='web' %}checked{%
+            <input type="radio" name="verification_mode" value="web" {% if verification_default_mode == 'web' %}checked{%
               endif %} onchange="updateVerificationUI()">
             <span class="backend-card">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -195,7 +204,7 @@
           </label>
 
           <label class="backend-option" id="lbl-verify-eduqg">
-            <input type="radio" name="verification_mode" value="eduqg" {% if verification_default_mode=='eduqg'
+            <input type="radio" name="verification_mode" value="eduqg" {% if verification_default_mode == 'eduqg'
               %}checked{% endif %} onchange="updateVerificationUI()">
             <span class="backend-card">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -211,7 +220,7 @@
           </label>
 
           <label class="backend-option" id="lbl-verify-hybrid">
-            <input type="radio" name="verification_mode" value="hybrid" {% if verification_default_mode=='hybrid'
+            <input type="radio" name="verification_mode" value="hybrid" {% if verification_default_mode == 'hybrid'
               %}checked{% endif %} onchange="updateVerificationUI()">
             <span class="backend-card">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -499,7 +508,7 @@
 
   .recorder-actions {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 8px;
   }
 
@@ -668,6 +677,7 @@
   function initRecorder() {
     var audioInput = document.getElementById('id_audio');
     var startBtn = document.getElementById('record-start');
+    var pickBtn = document.getElementById('record-pick');
     var stopBtn = document.getElementById('record-stop');
     var clearBtn = document.getElementById('record-clear');
     var preview = document.getElementById('record-preview');
@@ -680,7 +690,17 @@
     var chunks = [];
     var timerInterval = null;
     var startedAt = 0;
+    var supportsRecording = !!(
+      window.isSecureContext &&
+      navigator.mediaDevices &&
+      typeof navigator.mediaDevices.getUserMedia === 'function' &&
+      window.MediaRecorder
+    );
     window.simaRecordedBlob = null;
+
+    if (!audioInput || !startBtn || !pickBtn || !stopBtn || !clearBtn || !preview || !statusEl || !hintEl || !dot || !timeEl) {
+      return;
+    }
 
     // Actualizar cronómetro
     function tick() {
@@ -695,7 +715,9 @@
       preview.hidden = true;
       audioInput.value = '';
       statusEl.textContent = 'Listo para grabar';
-      hintEl.textContent = '';
+      hintEl.textContent = supportsRecording
+        ? 'Al detener, el audio queda listo para subir.'
+        : 'La grabacion directa necesita HTTPS o localhost. Usa Seleccionar para subir un audio.';
       dot.classList.remove('is-recording');
       timeEl.textContent = '00:00';
       startBtn.disabled = false;
@@ -703,8 +725,23 @@
       clearBtn.disabled = true;
     });
 
+    pickBtn.addEventListener('click', function () {
+      audioInput.click();
+    });
+
+    if (!supportsRecording) {
+      startBtn.disabled = true;
+      statusEl.textContent = 'Grabacion no disponible aqui';
+      hintEl.textContent = 'La grabacion directa necesita HTTPS o localhost. Usa Seleccionar para subir un audio.';
+    }
+
     // Grabar
     startBtn.addEventListener('click', async function () {
+      if (!supportsRecording) {
+        statusEl.textContent = 'Grabacion no disponible aqui';
+        hintEl.textContent = 'La grabacion directa necesita HTTPS o localhost. Usa Seleccionar para subir un audio.';
+        return;
+      }
       try {
         var stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         chunks = [];
@@ -739,8 +776,8 @@
         clearBtn.disabled = true;
 
       } catch (err) {
-        statusEl.textContent = 'Sin acceso al micrófono';
-        hintEl.textContent = 'Permite el acceso en el navegador o sube un archivo de audio.';
+        statusEl.textContent = 'Sin acceso al microfono';
+        hintEl.textContent = 'Permite el acceso en el navegador o usa Seleccionar para subir un audio.';
       }
     });
 

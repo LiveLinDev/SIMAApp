@@ -2,10 +2,10 @@
 {% block title %}Nueva clase - SIMA{% endblock %}
 {% block content %}
 <section class="page-head">
-  <p class="eyebrow">{% if mode == "api" %}Procesamiento con IA{% else %}Manual gratis{% endif %}</p>
+  <p class="eyebrow">{% if mode == "api" %}Crear clase{% else %}Manual gratis{% endif %}</p>
   <h1>Nueva clase</h1>
   {% if mode == "api" and profile %}
-    <p class="muted">Te quedan {{ profile.remaining_classes }} clases API este mes.</p>
+    <p class="muted">Te quedan {{ profile.remaining_classes }} clases este mes.</p>
   {% endif %}
 </section>
 
@@ -23,11 +23,11 @@
     {{ form.tags.label_tag }}
     {{ form.tags }}
     {{ form.tags.errors }}
-    <small class="field-hint">Separalos con comas. Sirven para Explorar y busqueda publica.</small>
+    <small class="field-hint">Opcional: separalas con comas.</small>
   </p>
 
   <fieldset class="input-mode-selector">
-    <legend class="backend-label">¿Qué vas a usar?</legend>
+    <legend class="backend-label">Que vas a usar?</legend>
     <div class="backend-options">
       <label class="backend-option" id="lbl-mode-text">
         <input type="radio" name="input_mode" value="text" checked onchange="updateInputMode()">
@@ -37,7 +37,7 @@
           </svg>
           <span>
             <strong>Texto</strong>
-            <small>Genera ítems directo, sin pasar por Whisper.</small>
+            <small>Pega el contenido de tu clase.</small>
           </span>
         </span>
       </label>
@@ -50,7 +50,7 @@
           </svg>
           <span>
             <strong>Audio</strong>
-            <small>Primero se transcribe localmente con Whisper.</small>
+            <small>Sube un audio o grabalo aqui.</small>
           </span>
         </span>
       </label>
@@ -74,7 +74,7 @@
     <div class="mobile-recorder" id="mobile-recorder">
       <div class="recorder-topline">
         <span class="record-dot" id="record-dot" aria-hidden="true"></span>
-        <strong id="record-status">Lista para grabar</strong>
+        <strong id="record-status">Listo para grabar</strong>
         <span class="record-time" id="record-time">00:00</span>
       </div>
       <div class="recorder-actions">
@@ -98,14 +98,22 @@
         </button>
       </div>
       <audio id="record-preview" controls playsinline hidden></audio>
-      <p class="recorder-hint" id="record-hint">El audio grabado queda seleccionado automaticamente para Whisper.</p>
+      <p class="recorder-hint" id="record-hint">Al detener, el audio queda listo para subir.</p>
     </div>
-    <p class="backend-note">Whisper solo se usa en este modo. Luego el texto transcrito pasa al motor de IA elegido abajo.</p>
   </div>
 
+  <details class="advanced-settings">
+    <summary class="advanced-summary">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5z"/>
+        <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.03-1.56 1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 8a1.7 1.7 0 0 0-.34-1.88l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 8.97 3.6 1.7 1.7 0 0 0 10 2.04V2a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 8c.22.63.8 1.03 1.47 1.03H21a2 2 0 1 1 0 4h-.09A1.7 1.7 0 0 0 19.4 15z"/>
+      </svg>
+      Ajustes
+    </summary>
+    <div class="advanced-settings__body">
   <fieldset class="backend-selector">
-    <legend class="backend-label">Motor de IA para generación de ítems</legend>
-    <p class="backend-note">Esta selección solo decide quién genera los ítems. No afecta la transcripción.</p>
+    <legend class="backend-label">Generador</legend>
+    <p class="backend-note">Solo cambia esto si quieres elegir el servicio.</p>
     <div class="backend-options">
 
       <label class="backend-option {% if not backends.anthropic %}backend-option--disabled{% endif %}" id="lbl-anthropic">
@@ -120,9 +128,9 @@
           <span>
             <strong>Anthropic Claude</strong>
             {% if backends.anthropic %}
-              <small>Disponible — API key configurada</small>
+              <small>Disponible</small>
             {% else %}
-              <small class="disabled-note">No configurado — agrega ANTHROPIC_API_KEY real en .env</small>
+              <small class="disabled-note">No configurado</small>
             {% endif %}
           </span>
         </span>
@@ -137,8 +145,8 @@
             <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/>
           </svg>
           <span>
-            <strong>Modelo local</strong>
-            <small>{{ local_model }} - LM Studio / Ollama en LOCAL_API_BASE</small>
+            <strong>Equipo local</strong>
+            <small>Usar configuracion local</small>
           </span>
         </span>
       </label>
@@ -147,8 +155,8 @@
   </fieldset>
 
   <fieldset class="backend-selector" id="verification-selector">
-    <legend class="backend-label">Verificador antes de finalizar</legend>
-    <p class="backend-note">Esto solo afecta la verificacion. El generador MINI sigue igual y tu Qwen local no se entrena ni se modifica.</p>
+    <legend class="backend-label">Revision final</legend>
+    <p class="backend-note">Controla como se revisan las preguntas antes de guardar.</p>
     <div class="backend-options">
       <label class="backend-option" id="lbl-verify-web">
         <input type="radio" name="verification_mode" value="web"
@@ -174,8 +182,8 @@
             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"/>
           </svg>
           <span>
-            <strong>EduQG local</strong>
-            <small>Lee dataset/archivos locales solo como referencia del verificador.</small>
+            <strong>Material local</strong>
+            <small>Usa archivos de referencia del equipo.</small>
           </span>
         </span>
       </label>
@@ -190,25 +198,27 @@
           </svg>
           <span>
             <strong>Mixto</strong>
-            <small>Combina fuentes web y EduQG local para revisar mejor.</small>
+            <small>Combina web y material local.</small>
           </span>
         </span>
       </label>
     </div>
   </fieldset>
+    </div>
+  </details>
   {% else %}
   {{ form.as_p }}
   {% endif %}
 
   <button class="primary-button" type="submit" id="submit-btn">
-    {% if mode == "api" %}Procesar con IA{% else %}Crear prompts{% endif %}
+    {% if mode == "api" %}Crear clase{% else %}Crear prompts{% endif %}
   </button>
 
   {% if mode == "api" %}
   <div id="processing-status" hidden>
-    <p class="processing-label">Agregando tu clase a la cola local…</p>
+    <p class="processing-label">Preparando tu clase...</p>
     <div class="processing-bar"><div class="processing-bar__fill"></div></div>
-    <p class="processing-steps" id="processing-step">Analizando contenido…</p>
+    <p class="processing-steps" id="processing-step">Revisando contenido...</p>
   </div>
   {% endif %}
 </form>
@@ -236,6 +246,39 @@
   .backend-option--disabled { opacity: .5; cursor: not-allowed; }
   .backend-option--disabled .backend-card:hover { border-color: var(--line); }
   .disabled-note { color: var(--red) !important; }
+  .advanced-settings {
+    margin: 12px 0 18px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, .025);
+  }
+  .advanced-summary {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    padding: 0 12px;
+    color: var(--gray-200);
+    cursor: pointer;
+    font-weight: 900;
+    list-style: none;
+  }
+  .advanced-summary::-webkit-details-marker {
+    display: none;
+  }
+  .advanced-settings[open] .advanced-summary {
+    border-bottom: 1px solid var(--line);
+  }
+  .advanced-settings__body {
+    padding: 14px;
+  }
+  .advanced-settings .backend-selector {
+    margin: 0 0 16px;
+  }
+  .advanced-settings .backend-selector:last-child {
+    margin-bottom: 0;
+  }
 
   .processing-label { margin: 16px 0 8px; font-weight: 600; color: var(--ink); }
   .processing-bar { width: 100%; height: 10px; border-radius: 999px; background: var(--line); overflow: hidden; }
@@ -365,35 +408,88 @@
     var btn    = document.getElementById('submit-btn');
     var status = document.getElementById('processing-status');
     var stepEl = document.getElementById('processing-step');
+    var originalText = btn ? (btn.textContent || 'Crear clase').trim() : 'Crear clase';
+    var progressTimer = null;
 
-    form.addEventListener('submit', function () {
-      // detectar si hay archivo de audio seleccionado
-      var audioInput = form.querySelector('input[type="file"]');
-      var hasAudio = audioInput && audioInput.files && audioInput.files.length > 0;
-      var sourceText = form.querySelector('textarea[name="source_text"], input[name="source_text"]');
-      var hasText = sourceText && sourceText.value.trim().length > 0;
+    if (!form || !btn || !status || !stepEl) return;
 
+    function showProgress(hasAudio, hasText) {
       var steps = [];
       if (hasAudio) {
-        steps.push('Transcribiendo audio con Whisper…');
+        steps.push('Preparando audio...');
       }
-      steps.push('Analizando contenido…');
-      steps.push('Generando ítems con IA…');
+      steps.push('Revisando contenido...');
+      steps.push('Creando preguntas...');
       if (hasAudio || hasText) {
-        steps.push('Verificando calidad de los ítems…');
+        steps.push('Haciendo revision final...');
       }
-      steps.push('Casi listo…');
+      steps.push('Casi listo...');
 
       var stepIndex = 0;
       btn.disabled = true;
-      btn.textContent = 'Enviando…';
+      btn.textContent = 'Creando...';
       status.hidden = false;
       stepEl.textContent = steps[0];
 
-      setInterval(function () {
+      if (progressTimer) window.clearInterval(progressTimer);
+      progressTimer = window.setInterval(function () {
         stepIndex = (stepIndex + 1) % steps.length;
         stepEl.textContent = steps[stepIndex];
       }, 18000);
+    }
+
+    function restoreSubmit(message) {
+      if (progressTimer) window.clearInterval(progressTimer);
+      progressTimer = null;
+      btn.disabled = false;
+      btn.textContent = originalText;
+      status.hidden = false;
+      stepEl.textContent = message;
+    }
+
+    form.addEventListener('submit', function (event) {
+      var audioInput = form.querySelector('input[type="file"]');
+      var recordedAudio = window.simaRecordedAudioFile || null;
+      var hasSelectedAudio = audioInput && audioInput.files && audioInput.files.length > 0;
+      var hasAudio = hasSelectedAudio || !!recordedAudio;
+      var sourceText = form.querySelector('textarea[name="source_text"], input[name="source_text"]');
+      var hasText = sourceText && sourceText.value.trim().length > 0;
+
+      // Si hay audio grabado, siempre usar fetch para evitar que el browser
+      // abra el selector de archivos o ignore el blob grabado
+      if (recordedAudio && audioInput && window.fetch && window.FormData) {
+        event.preventDefault();
+        showProgress(true, false);
+
+        // Deshabilitar el file input para que FormData no lo incluya vacío
+        audioInput.disabled = true;
+        var formData = new FormData(form);
+        audioInput.disabled = false;
+        formData.set(audioInput.name, recordedAudio, recordedAudio.name);
+
+        window.fetch(form.action || window.location.href, {
+          method: (form.method || 'POST').toUpperCase(),
+          body: formData,
+          credentials: 'same-origin'
+        }).then(function (response) {
+          if (response.redirected) {
+            window.location.href = response.url;
+            return '';
+          }
+          if (!response.ok) throw new Error('upload-failed');
+          return response.text();
+        }).then(function (html) {
+          if (!html) return;
+          document.open();
+          document.write(html);
+          document.close();
+        }).catch(function () {
+          restoreSubmit('No se pudo subir la grabacion. Prueba otra vez o usa el campo de audio.');
+        });
+        return;
+      }
+
+      showProgress(hasAudio, hasText);
     });
   })();
 
@@ -414,9 +510,10 @@
     var startedAt = 0;
     var timer = null;
     var lastUrl = '';
+    var canRecord = !!(window.MediaRecorder && navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+    window.simaRecordedAudioFile = null;
 
-    if (!recorderBox || !audioInput || !startBtn || !window.MediaRecorder || !navigator.mediaDevices) {
-      if (recorderBox) recorderBox.hidden = true;
+    if (!recorderBox || !audioInput || !startBtn || !stopBtn || !clearBtn || !preview || !status || !hint || !dot || !timeEl) {
       return;
     }
 
@@ -440,11 +537,81 @@
       timeEl.textContent = mins + ':' + secs;
     }
 
+    function clearTimer() {
+      if (timer) {
+        window.clearInterval(timer);
+        timer = null;
+      }
+    }
+
     function stopTracks() {
       if (stream) {
         stream.getTracks().forEach(function(track) { track.stop(); });
         stream = null;
       }
+    }
+
+    function revokePreviewUrl() {
+      if (lastUrl) URL.revokeObjectURL(lastUrl);
+      lastUrl = '';
+    }
+
+    function showPreview(blobOrFile) {
+      revokePreviewUrl();
+      lastUrl = URL.createObjectURL(blobOrFile);
+      preview.src = lastUrl;
+      preview.hidden = false;
+    }
+
+    function resetRecorderUi() {
+      clearTimer();
+      audioInput.value = '';
+      window.simaRecordedAudioFile = null;
+      preview.removeAttribute('src');
+      preview.hidden = true;
+      clearBtn.disabled = true;
+      stopBtn.disabled = true;
+      startBtn.disabled = false;
+      dot.classList.remove('is-recording');
+      setTime(0);
+      status.textContent = canRecord ? 'Listo para grabar' : 'Listo para audio';
+      hint.textContent = canRecord
+        ? 'Al detener, el audio queda listo para subir.'
+        : 'Toca Grabar para elegir o grabar un audio desde tu dispositivo.';
+      revokePreviewUrl();
+      stopTracks();
+    }
+
+    function markAudioReady(file, assignedToInput) {
+      window.simaRecordedAudioFile = assignedToInput ? null : file;
+      showPreview(file);
+      clearBtn.disabled = false;
+      status.textContent = 'Audio listo';
+      hint.textContent = assignedToInput ? 'Listo para subir.' : 'Listo para subir al crear la clase.';
+    }
+
+    audioInput.addEventListener('change', function () {
+      var file = audioInput.files && audioInput.files[0];
+      window.simaRecordedAudioFile = null;
+      if (!file) {
+        resetRecorderUi();
+        return;
+      }
+      showPreview(file);
+      clearBtn.disabled = false;
+      status.textContent = 'Audio listo';
+      hint.textContent = file.name + ' listo para subir.';
+    });
+
+    clearBtn.addEventListener('click', resetRecorderUi);
+
+    if (!canRecord) {
+      status.textContent = 'Listo para audio';
+      hint.textContent = 'Toca Grabar para elegir o grabar un audio desde tu dispositivo.';
+      startBtn.addEventListener('click', function () {
+        audioInput.click();
+      });
+      return;
     }
 
     startBtn.addEventListener('click', async function () {
@@ -457,32 +624,27 @@
           if (event.data && event.data.size > 0) chunks.push(event.data);
         });
         recorder.addEventListener('stop', function () {
+          clearTimer();
           var type = recorder.mimeType || mimeType || 'audio/webm';
           var blob = new Blob(chunks, { type: type });
           var file = new File([blob], 'grabacion-sima-' + Date.now() + '.' + extensionFor(type), { type: type });
+          var assignedToInput = false;
           try {
             var transfer = new DataTransfer();
             transfer.items.add(file);
             audioInput.files = transfer.files;
+            assignedToInput = audioInput.files && audioInput.files.length > 0;
           } catch (err) {
-            status.textContent = 'Grabacion lista';
-            hint.textContent = 'Tu navegador no permite adjuntarla automaticamente; usa el selector de archivo.';
-            stopTracks();
-            return;
           }
-          if (lastUrl) URL.revokeObjectURL(lastUrl);
-          lastUrl = URL.createObjectURL(blob);
-          preview.src = lastUrl;
-          preview.hidden = false;
-          clearBtn.disabled = false;
-          status.textContent = 'Grabacion lista';
-          hint.textContent = file.name + ' quedo seleccionada para subir.';
+          markAudioReady(file, assignedToInput);
           stopTracks();
+          recorder = null;
         });
         recorder.start();
         startedAt = Date.now();
         setTime(0);
-        timer = setInterval(function () {
+        clearTimer();
+        timer = window.setInterval(function () {
           setTime((Date.now() - startedAt) / 1000);
         }, 500);
         startBtn.disabled = true;
@@ -490,32 +652,24 @@
         clearBtn.disabled = true;
         dot.classList.add('is-recording');
         status.textContent = 'Grabando';
-        hint.textContent = 'Mantén esta pagina abierta mientras grabas.';
+        hint.textContent = 'Manten esta pagina abierta mientras grabas.';
       } catch (err) {
-        status.textContent = 'No se pudo activar el microfono';
-        hint.textContent = 'Revisa permisos del navegador o sube un archivo de audio.';
+        clearTimer();
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+        dot.classList.remove('is-recording');
+        status.textContent = 'No se pudo usar el microfono';
+        hint.textContent = 'Activa el permiso o toca el campo de audio para subir uno.';
         stopTracks();
       }
     });
 
     stopBtn.addEventListener('click', function () {
       if (recorder && recorder.state !== 'inactive') recorder.stop();
-      clearInterval(timer);
+      clearTimer();
       startBtn.disabled = false;
       stopBtn.disabled = true;
       dot.classList.remove('is-recording');
-    });
-
-    clearBtn.addEventListener('click', function () {
-      audioInput.value = '';
-      preview.removeAttribute('src');
-      preview.hidden = true;
-      clearBtn.disabled = true;
-      setTime(0);
-      status.textContent = 'Lista para grabar';
-      hint.textContent = 'El audio grabado queda seleccionado automaticamente para Whisper.';
-      if (lastUrl) URL.revokeObjectURL(lastUrl);
-      lastUrl = '';
     });
   })();
 

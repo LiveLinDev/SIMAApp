@@ -32,10 +32,16 @@ class ApiLessonForm(forms.ModelForm):
     class Meta:
         model = LessonJob
         fields = ("title", "source_text", "audio", "tags")
+        labels = {
+            "title": "Titulo",
+            "source_text": "Texto de la clase",
+            "audio": "Audio de la clase",
+            "tags": "Etiquetas",
+        }
         widgets = {
             "title": forms.TextInput(attrs={"placeholder": "Ej: Clase de economia"}),
             "source_text": forms.Textarea(attrs={"rows": 5, "placeholder": "Opcional si subes audio. Tambien puedes pegar texto directo."}),
-            "audio": forms.ClearableFileInput(attrs={"accept": "audio/*"}),
+            "audio": forms.ClearableFileInput(attrs={"accept": "audio/*", "capture": "microphone"}),
             "tags": forms.TextInput(attrs={"placeholder": "moba, historia, videojuegos"}),
         }
 

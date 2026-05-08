@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}{{ course.name }} - SIMA{% endblock %}
+{% block content %}
+
+<section class="ld-header">
+  <div>
+    <a href="{% url 'dashboard' %}" class="back-link">Volver al dashboard</a>
+    <p class="eyebrow">{{ course.academic_period|default:"Curso personal" }}</p>
+    <h1>{{ course.name }}</h1>
+    {% if course.student_goal %}
+      <p class="ld-meta">{{ course.student_goal }}</p>
+    {% endif %}
+  </div>
+  <div class="ld-actions">
+    <a class="primary-button" href="{% url 'api_lesson' %}?course={{ course.pk }}">Nueva clase</a>
+    <a class="secondary-button" href="{% url 'free_lesson' %}?course={{ course.pk }}">Clase manual</a>
+  </div>
+</section>
+
+<div class="dash-stats">
+  <div class="stat-card"><strong>{{ stats.classes }}</strong><small>Clases</small></div>
+  <div class="stat-card"><strong>{{ stats.ready }}</strong><small>Listas</small></div>
+  <div class="stat-card"><strong>{{ stats.processing }}</strong><small>En proceso</small></div>
+  <div class="stat-card"><strong>{{ stats.quizzes }}</strong><small>Intentos</small></div>
+</div>
+
+{% if course.main_topics %}
+<section class="study-meta-card" style="margin-top:18px">
+  <h3>Temas principales</h3>
+  <div class="study-meta-row">
+    {% for topic in course.main_topics %}
+      <span class="study-badge">{{ topic }}</span>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section class="dash-panel">
+  <div class="explore-header">
+    <h2>Clases del curso</h2>
+  </div>
+
+  {% if jobs %}
+  <div class="lesson-grid">
+    {% for job in jobs %}
+    <article class="lesson-card">
+      <div class="lesson-card-header">
+        <h3>{{ job.title }}</h3>
+        <span class="visibility-badge">{{ job.get_status_display }}</span>
+      </div>
+      <p class="lesson-meta">{{ job.updated_at|date:"d M Y" }}</p>
+      {% if job.tag_list %}
+      <div class="lesson-tags">
+        {% for tag in job.tag_list %}
+          <span class="tag-chip">{{ tag }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% if job.corrected_output or job.toon_output %}
+        <a class="lesson-cta" href="{% url 'lesson_detail' job.pk %}">Estudiar</a>
+      {% else %}
+        <a class="lesson-cta lesson-cta--secondary" href="{% url 'lesson_detail' job.pk %}">Ver pipeline</a>
+      {% endif %}
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <h3>Aun no hay clases en este curso</h3>
+    <p>Sube una grabacion o pega apuntes para empezar a construir el contexto del curso.</p>
+    <a class="primary-button" href="{% url 'api_lesson' %}?course={{ course.pk }}">Crear primera clase</a>
+  </div>
+  {% endif %}
+</section>
+
+{% endblock %}

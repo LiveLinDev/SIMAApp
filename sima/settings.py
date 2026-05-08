@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+from urllib.parse import parse_qsl, urlparse
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -51,6 +52,40 @@ def env_int(name, default):
 
 def env_text(name, default=""):
     return os.getenv(name, default).strip()
+
+
+def database_config():
+    database_url = env_text("DATABASE_URL")
+    if database_url:
+        parsed = urlparse(database_url)
+        if parsed.scheme not in {"postgres", "postgresql"}:
+            raise RuntimeError("DATABASE_URL debe usar postgres:// o postgresql:// para SIMA.")
+        options = dict(parse_qsl(parsed.query))
+        return {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": parsed.path.lstrip("/"),
+            "USER": parsed.username or "",
+            "PASSWORD": parsed.password or "",
+            "HOST": parsed.hostname or "",
+            "PORT": str(parsed.port or ""),
+            "OPTIONS": options,
+        }
+
+    engine = env_text("DB_ENGINE", "sqlite").lower()
+    if engine in {"postgres", "postgresql"}:
+        return {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": env_text("POSTGRES_DB", "simaapp"),
+            "USER": env_text("POSTGRES_USER", "simaapp"),
+            "PASSWORD": env_text("POSTGRES_PASSWORD", ""),
+            "HOST": env_text("POSTGRES_HOST", "127.0.0.1"),
+            "PORT": env_text("POSTGRES_PORT", "5432"),
+        }
+
+    return {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / env_text("SQLITE_NAME", "db.sqlite3"),
+    }
 
 
 SIMA_PC = env_text("SIMA_PC", "adrian").lower()
@@ -108,12 +143,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "sima.wsgi.application"
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
+DATABASES = {"default": database_config()}
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},

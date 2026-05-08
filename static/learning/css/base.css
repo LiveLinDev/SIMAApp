@@ -13,12 +13,8 @@ body {
   min-height: 100vh;
   color: var(--ink);
   background:
-    linear-gradient(rgba(212, 255, 0, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(212, 255, 0, 0.035) 1px, transparent 1px),
-    radial-gradient(circle at 88% 8%, rgba(212, 255, 0, 0.12), transparent 28rem),
-    radial-gradient(circle at 4% 44%, rgba(125, 211, 252, 0.1), transparent 24rem),
-    var(--black);
-  background-size: 56px 56px, 56px 56px, auto, auto, auto;
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(247, 244, 236, 0.94) 46%, #f4f0e8),
+    var(--page);
   font-family: var(--font-body);
   letter-spacing: 0;
   overflow-x: hidden;
@@ -30,8 +26,12 @@ body::before {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  opacity: 0.32;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.18'/%3E%3C/svg%3E");
+  opacity: 1;
+  background:
+    linear-gradient(90deg, rgba(216, 92, 92, 0.045) 1px, transparent 1px),
+    linear-gradient(rgba(216, 92, 92, 0.035) 1px, transparent 1px);
+  background-size: 88px 88px;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.42), transparent 62%);
 }
 
 a {
@@ -52,25 +52,27 @@ svg {
 }
 
 .app-shell {
-  width: min(1180px, 100%);
+  width: min(1360px, 100%);
   margin: 0 auto;
-  padding: 14px clamp(14px, 4vw, 32px) 44px;
+  padding: 16px clamp(18px, 3vw, 44px) 56px;
 }
 
 .topbar {
   position: sticky;
   top: 0;
   z-index: 50;
-  min-height: 64px;
+  min-height: 58px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  margin: 0 calc(clamp(14px, 4vw, 32px) * -1) 12px;
-  padding: 12px clamp(14px, 4vw, 32px);
-  border-bottom: 1px solid rgba(212, 255, 0, 0.1);
-  background: rgba(10, 10, 8, 0.78);
-  backdrop-filter: blur(18px);
+  margin: 0 0 18px;
+  padding: 10px 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 28px rgba(93, 55, 55, 0.08);
+  backdrop-filter: blur(16px);
 }
 
 .brand,
@@ -85,41 +87,40 @@ svg {
 
 .brand {
   color: var(--acid);
-  font-family: var(--font-mono);
+  font-family: var(--font-display);
   font-size: 1rem;
   font-weight: 800;
 }
 
 .brand-mark {
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   display: grid;
   place-items: center;
-  border: 1px solid rgba(212, 255, 0, 0.36);
-  border-radius: var(--radius-md);
-  color: var(--black);
+  border: 1px solid rgba(216, 92, 92, 0.22);
+  border-radius: 10px;
+  color: #fff;
   background: var(--acid);
-  box-shadow: 0 0 28px var(--glow);
+  box-shadow: 0 10px 24px var(--glow);
 }
 
 .topnav {
   flex-wrap: wrap;
   justify-content: flex-end;
-  color: var(--gray-400);
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  text-transform: uppercase;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
 }
 
 .topnav a {
-  padding: 9px 10px;
-  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  border-radius: 8px;
   transition: color 0.2s, background 0.2s;
 }
 
 .topnav a:hover {
   color: var(--acid);
-  background: rgba(212, 255, 0, 0.07);
+  background: rgba(216, 92, 92, 0.10);
 }
 
 main {
@@ -128,6 +129,6 @@ main {
 }
 
 ::selection {
-  color: var(--black);
+  color: #fff;
   background: var(--acid);
 }

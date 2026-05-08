@@ -13,6 +13,8 @@ urlpatterns = [
     path("login/", auth_views.LoginView.as_view(template_name="registration/login.html"), name="login"),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
     path("dashboard/", views.dashboard, name="dashboard"),
+    path("cursos/nuevo/", views.course_create, name="course_create"),
+    path("cursos/<int:pk>/", views.course_detail, name="course_detail"),
     path("planes/", views.plans, name="plans"),
     path("gratis/nueva/", views.free_lesson, name="free_lesson"),
     path("api/nueva/", views.api_lesson, name="api_lesson"),

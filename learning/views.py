@@ -5,15 +5,22 @@ from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpResponse, JsonResponse
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 
 from .cat import BLOOM_LABELS, build_bank, choose_next_item, estimate_theta, option_index, parse_cat_params
-from .forms import ApiLessonForm, FreeLessonForm, ManualResultForm, PlanForm, RegisterForm, VerificationResultForm
+from .credits import (
+    REGENERATION_COST,
+    consume_credits,
+    estimate_lesson_job_cost,
+    grant_plan_credits,
+    has_enough_credits,
+)
+from .forms import ApiLessonForm, CourseForm, FreeLessonForm, ManualResultForm, PlanForm, RegisterForm, VerificationResultForm
 from .job_queue import enqueue_lesson_job
-from .models import LessonJob, PLAN_DETAILS, Plan, QuizAttempt, QuizResponse
+from .models import ClassSession, Course, LessonJob, PLAN_DETAILS, Plan, QuizAttempt, QuizResponse
 from .parse_mini import apply_corrections_with_trace, assessment_to_dict, normalize_mini_text, parse_mini, render_mini_html, validate_mini_parse
 from .services import (
     build_generation_prompt,
@@ -69,6 +76,8 @@ def register(request):
         form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
+            profile = _get_or_create_profile(user)
+            grant_plan_credits(profile, description="Creditos iniciales del plan gratis")
             login(request, user)
             messages.success(request, "Cuenta creada. Bienvenido a tu dojo de clases.")
             return redirect("dashboard")
@@ -80,6 +89,9 @@ def register(request):
 @login_required
 def dashboard(request):
     profile = _get_or_create_profile(request.user)
+    courses = Course.objects.filter(user=request.user, is_archived=False).annotate(
+        class_count=Count("legacy_lesson_jobs", filter=Q(legacy_lesson_jobs__user=request.user)),
+    )
     jobs = LessonJob.objects.filter(user=request.user)[:8]
     public_jobs = LessonJob.objects.select_related("user").filter(
         visibility=LessonJob.Visibility.PUBLIC,
@@ -97,9 +109,10 @@ def dashboard(request):
         public_jobs = public_jobs.filter(tags__icontains=tag)
     public_jobs = public_jobs[:24]
     popular_tags = _collect_public_tags()
-    active_tab = "explorar" if query or tag else "mis-clases"
+    active_tab = "explorar" if query or tag else "cursos"
     return render(request, "learning/dashboard.html", {
         "profile": profile,
+        "courses": courses,
         "jobs": jobs,
         "public_jobs": public_jobs,
         "popular_tags": popular_tags,
@@ -107,6 +120,40 @@ def dashboard(request):
         "explore_query": query,
         "explore_tag": tag,
         "plans": PLAN_DETAILS,
+    })
+
+
+@login_required
+def course_create(request):
+    if request.method == "POST":
+        form = CourseForm(request.POST)
+        if form.is_valid():
+            course = form.save(commit=False)
+            course.user = request.user
+            course.save()
+            messages.success(request, "Curso creado. Ahora puedes subir clases dentro de este curso.")
+            return redirect("course_detail", pk=course.pk)
+    else:
+        form = CourseForm()
+    return render(request, "learning/course_form.html", {"form": form})
+
+
+@login_required
+def course_detail(request, pk):
+    course = get_object_or_404(Course, pk=pk, user=request.user, is_archived=False)
+    jobs = LessonJob.objects.filter(user=request.user, course=course)
+    class_sessions = ClassSession.objects.filter(user=request.user, course=course)
+    stats = {
+        "classes": jobs.count(),
+        "sessions": class_sessions.count(),
+        "ready": jobs.filter(Q(corrected_output__gt="") | Q(toon_output__gt="")).count(),
+        "processing": jobs.filter(status__in=[LessonJob.Status.QUEUED, LessonJob.Status.PROCESSING]).count(),
+        "quizzes": sum(job.quiz_attempts.filter(user=request.user).count() for job in jobs[:100]),
+    }
+    return render(request, "learning/course_detail.html", {
+        "course": course,
+        "jobs": jobs[:24],
+        "stats": stats,
     })
 
 
@@ -119,6 +166,7 @@ def plans(request):
             profile.plan = form.cleaned_data["plan"]
             profile.api_classes_used = 0
             profile.save()
+            grant_plan_credits(profile)
             messages.success(request, "Plan actualizado para este mes.")
             return redirect("dashboard")
     else:
@@ -128,8 +176,11 @@ def plans(request):
 
 @login_required
 def free_lesson(request):
+    if not Course.objects.filter(user=request.user, is_archived=False).exists():
+        messages.info(request, "Primero crea un curso para que SIMA guarde tus clases con contexto.")
+        return redirect("course_create")
     if request.method == "POST":
-        form = FreeLessonForm(request.POST)
+        form = FreeLessonForm(request.POST, user=request.user)
         if form.is_valid():
             job = form.save(commit=False)
             job.user = request.user
@@ -138,9 +189,10 @@ def free_lesson(request):
             job.generation_prompt = build_generation_prompt(job.source_text)
             job.status = LessonJob.Status.PROMPT_READY
             job.save()
+            _sync_class_session_for_job(job)
             return redirect("lesson_detail", pk=job.pk)
     else:
-        form = FreeLessonForm()
+        form = FreeLessonForm(user=request.user, initial={"course": request.GET.get("course")})
     return render(request, "learning/lesson_form.html", {"form": form, "mode": "free"})
 
 
@@ -151,8 +203,11 @@ def api_lesson(request):
     if not _has_api_capacity(request.user, profile):
         messages.warning(request, "Tu plan actual no tiene clases API disponibles.")
         return redirect("plans")
+    if not Course.objects.filter(user=request.user, is_archived=False).exists():
+        messages.info(request, "Primero crea un curso para que SIMA guarde tus clases con contexto.")
+        return redirect("course_create")
     if request.method == "POST":
-        form = ApiLessonForm(request.POST, request.FILES)
+        form = ApiLessonForm(request.POST, request.FILES, user=request.user)
         backend = request.POST.get("backend", "auto")
         verification_mode = request.POST.get("verification_mode") or getattr(settings, "VERIFICATION_DEFAULT_MODE", "web")
         if form.is_valid():
@@ -165,7 +220,32 @@ def api_lesson(request):
             job.tags = _normalize_tags(job.tags)
             job.processing_stage = "En cola"
             job.processing_log = "En cola - Esperando turno en el procesador local."
+            estimate = estimate_lesson_job_cost(
+                has_audio=bool(request.FILES.get("audio")),
+                has_text=bool(form.cleaned_data.get("source_text", "").strip()),
+            )
+            if not has_enough_credits(profile, estimate.amount):
+                messages.warning(
+                    request,
+                    f"No tienes creditos suficientes. Esta clase requiere {estimate.amount} y tienes {profile.credits_label}.",
+                )
+                return redirect("plans")
             job.save()
+            class_session = _sync_class_session_for_job(job)
+            try:
+                consume_credits(
+                    profile,
+                    estimate.amount,
+                    action=estimate.action,
+                    course=job.course,
+                    class_session=class_session,
+                    description=f"Procesamiento de clase: {job.title}",
+                    metadata={"details": estimate.details, "lesson_job_id": job.pk},
+                )
+            except ValueError:
+                job.delete()
+                messages.warning(request, "No tienes creditos suficientes para procesar esta clase.")
+                return redirect("plans")
             try:
                 enqueue_lesson_job(job.pk, backend=backend)
                 messages.success(request, "Clase agregada a la cola. Puedes dejar esta página abierta; se actualizará sola.")
@@ -177,11 +257,12 @@ def api_lesson(request):
                 messages.warning(request, f"No se pudo completar automaticamente: {err_str}")
             return redirect("lesson_detail", pk=job.pk)
     else:
-        form = ApiLessonForm()
+        form = ApiLessonForm(user=request.user, initial={"course": request.GET.get("course")})
     return render(request, "learning/lesson_form.html", {
         "form": form, "mode": "api", "profile": profile, "backends": backends,
         "local_model": getattr(settings, "LOCAL_MODEL", None) or getattr(settings, "ANTHROPIC_MODEL", "local"),
         "verification_default_mode": getattr(settings, "VERIFICATION_DEFAULT_MODE", "web"),
+        "credit_estimate": estimate_lesson_job_cost(has_audio=True, has_text=True),
     })
 
 
@@ -387,6 +468,22 @@ def retry_api_lesson(request, pk):
 
     backend = request.POST.get("backend", "auto")
     verification_mode = request.POST.get("verification_mode") or job.verification_mode
+    if not has_enough_credits(profile, REGENERATION_COST):
+        messages.warning(request, f"Necesitas {REGENERATION_COST} creditos para regenerar esta clase.")
+        return redirect("plans")
+    try:
+        consume_credits(
+            profile,
+            REGENERATION_COST,
+            action="regeneration",
+            course=job.course,
+            class_session=_safe_class_session(job),
+            description=f"Regeneracion de clase: {job.title}",
+            metadata={"lesson_job_id": job.pk},
+        )
+    except ValueError:
+        messages.warning(request, "No tienes creditos suficientes para regenerar esta clase.")
+        return redirect("plans")
     job.status = LessonJob.Status.QUEUED
     job.ai_backend = backend
     job.verification_mode = _normalize_verification_mode(verification_mode)
@@ -700,7 +797,7 @@ def _normalize_verification_mode(mode: str) -> str:
 
 def _get_accessible_job(user, pk):
     return get_object_or_404(
-        LessonJob.objects.select_related("user"),
+        LessonJob.objects.select_related("user", "course"),
         Q(pk=pk, user=user)
         | Q(pk=pk, visibility=LessonJob.Visibility.PUBLIC)
         | Q(pk=pk, visibility=LessonJob.Visibility.SHARED),
@@ -831,3 +928,45 @@ def _collect_public_tags() -> list[str]:
             if len(tags) >= 24:
                 return tags
     return tags
+
+
+def _sync_class_session_for_job(job: LessonJob) -> ClassSession | None:
+    if not job.course_id:
+        return None
+    status_map = {
+        LessonJob.Status.DRAFT: ClassSession.ProcessingStatus.DRAFT,
+        LessonJob.Status.QUEUED: ClassSession.ProcessingStatus.QUEUED,
+        LessonJob.Status.PROCESSING: ClassSession.ProcessingStatus.PROCESSING,
+        LessonJob.Status.ERROR: ClassSession.ProcessingStatus.ERROR,
+    }
+    ready_statuses = {
+        LessonJob.Status.PROMPT_READY,
+        LessonJob.Status.TOON_READY,
+        LessonJob.Status.VERIFIED,
+        LessonJob.Status.CORRECTED,
+    }
+    status = ClassSession.ProcessingStatus.READY if job.status in ready_statuses else status_map.get(
+        job.status,
+        ClassSession.ProcessingStatus.DRAFT,
+    )
+    session, _created = ClassSession.objects.update_or_create(
+        legacy_lesson_job=job,
+        defaults={
+            "user": job.user,
+            "course": job.course,
+            "title": job.title,
+            "status": status,
+            "main_topic": job.tags.split(",")[0].strip() if job.tags else "",
+            "requested_outputs": ["transcript", "quiz"],
+            "processing_log": job.processing_log,
+            "error": job.error,
+        },
+    )
+    return session
+
+
+def _safe_class_session(job: LessonJob) -> ClassSession | None:
+    try:
+        return job.class_session
+    except ClassSession.DoesNotExist:
+        return None

@@ -1,41 +1,48 @@
 :root {
-  --acid: #d4ff00;
-  --acid-hot: #aaff00;
-  --lime-200: #d9f852;
-  --black: #0a0a08;
-  --gray-950: #0f0f0d;
-  --gray-900: #111110;
-  --gray-850: #171715;
-  --gray-800: #1c1c1a;
-  --gray-700: #2a2a27;
-  --gray-600: #44443f;
-  --gray-500: #6d6d65;
-  --gray-400: #9a9a90;
-  --gray-200: #d4d4cc;
-  --white: #fafaf5;
-  --blue: #7dd3fc;
-  --yellow: #ffc800;
-  --orange: #ff9600;
-  --red: #ff5f57;
-  --violet: #ce82ff;
+  --page: #f7f4ec;
+  --paper: #ffffff;
+  --paper-tint: #ffe8e4;
+  --ink: #22312d;
+  --muted: #66746f;
+  --quiet: #8b9892;
+  --line: rgba(93, 55, 55, 0.14);
+  --line-strong: rgba(93, 55, 55, 0.26);
 
+  --acid: #d85c5c;
+  --acid-hot: #b94343;
+  --lime-200: #ffd0ca;
   --green: var(--acid);
-  --green-dark: #9fca00;
-  --ink: var(--white);
-  --muted: var(--gray-400);
-  --line: rgba(212, 255, 0, 0.18);
-  --surface: var(--gray-900);
-  --surface-2: var(--gray-800);
-  --soft: var(--gray-850);
-  --shadow: rgba(0, 0, 0, 0.42);
-  --glow: rgba(212, 255, 0, 0.16);
+  --green-dark: #b94343;
+  --blue: #506f9f;
+  --yellow: #d59a2e;
+  --orange: #c9793f;
+  --red: #c84d4d;
+  --violet: #7862a8;
+
+  --black: #14231f;
+  --gray-950: #172622;
+  --gray-900: #ffffff;
+  --gray-850: #f2f5ef;
+  --gray-800: #e7ece6;
+  --gray-700: #d8e0d8;
+  --gray-600: #aebdb6;
+  --gray-500: #7e9088;
+  --gray-400: #667872;
+  --gray-200: #edf5ef;
+  --white: var(--ink);
+
+  --surface: var(--paper);
+  --surface-2: #fffafa;
+  --soft: var(--paper-tint);
+  --shadow: rgba(42, 48, 45, 0.10);
+  --glow: rgba(216, 92, 92, 0.22);
 
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 10px;
   --radius-xl: 14px;
 
-  --font-display: "Syne", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "Space Mono", "Cascadia Mono", Consolas, monospace;
-  --font-body: "DM Sans", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-display: "Bricolage Grotesque", "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Manrope", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }

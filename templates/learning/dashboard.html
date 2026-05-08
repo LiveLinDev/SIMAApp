@@ -7,10 +7,7 @@
   <div>
     <p class="eyebrow">Hola, {{ user.username }}</p>
     <h1>Tu espacio de estudio</h1>
-    <a class="mini-header-link" href="{% url 'mini_landing' %}">
-      <span>.mini lab</span>
-      Playground para convertir evaluaciones entre MINI y JSON
-    </a>
+    <p class="dash-intro">Organiza tus cursos, convierte clases en materiales cortos y sigue tu progreso por tema.</p>
   </div>
   <div class="dash-stats">
     <div class="stat-card stat-card--fire">
@@ -28,11 +25,16 @@
       <strong>{{ profile.remaining_classes }}</strong>
       <small>clases API</small>
     </div>
+    <div class="stat-card">
+      <strong>{{ profile.credits_label }}</strong>
+      <small>creditos</small>
+    </div>
   </div>
 </section>
 
 {# ── TABS: MIS CLASES | EXPLORAR | GUARDADAS ──────────────────────── #}
 <div class="dash-tabs">
+  <button class="dash-tab {% if active_tab == 'cursos' %}dash-tab--active{% endif %}" data-tab="cursos">Cursos</button>
   <button class="dash-tab {% if active_tab == 'mis-clases' %}dash-tab--active{% endif %}" data-tab="mis-clases">Mis clases</button>
   <button class="dash-tab {% if active_tab == 'explorar' %}dash-tab--active{% endif %}" data-tab="explorar">Explorar</button>
   <button class="dash-tab" data-tab="guardadas">Guardadas</button>
@@ -41,6 +43,64 @@
 {# ══════════════════════════════════════════════════════════════════ #}
 {# TAB: MIS CLASES                                                    #}
 {# ══════════════════════════════════════════════════════════════════ #}
+<div class="dash-panel" id="panel-cursos" {% if active_tab != 'cursos' %}hidden{% endif %}>
+  <div class="panel-actions">
+    <a class="primary-button" href="{% url 'course_create' %}">+ Nuevo curso</a>
+  </div>
+
+  {% if courses %}
+  <div class="lesson-grid">
+    {% for course in courses %}
+    <article class="lesson-card">
+      <div class="lesson-card-header">
+        <h3>{{ course.name }}</h3>
+        <span class="visibility-badge">{{ course.academic_period|default:"Personal" }}</span>
+      </div>
+      {% if course.student_goal %}
+        <p class="lesson-meta">{{ course.student_goal|truncatechars:110 }}</p>
+      {% elif course.description %}
+        <p class="lesson-meta">{{ course.description|truncatechars:110 }}</p>
+      {% else %}
+        <p class="lesson-meta">{{ course.get_level_display }}</p>
+      {% endif %}
+      {% if course.main_topics %}
+      <div class="lesson-tags">
+        {% for topic in course.main_topics|slice:":5" %}
+        <span class="tag-chip">{{ topic }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+      <p class="lesson-status">{{ course.class_count }} clases registradas</p>
+      <a class="lesson-cta" href="{% url 'course_detail' course.pk %}">Abrir curso</a>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-copy">
+      <span class="study-badge">Primer paso</span>
+      <h3>Crea tu primer curso</h3>
+      <p>El curso sera el contenedor de clases, transcripciones, quizzes, flashcards, recomendaciones y progreso.</p>
+      <a class="primary-button" href="{% url 'course_create' %}">Crear curso</a>
+    </div>
+    <div class="onboarding-grid">
+      <article>
+        <strong>1. Define el contexto</strong>
+        <span>Nombre, ciclo, temas principales y objetivo de estudio.</span>
+      </article>
+      <article>
+        <strong>2. Sube una clase</strong>
+        <span>Audio o apuntes dentro del curso correcto.</span>
+      </article>
+      <article>
+        <strong>3. Estudia en bloques</strong>
+        <span>Quiz adaptativo, repasos y recomendaciones por debilidad.</span>
+      </article>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
 <div class="dash-panel" id="panel-mis-clases" {% if active_tab != 'mis-clases' %}hidden{% endif %}>
   
   <div class="panel-actions">
@@ -78,6 +138,9 @@
       </div>
       
       <p class="lesson-meta">{{ job.updated_at|date:"d M Y" }} · {{ job.get_status_display }}</p>
+      {% if job.course %}
+        <p class="lesson-meta">Curso: {{ job.course.name }}</p>
+      {% endif %}
       {% if job.tag_list %}
       <div class="lesson-tags">
         {% for tag in job.tag_list %}
@@ -185,6 +248,143 @@
 
 {# ── ESTILOS ──────────────────────────────────────────────────────── #}
 <style>
+  .dash-header {
+    align-items: stretch !important;
+    margin: 18px 0 22px !important;
+    padding: 26px 28px !important;
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    background:
+      linear-gradient(135deg, rgba(255, 255, 255, .94), rgba(238, 245, 238, .88)),
+      var(--surface);
+    box-shadow: 0 16px 44px rgba(47, 60, 56, .09);
+  }
+  .dash-header h1 {
+    max-width: 680px;
+    margin: 0 !important;
+    color: var(--ink) !important;
+    font-family: var(--font-display) !important;
+    font-size: clamp(2.15rem, 4.2vw, 4.4rem) !important;
+    line-height: .98 !important;
+  }
+  .dash-intro {
+    max-width: 580px;
+    margin: 12px 0 0;
+    color: var(--muted);
+    font-size: 1.02rem;
+    line-height: 1.6;
+  }
+  .dash-header .eyebrow {
+    margin-bottom: 8px;
+    color: var(--green-dark);
+    font-family: var(--font-body);
+    font-size: .76rem;
+    letter-spacing: .08em;
+  }
+  .dash-stats {
+    align-content: start;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(112px, 1fr));
+    min-width: 310px;
+  }
+  .stat-card {
+    min-height: 96px !important;
+    border-radius: 16px !important;
+    background: rgba(255,255,255,.78) !important;
+    box-shadow: 0 10px 24px rgba(47, 60, 56, .07) !important;
+  }
+  .stat-card strong {
+    color: var(--green-dark) !important;
+    font-family: var(--font-display) !important;
+    font-size: 1.55rem !important;
+    line-height: 1;
+  }
+  .stat-card small {
+    color: var(--muted) !important;
+    font-size: .76rem !important;
+  }
+  .dash-tabs {
+    gap: 8px !important;
+    margin-top: 10px !important;
+    border-bottom: 0 !important;
+    padding: 6px !important;
+    border-radius: 14px;
+    background: rgba(255,255,255,.58);
+    width: fit-content;
+  }
+  .dash-tab {
+    border: 0 !important;
+    border-radius: 10px !important;
+    margin: 0 !important;
+    padding: 11px 18px !important;
+    color: var(--muted) !important;
+    background: transparent !important;
+  }
+  .dash-tab--active {
+    background: var(--green) !important;
+    color: #fff !important;
+    box-shadow: 0 8px 20px rgba(46, 146, 118, .2);
+  }
+  .panel-actions {
+    margin: 20px 0 16px !important;
+  }
+  .empty-state {
+    display: grid !important;
+    grid-template-columns: minmax(260px, .82fr) minmax(280px, 1fr);
+    gap: 22px;
+    align-items: stretch;
+    padding: 24px !important;
+    border-style: solid !important;
+    border-radius: 22px !important;
+    background:
+      linear-gradient(135deg, #fff, rgba(239, 246, 239, .94)),
+      var(--surface) !important;
+    text-align: left !important;
+  }
+  .empty-copy {
+    display: grid;
+    align-content: center;
+    gap: 12px;
+    padding: clamp(12px, 2vw, 22px);
+  }
+  .empty-state h3 {
+    margin: 0 !important;
+    color: var(--ink) !important;
+    font-family: var(--font-display);
+    font-size: clamp(1.7rem, 3vw, 2.6rem);
+    line-height: 1;
+  }
+  .empty-state p {
+    max-width: 480px;
+    margin: 0 !important;
+    color: var(--muted) !important;
+    line-height: 1.65;
+  }
+  .empty-state .primary-button {
+    width: fit-content;
+    margin-top: 4px;
+  }
+  .onboarding-grid {
+    display: grid;
+    gap: 12px;
+  }
+  .onboarding-grid article {
+    display: grid;
+    gap: 5px;
+    min-height: 108px;
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: rgba(255,255,255,.72);
+  }
+  .onboarding-grid strong {
+    color: var(--ink);
+    font-size: 1rem;
+  }
+  .onboarding-grid span {
+    color: var(--muted);
+    line-height: 1.45;
+  }
   /* header */
   .dash-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px; margin-bottom: 24px; }
   .dash-header h1 { margin: 4px 0 0; font-size: 2rem; }
@@ -277,9 +477,21 @@
 
   @media (max-width: 640px) {
     .dash-header { flex-direction: column; }
-    .dash-stats { width: 100%; justify-content: space-between; }
+    .dash-stats { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .stat-card { flex: 1; min-width: 90px; }
     .lesson-grid { grid-template-columns: 1fr; }
+    .dash-tabs {
+      width: 100%;
+      display: grid !important;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .empty-state {
+      grid-template-columns: 1fr !important;
+      padding: 18px !important;
+    }
+    .empty-state .primary-button {
+      width: 100%;
+    }
   }
 </style>
 

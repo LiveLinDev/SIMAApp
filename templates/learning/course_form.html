@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Nuevo curso - SIMA{% endblock %}
+{% block content %}
+
+<section class="page-head">
+  <p class="eyebrow">Curso</p>
+  <h1>Nuevo curso</h1>
+  <p class="muted">SIMA usa el curso como contexto para organizar clases, materiales, progreso y recomendaciones.</p>
+</section>
+
+<form method="post" class="form-card">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <div class="action-row">
+    <button class="primary-button" type="submit">Crear curso</button>
+    <a class="secondary-button" href="{% url 'dashboard' %}">Cancelar</a>
+  </div>
+</form>
+
+{% endblock %}

@@ -1,79 +1,153 @@
 {% extends "base.html" %}
-{% block title %}SIMA — Aprende más en menos tiempo{% endblock %}
+{% block title %}SIMA - Plataforma de estudio con IA{% endblock %}
 {% block content %}
 
-<section class="hero">
-  <div class="hero-copy">
-    <p class="eyebrow">Para estudiantes universitarios</p>
-    <h1>Convierte tus clases en material de estudio listo para repasar</h1>
-    <p>Pega el texto de tus apuntes o sube el audio de una clase y SIMA genera resúmenes, preguntas de práctica y tarjetas de repaso en segundos.</p>
+<section class="landing-hero">
+  <div class="landing-copy">
+    <p class="eyebrow">Microaprendizaje para universitarios</p>
+    <h1>Convierte cada clase grabada en una ruta clara de estudio.</h1>
+    <p class="hero-lead">
+      Crea tus cursos, sube clases, genera resúmenes, flashcards y quizzes adaptativos, y sigue tu progreso tema por tema.
+    </p>
     <div class="action-row">
       <a class="primary-button" href="{% url 'register' %}">Empezar gratis</a>
-      <a class="secondary-button" href="{% url 'login' %}">Ya tengo cuenta</a>
-      <a class="secondary-button" href="{% url 'mini_benchmark' %}">Benchmark .mini</a>
+      <a class="secondary-button" href="{% url 'login' %}">Entrar a mi cuenta</a>
+    </div>
+    <div class="trust-row">
+      <span>Curso → clase → repaso</span>
+      <span>Créditos controlados</span>
+      <span>Bloom + CAT</span>
     </div>
   </div>
-  <div class="lesson-preview" aria-hidden="true">
-    <div class="phone-card">
-      <span class="streak">12 días seguidos</span>
-      <h2>Fotosíntesis</h2>
-      <p class="card-label">Biología — Semana 4</p>
-      <div class="progress"><span style="width: 68%"></span></div>
-      <p class="progress-label">68% completado</p>
-      <button>Generar resumen</button>
-      <button class="ghost">Ver preguntas</button>
+
+  <div class="product-preview" aria-label="Vista previa de SIMA">
+    <div class="preview-toolbar">
+      <span></span><span></span><span></span>
+      <strong>Biología General</strong>
+    </div>
+    <div class="preview-body">
+      <aside class="preview-sidebar">
+        <span class="active">Resumen</span>
+        <span>Flashcards</span>
+        <span>Quiz</span>
+      </aside>
+      <div class="preview-main">
+        <div class="preview-kicker">Clase 04</div>
+        <h2>Fotosíntesis y respiración celular</h2>
+        <div class="preview-progress"><span style="width:68%"></span></div>
+        <div class="preview-cards">
+          <article>
+            <strong>12</strong>
+            <small>conceptos clave</small>
+          </article>
+          <article>
+            <strong>24</strong>
+            <small>flashcards</small>
+          </article>
+          <article>
+            <strong>L4</strong>
+            <small>reforzar análisis</small>
+          </article>
+        </div>
+        <div class="recommendation-strip">
+          Repasa “función de la luz” antes del siguiente quiz.
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
-<section class="how-it-works">
-  <h2>¿Cómo funciona?</h2>
-  <ol class="steps">
-    <li>
-      <span class="step-num">1</span>
-      <div>
-        <strong>Sube tu clase</strong>
-        <p>Pega el texto de tus apuntes o sube el audio de la grabación.</p>
-      </div>
-    </li>
-    <li>
-      <span class="step-num">2</span>
-      <div>
-        <strong>SIMA lo procesa</strong>
-        <p>La IA genera un resumen, preguntas de práctica y tarjetas de repaso adaptadas al tema.</p>
-      </div>
-    </li>
-    <li>
-      <span class="step-num">3</span>
-      <div>
-        <strong>Estudia a tu ritmo</strong>
-        <p>Repasa desde el celular en sesiones cortas, cuando y donde quieras.</p>
-      </div>
-    </li>
-  </ol>
+<section class="study-map">
+  <div class="section-narrative">
+    <p class="eyebrow">Flujo principal</p>
+    <h2>Una clase larga entra. Un plan de estudio accionable sale.</h2>
+    <p>El flujo está pensado como una mesa de trabajo académica: cada curso acumula contexto, cada clase produce materiales, y cada sesión actualiza tu siguiente paso.</p>
+  </div>
+  <div class="map-board">
+    <div class="map-line" aria-hidden="true"></div>
+    <article class="map-node node-course">
+      <span>01</span>
+      <h3>Contexto de curso</h3>
+      <p>Temas, ciclo, docente y objetivo personal.</p>
+      <small>Biología General · 2026-1</small>
+    </article>
+    <article class="map-node node-class">
+      <span>02</span>
+      <h3>Clase procesada</h3>
+      <p>Audio, transcripción y segmentación temática.</p>
+      <small>45 min → 8 bloques clave</small>
+    </article>
+    <article class="map-node node-study">
+      <span>03</span>
+      <h3>Ruta de repaso</h3>
+      <p>Resumen, flashcards, quiz y recomendación.</p>
+      <small>Próximo foco: análisis</small>
+    </article>
+  </div>
 </section>
 
-<section class="plan-grid compact">
-  <h2>Planes</h2>
-  <div class="plan-cards">
+<section class="sima-os">
+  <div class="section-narrative">
+    <p class="eyebrow">Qué genera SIMA</p>
+    <h2>Un sistema de materiales conectados, no cuatro archivos separados.</h2>
+    <p>Los outputs nacen del mismo contexto del curso y se retroalimentan con tus respuestas.</p>
+  </div>
+  <div class="bento-outputs">
+    <article class="bento-card bento-summary">
+      <span class="bento-label">Resumen</span>
+      <h3>Mapa breve de la clase</h3>
+      <p>Ideas principales, conceptos y ejemplos organizados por tema.</p>
+      <div class="summary-lines">
+        <i></i><i></i><i></i>
+      </div>
+    </article>
+    <article class="bento-card bento-quiz">
+      <span class="bento-label">Quiz adaptativo</span>
+      <h3>Bloom + IRT/CAT</h3>
+      <p>La dificultad se ajusta según precisión y error estándar.</p>
+      <div class="theta-meter"><span style="width:62%"></span></div>
+    </article>
+    <article class="bento-card bento-flashcards">
+      <span class="bento-label">Flashcards</span>
+      <h3>Repaso mínimo viable</h3>
+      <div class="flash-stack">
+        <div>¿Dónde ocurre la fotosíntesis?</div>
+        <div>Cloroplastos</div>
+      </div>
+    </article>
+    <article class="bento-card bento-recommendation">
+      <span class="bento-label">Recomendación</span>
+      <h3>Qué estudiar después</h3>
+      <p>Repasa función de la luz y resuelve 5 preguntas de análisis.</p>
+    </article>
+  </div>
+</section>
+
+<section class="pricing-lab">
+  <div class="section-narrative pricing-copy">
+    <p class="eyebrow">Planes</p>
+    <h2>Créditos claros para estudiar sin sorpresas.</h2>
+    <p>Antes de procesar una clase, SIMA muestra el costo estimado. Tú decides cuándo gastar créditos.</p>
+  </div>
+  <div class="pricing-shell">
     {% for key, plan in plans.items %}
-      <article class="plan-card {% if key == 'pro' %}plan-card--featured{% endif %}">
-        <span class="plan-badge">{{ plan.label }}</span>
-        <p class="plan-price">${{ plan.price }}<small>/mes</small></p>
+      <article class="pricing-card {% if key == 'pro' %}pricing-card--featured{% endif %}">
+        {% if key == 'pro' %}<span class="recommended">Recomendado</span>{% endif %}
+        <div>
+          <span class="plan-badge">{{ plan.label }}</span>
+          <p class="plan-price">${{ plan.price }}<small>/mes</small></p>
+        </div>
         {% if key == "free" %}
-          <p>Sube tus apuntes y genera material de estudio tú mismo, sin IA automática.</p>
-          <p class="plan-note">Ideal para empezar sin costo.</p>
-        {% elif key == "basic" %}
-          <p>{{ plan.classes }} clases procesadas con IA al mes.</p>
-          <p class="plan-note">Para estudiantes con pocas materias.</p>
-        {% elif key == "pro" %}
-          <p>{{ plan.classes }} clases procesadas con IA al mes.</p>
-          <p class="plan-note">El más elegido por universitarios.</p>
+          <p>Para probar el flujo, crear cursos y organizar primeros materiales.</p>
+          <strong>30 créditos</strong>
         {% elif key == "unlimited" %}
-          <p>Clases ilimitadas procesadas con IA.</p>
-          <p class="plan-note">Para quienes estudian sin parar.</p>
+          <p>Para estudiantes intensivos que procesan muchas clases por semana.</p>
+          <strong>Créditos ilimitados</strong>
+        {% else %}
+          <p>Para procesar clases con transcripción, quizzes y repasos adaptativos.</p>
+          <strong>{{ plan.credits }} créditos</strong>
         {% endif %}
-        <a class="primary-button" href="{% url 'register' %}">Elegir plan</a>
+        <a class="primary-button" href="{% url 'register' %}">Elegir</a>
       </article>
     {% endfor %}
   </div>

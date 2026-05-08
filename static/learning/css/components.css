@@ -1,7 +1,7 @@
 .eyebrow,
 .section-label {
   margin: 0 0 10px;
-  color: var(--acid);
+  color: var(--green-dark);
   font-family: var(--font-mono);
   font-size: 0.72rem;
   font-weight: 800;
@@ -35,7 +35,7 @@
   justify-content: center;
   gap: 8px;
   border-radius: var(--radius-sm);
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0;
   cursor: pointer;
   transition: transform 0.18s, border-color 0.18s, background 0.18s, color 0.18s, box-shadow 0.18s;
@@ -45,9 +45,9 @@
 .lesson-cta {
   border: 1px solid var(--acid);
   background: var(--acid);
-  color: var(--black);
+  color: #fff;
   padding: 14px 18px;
-  box-shadow: 0 0 24px var(--glow);
+  box-shadow: 0 10px 24px var(--glow);
 }
 
 .secondary-button,
@@ -58,8 +58,8 @@
 .advanced-btn,
 .icon-btn {
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.02);
-  color: var(--gray-200);
+  background: var(--surface);
+  color: var(--ink);
   padding: 12px 16px;
 }
 
@@ -74,15 +74,14 @@
 .icon-btn:hover {
   transform: translateY(-1px);
   border-color: var(--acid);
-  box-shadow: 0 0 28px var(--glow);
+  box-shadow: 0 12px 26px var(--glow);
 }
 
 .link-button {
   min-height: auto;
   padding: 9px 10px;
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  text-transform: uppercase;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
 }
 
 .full {
@@ -115,14 +114,14 @@
 .phone-card {
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.012)), var(--surface);
+  background: var(--surface);
   color: var(--ink);
-  box-shadow: 0 18px 50px var(--shadow);
+  box-shadow: 0 12px 32px var(--shadow);
 }
 
 .message {
   padding: 12px 14px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .message.success {
@@ -150,7 +149,7 @@ form {
 }
 
 label {
-  color: var(--gray-200);
+  color: var(--ink);
   font-weight: 900;
 }
 
@@ -161,7 +160,7 @@ select {
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   padding: 13px;
-  background: rgba(10, 10, 8, 0.72);
+  background: var(--surface-2);
   color: var(--ink);
   outline: none;
 }
@@ -170,7 +169,7 @@ input:focus,
 textarea:focus,
 select:focus {
   border-color: var(--acid);
-  box-shadow: 0 0 0 3px rgba(212, 255, 0, 0.1);
+  box-shadow: 0 0 0 3px rgba(216, 92, 92, 0.15);
 }
 
 textarea {
@@ -190,7 +189,7 @@ pre,
   background: var(--black);
   color: var(--gray-200);
   padding: 14px;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 0.82rem;
   line-height: 1.65;
 }
@@ -200,7 +199,7 @@ pre,
   height: 12px;
   overflow: hidden;
   border-radius: 999px;
-  background: var(--gray-700);
+  background: var(--gray-800);
 }
 
 .progress span,
@@ -217,9 +216,9 @@ pre,
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  border: 1px solid rgba(212, 255, 0, 0.22);
+  border: 1px solid rgba(216, 92, 92, 0.25);
   border-radius: 999px;
-  background: rgba(212, 255, 0, 0.08);
+  background: rgba(216, 92, 92, 0.10);
   color: var(--acid);
   padding: 5px 10px;
   font-family: var(--font-mono);
@@ -248,7 +247,7 @@ pre,
 .view-btn--active,
 .dash-tab--active {
   border-color: var(--acid) !important;
-  color: var(--black) !important;
+  color: #fff !important;
   background: var(--acid) !important;
 }
 
@@ -259,7 +258,7 @@ pre,
 .share-option--active,
 .study-badge--verified {
   border-color: rgba(212, 255, 0, 0.48) !important;
-  background: rgba(212, 255, 0, 0.08) !important;
+  background: rgba(216, 92, 92, 0.12) !important;
   color: var(--acid) !important;
 }
 
@@ -313,7 +312,7 @@ pre,
 .mini-item {
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
-  background: var(--surface);
+  background: var(--surface-2);
   padding: 15px;
 }
 
@@ -334,7 +333,7 @@ pre,
 
 .mini-bloom {
   border-radius: 999px;
-  color: var(--black);
+  color: #fff;
   padding: 2px 8px;
   font-family: var(--font-mono);
   font-size: 0.72rem;

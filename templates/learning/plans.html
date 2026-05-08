@@ -18,9 +18,10 @@
         {% if value == "free" %}
           <p>Sin API Claude. Sin transcripcion. Generas prompts y pegas respuestas manualmente.</p>
         {% elif value == "unlimited" %}
-          <p>Clases API infinitas con Claude y transcripcion local Whisper.</p>
+          <p>Creditos ilimitados para clases API, Claude y transcripcion local Whisper.</p>
         {% else %}
-          <p>{{ plan.classes }} clases API con Claude y transcripcion local Whisper.</p>
+          <p>{{ plan.credits }} creditos mensuales para transcripcion, quizzes y regeneraciones.</p>
+          <p>{{ plan.classes }} clases API referenciales al mes.</p>
         {% endif %}
       </label>
       {% endwith %}

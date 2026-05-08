@@ -6,7 +6,7 @@ from django.conf import settings
 from django.db import close_old_connections
 from django.utils import timezone
 
-from .models import LessonJob, Profile
+from .models import ClassSession, LessonJob, Profile, Transcript
 from .parse_mini import apply_corrections_with_trace, normalize_mini_text, validate_mini_parse
 from .services import (
     clean_ai_error,
@@ -77,6 +77,7 @@ def process_lesson_job(job_id: int, backend: str = "auto"):
             if not job.transcript:
                 job.transcript = transcribe_audio(job.audio.path)
                 job.save(update_fields=["transcript", "updated_at"])
+                _sync_transcript_record(job)
             _discard_processed_audio(job)
 
         if requested_backend == "local":
@@ -136,12 +137,15 @@ def process_lesson_job(job_id: int, backend: str = "auto"):
             "api_usage_counted",
             "updated_at",
         ])
+        _sync_class_session_status(job)
+        _sync_transcript_record(job)
     except Exception as exc:
         job.error = clean_ai_error(exc)
         job.status = LessonJob.Status.ERROR
         job.processing_stage = "Error"
         job.processing_log = _append_log(job.processing_log, "Error", job.error)
         job.save(update_fields=["error", "status", "processing_stage", "processing_log", "updated_at"])
+        _sync_class_session_status(job)
 
 
 def _set_stage(job: LessonJob, stage: str, detail: str = ""):
@@ -360,3 +364,54 @@ def _count_api_usage(job: LessonJob):
     profile.api_classes_used += 1
     profile.save(update_fields=["api_classes_used", "updated_at"])
     job.api_usage_counted = True
+
+
+def _sync_class_session_status(job: LessonJob) -> ClassSession | None:
+    if not job.course_id:
+        return None
+    ready_statuses = {
+        LessonJob.Status.PROMPT_READY,
+        LessonJob.Status.TOON_READY,
+        LessonJob.Status.VERIFIED,
+        LessonJob.Status.CORRECTED,
+    }
+    status_map = {
+        LessonJob.Status.DRAFT: ClassSession.ProcessingStatus.DRAFT,
+        LessonJob.Status.QUEUED: ClassSession.ProcessingStatus.QUEUED,
+        LessonJob.Status.PROCESSING: ClassSession.ProcessingStatus.PROCESSING,
+        LessonJob.Status.ERROR: ClassSession.ProcessingStatus.ERROR,
+    }
+    status = ClassSession.ProcessingStatus.READY if job.status in ready_statuses else status_map.get(
+        job.status,
+        ClassSession.ProcessingStatus.DRAFT,
+    )
+    session, _created = ClassSession.objects.update_or_create(
+        legacy_lesson_job=job,
+        defaults={
+            "user": job.user,
+            "course": job.course,
+            "title": job.title,
+            "status": status,
+            "main_topic": job.tags.split(",")[0].strip() if job.tags else "",
+            "requested_outputs": ["transcript", "quiz"],
+            "processing_log": job.processing_log,
+            "error": job.error,
+        },
+    )
+    return session
+
+
+def _sync_transcript_record(job: LessonJob):
+    if not (job.course_id and job.transcript.strip()):
+        return
+    session = _sync_class_session_status(job)
+    if not session:
+        return
+    Transcript.objects.update_or_create(
+        class_session=session,
+        defaults={
+            "full_text": job.transcript,
+            "source": Transcript.Source.WHISPER if job.audio or job.mode == LessonJob.Mode.API else Transcript.Source.MANUAL,
+            "language": "es",
+        },
+    )

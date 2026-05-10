@@ -15,13 +15,18 @@
         <input type="radio" name="plan" value="{{ value }}" {% if form.plan.value == value %}checked{% endif %}>
         <span class="plan-badge">{{ plan.label }}</span>
         <h2>${{ plan.price }}<small>/mes</small></h2>
-        {% if value == "free" %}
-          <p>Sin API Claude. Sin transcripcion. Generas prompts y pegas respuestas manualmente.</p>
-        {% elif value == "unlimited" %}
-          <p>Creditos ilimitados para clases API, Claude y transcripcion local Whisper.</p>
+        {% if plan.description %}
+          <p>{{ plan.description }}</p>
+        {% endif %}
+        {% if plan.credits == None %}
+          <p>Creditos ilimitados.</p>
         {% else %}
-          <p>{{ plan.credits }} creditos mensuales para transcripcion, quizzes y regeneraciones.</p>
-          <p>{{ plan.classes }} clases API referenciales al mes.</p>
+          <p>{{ plan.credits }} creditos mensuales.</p>
+        {% endif %}
+        {% if plan.classes == None %}
+          <p>Clases API ilimitadas.</p>
+        {% else %}
+          <p>{{ plan.classes }} clases API al mes.</p>
         {% endif %}
       </label>
       {% endwith %}

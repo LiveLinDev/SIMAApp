@@ -193,6 +193,98 @@
   .benchmark-embed-wrap {
     margin-top: 1.5rem;
   }
+
+  /* SIMA tech-light override */
+  :root {
+    --acid: #d93424;
+    --black: #fbf8f2;
+    --gray-900: #ffffff;
+    --gray-800: #f4eee8;
+    --gray-700: rgba(20, 24, 18, 0.14);
+    --gray-500: #7b8781;
+    --gray-400: #66746f;
+    --gray-200: #22312d;
+    --white: #22312d;
+    --coral: #9f1f16;
+  }
+
+  body {
+    background:
+      radial-gradient(circle at 82% 8%, rgba(217, 52, 36, 0.14), transparent 24%),
+      linear-gradient(180deg, #fff, #fafaf5);
+    color: var(--white);
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(20, 24, 18, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(20, 24, 18, 0.045) 1px, transparent 1px);
+    background-size: 54px 54px;
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,.48), transparent 70%);
+  }
+
+  a,
+  .page-label,
+  .doc-section h3,
+  .format-card .fc-name,
+  code:not(pre code) {
+    color: var(--coral);
+  }
+
+  .page-wrap {
+    position: relative;
+    z-index: 1;
+  }
+
+  .page-header,
+  .doc-section,
+  .format-card,
+  pre {
+    border: 1px solid rgba(20, 24, 18, 0.12);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.84);
+    box-shadow: 0 16px 42px rgba(20, 24, 18, 0.08);
+  }
+
+  .page-header,
+  .doc-section {
+    padding: clamp(1.25rem, 3vw, 2rem);
+  }
+
+  .page-title {
+    font-size: clamp(2.4rem, 6vw, 5.4rem);
+    line-height: .9;
+  }
+
+  .page-label {
+    position: relative;
+    padding-left: 34px;
+    letter-spacing: 0;
+  }
+
+  .page-label::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 24px;
+    height: 2px;
+    background: var(--acid);
+    transform: translateY(-50%);
+  }
+
+  pre,
+  code:not(pre code) {
+    background: #fffdfb;
+  }
+
+  hr.section-divider {
+    border-top-color: rgba(20, 24, 18, 0.12);
+  }
 </style>
 </head>
 <body>

@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.utils import OperationalError, ProgrammingError
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -18,6 +19,61 @@ PLAN_DETAILS = {
     Plan.PRO: {"price": 10, "classes": 20, "credits": 2200, "api": True, "label": "Pro"},
     Plan.UNLIMITED: {"price": 25, "classes": None, "credits": None, "api": True, "label": "Ilimitado"},
 }
+
+
+class PlanCatalog(models.Model):
+    code = models.CharField(max_length=20, choices=Plan.choices, unique=True)
+    name = models.CharField(max_length=80)
+    description = models.TextField(blank=True)
+    monthly_price_usd = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    monthly_api_classes = models.PositiveIntegerField(null=True, blank=True)
+    monthly_credits = models.PositiveIntegerField(null=True, blank=True)
+    api_enabled = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    sort_order = models.PositiveSmallIntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["sort_order", "monthly_price_usd", "code"]
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def detail_dict(self):
+        price = float(self.monthly_price_usd)
+        if price.is_integer():
+            price = int(price)
+        return {
+            "price": price,
+            "classes": self.monthly_api_classes,
+            "credits": self.monthly_credits,
+            "api": self.api_enabled,
+            "label": self.name,
+            "description": self.description,
+            "active": self.is_active,
+        }
+
+
+def get_plan_info(plan: str) -> dict:
+    try:
+        catalog = PlanCatalog.objects.filter(code=plan, is_active=True).first()
+    except (OperationalError, ProgrammingError):
+        catalog = None
+    if catalog:
+        return catalog.detail_dict
+    return PLAN_DETAILS.get(plan, PLAN_DETAILS[Plan.FREE])
+
+
+def get_plan_details(active_only: bool = True) -> dict:
+    try:
+        plans = PlanCatalog.objects.all()
+        if active_only:
+            plans = plans.filter(is_active=True)
+        catalog = {plan.code: plan.detail_dict for plan in plans}
+    except (OperationalError, ProgrammingError):
+        catalog = {}
+    return catalog or PLAN_DETAILS
 
 
 class BloomLevel(models.TextChoices):
@@ -41,8 +97,7 @@ class Profile(models.Model):
     api_classes_used = models.PositiveIntegerField(default=0)
     credit_balance = models.IntegerField(default=0)
     
-    # Gamificación y progreso
-    daily_goal = models.PositiveIntegerField(default=10)  # preguntas por día
+    # Gamificacion y progreso
     current_streak = models.PositiveIntegerField(default=0)
     longest_streak = models.PositiveIntegerField(default=0)
     last_study_date = models.DateField(null=True, blank=True)
@@ -55,7 +110,7 @@ class Profile(models.Model):
 
     @property
     def plan_info(self):
-        return PLAN_DETAILS[self.plan]
+        return get_plan_info(self.plan)
 
     @property
     def can_use_api(self):
@@ -83,6 +138,28 @@ class Profile(models.Model):
     def level(self):
         """Calcula nivel basado en XP (cada 100 XP = 1 nivel)"""
         return (self.total_xp // 100) + 1
+
+
+class UserPreference(models.Model):
+    class Language(models.TextChoices):
+        SPANISH = "es", "Espanol"
+        ENGLISH = "en", "Ingles"
+
+    class Theme(models.TextChoices):
+        SYSTEM = "system", "Sistema"
+        LIGHT = "light", "Claro"
+        DARK = "dark", "Oscuro"
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="preferences")
+    daily_goal = models.PositiveIntegerField(default=10)
+    default_study_minutes = models.PositiveIntegerField(default=25)
+    preferred_language = models.CharField(max_length=8, choices=Language.choices, default=Language.SPANISH)
+    theme = models.CharField(max_length=16, choices=Theme.choices, default=Theme.SYSTEM)
+    email_reminders = models.BooleanField(default=False)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Preferencias de {self.user.username}"
 
 
 class Course(models.Model):
@@ -641,6 +718,8 @@ class QuizResponse(models.Model):
 def create_profile(sender, instance, created, **kwargs):
     if created:
         Profile.objects.create(user=instance)
+        UserPreference.objects.create(user=instance)
     else:
-        # garantiza que usuarios existentes siempre tengan perfil
+        # garantiza que usuarios existentes siempre tengan datos base
         Profile.objects.get_or_create(user=instance)
+        UserPreference.objects.get_or_create(user=instance)

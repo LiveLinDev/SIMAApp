@@ -7,34 +7,36 @@
   <title>{% block title %}SIMA Learn{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,300&family=Space+Mono:wght@400;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'learning/app.css' %}">
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
-      <a class="brand" href="{% url 'home' %}">
-        <span class="brand-mark">S</span>
-        <span>SIMA</span>
+      <a class="brand" href="{% url 'home' %}" aria-label="SIMA inicio">
+        <span class="brand-slash">//</span>
+        <span class="brand-dot">.</span><strong>SIMA</strong>
       </a>
-      <nav class="topnav">
+      {% with current=request.resolver_match.url_name %}
+      <nav class="topnav" aria-label="Navegacion principal">
         {% if user.is_authenticated %}
-          <a href="{% url 'dashboard' %}">Inicio</a>
-          <a href="{% url 'course_create' %}">Cursos</a>
-          <a href="{% url 'mini_landing' %}">.mini</a>
-          <a href="{% url 'mini_benchmark' %}">Benchmark</a>
-          <a href="{% url 'plans' %}">Planes</a>
+          <a class="nav-link {% if current == 'dashboard' %}is-active{% endif %}" href="{% url 'dashboard' %}">Inicio</a>
+          <a class="nav-link {% if current == 'course_create' %}is-active{% endif %}" href="{% url 'course_create' %}">Cursos</a>
+          <a class="nav-link {% if current == 'mini_landing' %}is-active{% endif %}" href="{% url 'mini_landing' %}">.mini</a>
+          <a class="nav-link {% if current == 'mini_benchmark' %}is-active{% endif %}" href="{% url 'mini_benchmark' %}">Benchmark</a>
+          <a class="nav-link {% if current == 'plans' %}is-active{% endif %}" href="{% url 'plans' %}">Planes</a>
           <form action="{% url 'logout' %}" method="post">
             {% csrf_token %}
-            <button class="link-button" type="submit">Salir</button>
+            <button class="nav-badge-button" type="submit">Salir</button>
           </form>
         {% else %}
-          <a href="{% url 'mini_landing' %}">.mini</a>
-          <a href="{% url 'mini_benchmark' %}">Benchmark</a>
-          <a href="{% url 'login' %}">Login</a>
-          <a class="nav-pill" href="{% url 'register' %}">Registro</a>
+          <a class="nav-link {% if current == 'mini_landing' %}is-active{% endif %}" href="{% url 'mini_landing' %}">.mini</a>
+          <a class="nav-link {% if current == 'mini_benchmark' %}is-active{% endif %}" href="{% url 'mini_benchmark' %}">Benchmark</a>
+          <a class="nav-link {% if current == 'login' %}is-active{% endif %}" href="{% url 'login' %}">Login</a>
+          <a class="nav-pill" href="{% url 'register' %}">v1.0 SIMA</a>
         {% endif %}
       </nav>
+      {% endwith %}
     </header>
 
     {% if messages %}

@@ -36,6 +36,29 @@
   .token-benchmark canvas {
     max-width: 100%;
   }
+
+  .token-benchmark {
+    --color-background-secondary: #fffdfb;
+    --color-border-secondary: rgba(20, 24, 18, 0.14);
+    --color-border-tertiary: rgba(20, 24, 18, 0.10);
+    --color-text-primary: #22312d;
+    --color-text-secondary: #66746f;
+    --acid: #9f1f16;
+
+    background:
+      radial-gradient(circle at 90% 0%, rgba(217, 52, 36, 0.14), transparent 24%),
+      linear-gradient(145deg, rgba(255,255,255,.92), rgba(250,250,245,.84));
+    box-shadow: 0 16px 42px rgba(20, 24, 18, 0.08);
+  }
+
+  .token-benchmark button,
+  .token-benchmark [role="tab"] {
+    border-radius: 6px !important;
+  }
+
+  .token-benchmark code {
+    color: #9f1f16;
+  }
 </style>
 
 <div class="token-benchmark">

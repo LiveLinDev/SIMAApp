@@ -8,6 +8,7 @@ from .models import (
     CreditLedgerEntry,
     Flashcard,
     LessonJob,
+    PlanCatalog,
     Profile,
     Question,
     Quiz,
@@ -18,12 +19,28 @@ from .models import (
     Summary,
     Transcript,
     TranscriptSegment,
+    UserPreference,
 )
+
+
+@admin.register(PlanCatalog)
+class PlanCatalogAdmin(admin.ModelAdmin):
+    list_display = ("name", "code", "monthly_price_usd", "monthly_api_classes", "monthly_credits", "api_enabled", "is_active", "sort_order")
+    list_filter = ("api_enabled", "is_active")
+    search_fields = ("name", "code", "description")
+    ordering = ("sort_order", "monthly_price_usd")
 
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
     list_display = ("user", "plan", "api_classes_used", "updated_at")
+    search_fields = ("user__username", "user__email")
+
+
+@admin.register(UserPreference)
+class UserPreferenceAdmin(admin.ModelAdmin):
+    list_display = ("user", "daily_goal", "default_study_minutes", "preferred_language", "theme", "email_reminders", "updated_at")
+    list_filter = ("preferred_language", "theme", "email_reminders")
     search_fields = ("user__username", "user__email")
 
 

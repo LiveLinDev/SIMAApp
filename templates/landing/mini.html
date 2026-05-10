@@ -1232,6 +1232,201 @@
     .hero-stats { gap: 2rem; }
     footer { flex-direction: column; text-align: center; }
   }
+
+  /* SIMA tech-light override: same .mini attitude, white product palette. */
+  :root {
+    --acid: #d93424;
+    --acid-hot: #9f1f16;
+    --black: #fbf8f2;
+    --gray-900: #ffffff;
+    --gray-800: #f4eee8;
+    --gray-700: rgba(20, 24, 18, 0.14);
+    --gray-500: #7b8781;
+    --gray-400: #66746f;
+    --gray-200: #22312d;
+    --white: #22312d;
+  }
+
+  body {
+    background:
+      radial-gradient(circle at 82% 8%, rgba(217, 52, 36, 0.16), transparent 24%),
+      radial-gradient(circle at 12% 72%, rgba(56, 83, 106, 0.055), transparent 25%),
+      linear-gradient(180deg, #fff, #f7f4ec);
+    color: var(--white);
+    cursor: auto;
+  }
+
+  body::before {
+    background-image:
+      linear-gradient(rgba(20, 24, 18, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(20, 24, 18, 0.045) 1px, transparent 1px);
+    background-size: 54px 54px;
+    opacity: 1;
+    mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.58), transparent 78%);
+  }
+
+  .cursor,
+  .cursor-trail {
+    display: none;
+  }
+
+  nav {
+    border-bottom: 1px solid rgba(20, 24, 18, 0.10);
+    background: rgba(255, 255, 255, 0.82);
+  }
+
+  .nav-logo,
+  .nav-links a:hover,
+  .section-label,
+  .hero-eyebrow,
+  .stat-num,
+  .terminal .t-key,
+  .t-header,
+  thead th.col-mini,
+  td.col-mini,
+  .bh-value,
+  .bar-name.highlight,
+  .bar-val.highlight,
+  .step-num,
+  .param-letter,
+  .bloom-level,
+  .creator-role,
+  .footer-sima span {
+    color: var(--acid-hot) !important;
+  }
+
+  .nav-logo span,
+  .nav-links a,
+  .hero-subtitle,
+  .stat-label,
+  .terminal-title,
+  .t-comment,
+  .why-desc,
+  .prob-text p,
+  .compare-lead,
+  td,
+  .bench-desc,
+  .bar-val,
+  .param-info p,
+  .bloom-desc,
+  .creator-bio,
+  .footer-credits {
+    color: var(--gray-400) !important;
+  }
+
+  .nav-badge,
+  .btn-primary,
+  .anno-tag,
+  .context-badge,
+  .cursor-blink {
+    background: var(--acid) !important;
+    color: #14231f !important;
+  }
+
+  .btn-primary {
+    box-shadow: 0 14px 32px rgba(217, 52, 36, 0.24);
+  }
+
+  .btn-ghost {
+    color: var(--white);
+    border-color: rgba(20, 24, 18, 0.14);
+    background: rgba(255,255,255,.66);
+  }
+
+  .hero-title .word-mini {
+    -webkit-text-stroke-color: var(--acid-hot);
+  }
+
+  .hero-bg-grid {
+    background-image:
+      linear-gradient(rgba(20, 24, 18, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(20, 24, 18, 0.045) 1px, transparent 1px);
+  }
+
+  .hero-bg-orb,
+  .hero-bg-orb2 {
+    background: radial-gradient(circle, rgba(217, 52, 36, 0.16) 0%, transparent 70%);
+  }
+
+  .terminal,
+  .origin-card,
+  .compare-table-wrap,
+  .anatomy-block,
+  .bench-highlight,
+  .step-card,
+  .play-panel,
+  .param-card,
+  .bloom-card,
+  .playground-panel,
+  .creator-card,
+  .context-badge,
+  .format-card,
+  .metric-card {
+    border-radius: 8px !important;
+    border-color: rgba(20, 24, 18, 0.12) !important;
+    background:
+      linear-gradient(145deg, rgba(255,255,255,.92), rgba(250,250,245,.82)) !important;
+    box-shadow: 0 16px 42px rgba(20, 24, 18, 0.08);
+  }
+
+  .terminal-bar,
+  .anatomy-header,
+  thead,
+  .playground-head {
+    border-color: rgba(20, 24, 18, 0.10) !important;
+    background: rgba(255, 247, 246, 0.76) !important;
+  }
+
+  .why-section,
+  .compare-section,
+  .anatomy-section,
+  .bench-section,
+  .how-section,
+  .irt-section,
+  .playground-section,
+  .creators-section,
+  footer {
+    background: transparent !important;
+    border-color: rgba(20, 24, 18, 0.10) !important;
+  }
+
+  tbody tr,
+  .problem-item,
+  .bh-metric {
+    border-color: rgba(20, 24, 18, 0.10) !important;
+  }
+
+  .prob-icon,
+  .step-icon,
+  .creator-avatar {
+    background: rgba(217, 52, 36, 0.16) !important;
+    border-color: rgba(217, 52, 36, 0.42) !important;
+  }
+
+  .bar-track,
+  .eff-fill {
+    background: rgba(20, 24, 18, 0.10) !important;
+  }
+
+  .bar-fill,
+  .eff-fill::after,
+  .bar-fill.is-mini {
+    background: linear-gradient(90deg, var(--acid), var(--acid-hot)) !important;
+  }
+
+  textarea,
+  input,
+  select,
+  .anatomy-code,
+  .terminal-body {
+    background: #fffdfb !important;
+    color: var(--white) !important;
+  }
+
+  .section-label::after,
+  .hero-eyebrow::before {
+    background: var(--acid);
+  }
 </style>
 </head>
 <body>

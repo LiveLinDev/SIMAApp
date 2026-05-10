@@ -73,7 +73,9 @@
 .advanced-btn:hover,
 .icon-btn:hover {
   transform: translateY(-1px);
-  border-color: var(--acid);
+  border-color: var(--acid-hot);
+  background: var(--acid-hot);
+  color: #fff;
   box-shadow: 0 12px 26px var(--glow);
 }
 
@@ -82,6 +84,57 @@
   padding: 9px 10px;
   font-family: var(--font-body);
   font-size: 0.8rem;
+}
+
+.topnav .link-button {
+  min-height: 38px;
+  border-color: rgba(20, 24, 18, 0.12);
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--ink);
+  padding: 8px 12px;
+}
+
+.nav-badge-button,
+.topnav .nav-pill {
+  min-height: 28px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: var(--acid) !important;
+  color: #000000 !important;
+  padding: 0 16px !important;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1;
+  text-transform: none;
+  cursor: pointer;
+}
+
+.nav-badge-button:hover,
+.topnav .nav-pill:hover {
+  transform: none !important;
+  background: var(--acid-hot) !important;
+  color: #000000 !important;
+  box-shadow: none !important;
+}
+
+.topnav .nav-pill {
+  margin-left: clamp(10px, 3vw, 40px);
+}
+
+.topnav .nav-pill:hover {
+  background: var(--acid-hot);
+  color: #000000;
+}
+
+.topnav .link-button:hover {
+  color: #000000;
+  border-color: var(--acid-hot);
+  background: var(--acid-hot);
+  box-shadow: 0 12px 26px rgba(20, 24, 18, 0.18);
 }
 
 .full {
@@ -169,7 +222,7 @@ input:focus,
 textarea:focus,
 select:focus {
   border-color: var(--acid);
-  box-shadow: 0 0 0 3px rgba(216, 92, 92, 0.15);
+  box-shadow: 0 0 0 3px rgba(217, 52, 36, 0.22);
 }
 
 textarea {
@@ -216,10 +269,10 @@ pre,
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  border: 1px solid rgba(216, 92, 92, 0.25);
+  border: 1px solid rgba(217, 52, 36, 0.46);
   border-radius: 999px;
-  background: rgba(216, 92, 92, 0.10);
-  color: var(--acid);
+  background: rgba(217, 52, 36, 0.16);
+  color: var(--black);
   padding: 5px 10px;
   font-family: var(--font-mono);
   font-size: 0.72rem;
@@ -258,8 +311,8 @@ pre,
 .share-option--active,
 .study-badge--verified {
   border-color: rgba(212, 255, 0, 0.48) !important;
-  background: rgba(216, 92, 92, 0.12) !important;
-  color: var(--acid) !important;
+  background: rgba(217, 52, 36, 0.16) !important;
+  color: var(--black) !important;
 }
 
 .modal {

@@ -1,8 +1,9 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from django.db.utils import OperationalError, ProgrammingError
 
-from .models import Course, LessonJob, Plan
+from .models import Course, LessonJob, Plan, PlanCatalog
 
 
 class RegisterForm(UserCreationForm):
@@ -15,6 +16,18 @@ class RegisterForm(UserCreationForm):
 
 class PlanForm(forms.Form):
     plan = forms.ChoiceField(choices=Plan.choices, widget=forms.RadioSelect)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        try:
+            choices = list(
+                PlanCatalog.objects.filter(is_active=True)
+                .order_by("sort_order", "monthly_price_usd")
+                .values_list("code", "name")
+            )
+        except (OperationalError, ProgrammingError):
+            choices = []
+        self.fields["plan"].choices = choices or Plan.choices
 
 
 class CourseForm(forms.ModelForm):

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from django.db import transaction
 
-from .models import CreditLedgerEntry, LessonJob, PLAN_DETAILS, Plan, Profile
+from .models import CreditLedgerEntry, LessonJob, Plan, Profile, get_plan_info
 
 
 @dataclass(frozen=True)
@@ -19,7 +19,8 @@ REGENERATION_COST = 12
 
 
 def plan_credit_amount(plan: str) -> int | None:
-    return PLAN_DETAILS.get(plan, PLAN_DETAILS[Plan.FREE])["credits"]
+    info = get_plan_info(plan)
+    return info.get("credits", get_plan_info(Plan.FREE)["credits"])
 
 
 def grant_plan_credits(profile: Profile, description: str = "Creditos mensuales del plan") -> int | None:

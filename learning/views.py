@@ -20,7 +20,7 @@ from .credits import (
 )
 from .forms import ApiLessonForm, CourseForm, FreeLessonForm, ManualResultForm, PlanForm, RegisterForm, VerificationResultForm
 from .job_queue import enqueue_lesson_job
-from .models import ClassSession, Course, LessonJob, PLAN_DETAILS, Plan, QuizAttempt, QuizResponse
+from .models import ClassSession, Course, LessonJob, QuizAttempt, QuizResponse, UserPreference, get_plan_details
 from .parse_mini import apply_corrections_with_trace, assessment_to_dict, normalize_mini_text, parse_mini, render_mini_html, validate_mini_parse
 from .services import (
     build_generation_prompt,
@@ -39,6 +39,11 @@ def _get_or_create_profile(user):
     from .models import Profile
     profile, _ = Profile.objects.get_or_create(user=user)
     return profile
+
+
+def _get_or_create_preferences(user):
+    preferences, _ = UserPreference.objects.get_or_create(user=user)
+    return preferences
 
 
 def _has_api_capacity(user, profile):
@@ -60,7 +65,7 @@ def _has_api_capacity(user, profile):
 def home(request):
     if request.user.is_authenticated:
         return redirect("dashboard")
-    return render(request, "learning/home.html", {"plans": PLAN_DETAILS})
+    return render(request, "learning/home.html", {"plans": get_plan_details()})
 
 
 def mini_landing(request):
@@ -89,10 +94,25 @@ def register(request):
 @login_required
 def dashboard(request):
     profile = _get_or_create_profile(request.user)
+    preferences = _get_or_create_preferences(request.user)
+    if request.method == "POST" and request.POST.get("dashboard_action") == "update_preferences":
+        try:
+            daily_goal = int(request.POST.get("daily_goal", preferences.daily_goal))
+        except (TypeError, ValueError):
+            daily_goal = preferences.daily_goal
+        preferences.daily_goal = max(1, min(daily_goal, 200))
+        preferences.save(update_fields=["daily_goal", "updated_at"])
+        messages.success(request, "Preferencias actualizadas.")
+        return redirect(f"{request.path}?tab=preferencias")
+
     courses = Course.objects.filter(user=request.user, is_archived=False).annotate(
         class_count=Count("legacy_lesson_jobs", filter=Q(legacy_lesson_jobs__user=request.user)),
     )
-    jobs = LessonJob.objects.filter(user=request.user)[:8]
+    all_jobs = LessonJob.objects.filter(user=request.user)
+    jobs = all_jobs.select_related("course")[:8]
+    ready_jobs = all_jobs.filter(Q(corrected_output__gt="") | Q(toon_output__gt="")).count()
+    processing_jobs = all_jobs.filter(status__in=[LessonJob.Status.QUEUED, LessonJob.Status.PROCESSING]).count()
+    class_sessions = ClassSession.objects.filter(user=request.user).select_related("course")[:6]
     public_jobs = LessonJob.objects.select_related("user").filter(
         visibility=LessonJob.Visibility.PUBLIC,
     ).exclude(corrected_output="", toon_output="")
@@ -109,17 +129,27 @@ def dashboard(request):
         public_jobs = public_jobs.filter(tags__icontains=tag)
     public_jobs = public_jobs[:24]
     popular_tags = _collect_public_tags()
-    active_tab = "explorar" if query or tag else "cursos"
+    requested_tab = request.GET.get("tab", "").strip()
+    allowed_tabs = {"cursos", "mis-clases", "explorar", "horario", "preferencias", "guardadas"}
+    active_tab = requested_tab if requested_tab in allowed_tabs else ("explorar" if query or tag else "cursos")
     return render(request, "learning/dashboard.html", {
         "profile": profile,
+        "preferences": preferences,
         "courses": courses,
         "jobs": jobs,
+        "class_sessions": class_sessions,
+        "dashboard_stats": {
+            "course_count": courses.count(),
+            "lesson_count": all_jobs.count(),
+            "ready_count": ready_jobs,
+            "processing_count": processing_jobs,
+        },
         "public_jobs": public_jobs,
         "popular_tags": popular_tags,
         "active_tab": active_tab,
         "explore_query": query,
         "explore_tag": tag,
-        "plans": PLAN_DETAILS,
+        "plans": get_plan_details(),
     })
 
 
@@ -171,7 +201,7 @@ def plans(request):
             return redirect("dashboard")
     else:
         form = PlanForm(initial={"plan": profile.plan})
-    return render(request, "learning/plans.html", {"form": form, "plans": PLAN_DETAILS, "profile": profile})
+    return render(request, "learning/plans.html", {"form": form, "plans": get_plan_details(), "profile": profile})
 
 
 @login_required

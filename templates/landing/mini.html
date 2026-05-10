@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>.mini — Formato de Evaluación Adaptativa</title>
+<script>
+  (function() {
+    if (localStorage.getItem("sima-theme") === "dark") {
+      document.documentElement.setAttribute("data-theme", "dark");
+    }
+  })();
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Mono:wght@400;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -123,6 +130,7 @@
     border-radius: 100px;
     font-weight: 700;
     letter-spacing: 0;
+    text-decoration: none;
   }
 
   /* ── HERO ── */
@@ -1427,6 +1435,214 @@
   .hero-eyebrow::before {
     background: var(--acid);
   }
+
+  :root[data-theme="dark"] {
+    --acid: #d4ff00;
+    --acid-hot: #aaff00;
+    --black: #0a0a08;
+    --gray-900: #111110;
+    --gray-800: #1c1c1a;
+    --gray-700: #2a2a27;
+    --gray-500: #5a5a54;
+    --gray-400: #8a8a82;
+    --gray-200: #d4d4cc;
+    --white: #fafaf5;
+  }
+
+  :root[data-theme="dark"] body {
+    background: var(--black) !important;
+    color: var(--white) !important;
+    cursor: none;
+  }
+
+  :root[data-theme="dark"] body::before {
+    background-image:
+      linear-gradient(rgba(212,255,0,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(212,255,0,0.03) 1px, transparent 1px) !important;
+    background-size: 60px 60px !important;
+    opacity: .55 !important;
+    mask-image: none !important;
+  }
+
+  :root[data-theme="dark"] .cursor,
+  :root[data-theme="dark"] .cursor-trail {
+    display: block;
+  }
+
+  :root[data-theme="dark"] nav {
+    border-bottom-color: rgba(212,255,0,0.08) !important;
+    background: rgba(10,10,8,0.75) !important;
+  }
+
+  :root[data-theme="dark"] .nav-logo,
+  :root[data-theme="dark"] .nav-links a:hover,
+  :root[data-theme="dark"] .section-label,
+  :root[data-theme="dark"] .hero-eyebrow,
+  :root[data-theme="dark"] .stat-num,
+  :root[data-theme="dark"] .terminal .t-key,
+  :root[data-theme="dark"] .t-header,
+  :root[data-theme="dark"] thead th.col-mini,
+  :root[data-theme="dark"] td.col-mini,
+  :root[data-theme="dark"] .bh-value,
+  :root[data-theme="dark"] .bar-name.highlight,
+  :root[data-theme="dark"] .bar-val.highlight,
+  :root[data-theme="dark"] .step-num,
+  :root[data-theme="dark"] .param-letter,
+  :root[data-theme="dark"] .bloom-level,
+  :root[data-theme="dark"] .creator-role,
+  :root[data-theme="dark"] .footer-sima span {
+    color: var(--acid) !important;
+  }
+
+  :root[data-theme="dark"] .nav-logo span,
+  :root[data-theme="dark"] .nav-links a,
+  :root[data-theme="dark"] .hero-subtitle,
+  :root[data-theme="dark"] .stat-label,
+  :root[data-theme="dark"] .terminal-title,
+  :root[data-theme="dark"] .t-comment,
+  :root[data-theme="dark"] .why-desc,
+  :root[data-theme="dark"] .prob-text p,
+  :root[data-theme="dark"] .compare-lead,
+  :root[data-theme="dark"] td,
+  :root[data-theme="dark"] .bench-desc,
+  :root[data-theme="dark"] .bar-val,
+  :root[data-theme="dark"] .param-info p,
+  :root[data-theme="dark"] .bloom-desc,
+  :root[data-theme="dark"] .creator-bio,
+  :root[data-theme="dark"] .footer-credits {
+    color: var(--gray-400) !important;
+  }
+
+  :root[data-theme="dark"] .hero-subtitle strong,
+  :root[data-theme="dark"] .why-desc strong,
+  :root[data-theme="dark"] .bench-desc strong,
+  :root[data-theme="dark"] .prob-text h4,
+  :root[data-theme="dark"] .creator-name,
+  :root[data-theme="dark"] .anno-desc strong,
+  :root[data-theme="dark"] td:first-child,
+  :root[data-theme="dark"] .section-title,
+  :root[data-theme="dark"] .hero-title {
+    color: var(--white) !important;
+  }
+
+  :root[data-theme="dark"] .nav-badge,
+  :root[data-theme="dark"] .btn-primary,
+  :root[data-theme="dark"] .anno-tag,
+  :root[data-theme="dark"] .context-badge,
+  :root[data-theme="dark"] .cursor-blink {
+    background: var(--acid) !important;
+    color: var(--black) !important;
+  }
+
+  :root[data-theme="dark"] .btn-primary {
+    box-shadow: none !important;
+  }
+
+  :root[data-theme="dark"] .btn-ghost {
+    color: var(--gray-200) !important;
+    border-color: var(--gray-700) !important;
+    background: transparent !important;
+  }
+
+  :root[data-theme="dark"] .hero-title .word-mini {
+    -webkit-text-stroke-color: var(--acid) !important;
+  }
+
+  :root[data-theme="dark"] .hero-bg-grid {
+    background-image:
+      linear-gradient(rgba(212,255,0,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(212,255,0,0.03) 1px, transparent 1px) !important;
+  }
+
+  :root[data-theme="dark"] .hero-bg-orb {
+    background: radial-gradient(circle, rgba(196,240,20,0.15) 0%, transparent 70%) !important;
+  }
+
+  :root[data-theme="dark"] .hero-bg-orb2 {
+    background: radial-gradient(circle, rgba(212,255,0,0.08) 0%, transparent 70%) !important;
+  }
+
+  :root[data-theme="dark"] .terminal,
+  :root[data-theme="dark"] .origin-card,
+  :root[data-theme="dark"] .compare-table-wrap,
+  :root[data-theme="dark"] .anatomy-block,
+  :root[data-theme="dark"] .bench-highlight,
+  :root[data-theme="dark"] .step-card,
+  :root[data-theme="dark"] .play-panel,
+  :root[data-theme="dark"] .param-card,
+  :root[data-theme="dark"] .bloom-card,
+  :root[data-theme="dark"] .playground-panel,
+  :root[data-theme="dark"] .creator-card,
+  :root[data-theme="dark"] .context-badge,
+  :root[data-theme="dark"] .format-card,
+  :root[data-theme="dark"] .metric-card {
+    border-color: var(--gray-700) !important;
+    background: var(--gray-900) !important;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.45), 0 0 0 1px rgba(212,255,0,0.04) !important;
+  }
+
+  :root[data-theme="dark"] .terminal-bar,
+  :root[data-theme="dark"] .anatomy-header,
+  :root[data-theme="dark"] thead,
+  :root[data-theme="dark"] .playground-head {
+    border-color: var(--gray-700) !important;
+    background: var(--gray-800) !important;
+  }
+
+  :root[data-theme="dark"] .why-section,
+  :root[data-theme="dark"] .anatomy-section,
+  :root[data-theme="dark"] .how-section,
+  :root[data-theme="dark"] .irt-section {
+    background: var(--gray-900) !important;
+    border-color: var(--gray-800) !important;
+  }
+
+  :root[data-theme="dark"] .compare-section,
+  :root[data-theme="dark"] .bench-section,
+  :root[data-theme="dark"] .playground-section,
+  :root[data-theme="dark"] .creators-section,
+  :root[data-theme="dark"] footer {
+    background: var(--black) !important;
+    border-color: var(--gray-800) !important;
+  }
+
+  :root[data-theme="dark"] tbody tr,
+  :root[data-theme="dark"] .problem-item,
+  :root[data-theme="dark"] .bh-metric {
+    border-color: var(--gray-800) !important;
+  }
+
+  :root[data-theme="dark"] .prob-icon,
+  :root[data-theme="dark"] .step-icon,
+  :root[data-theme="dark"] .creator-avatar {
+    background: rgba(212,255,0,0.06) !important;
+    border-color: rgba(212,255,0,0.16) !important;
+  }
+
+  :root[data-theme="dark"] .bar-track,
+  :root[data-theme="dark"] .eff-fill {
+    background: var(--gray-800) !important;
+  }
+
+  :root[data-theme="dark"] .bar-fill,
+  :root[data-theme="dark"] .eff-fill::after,
+  :root[data-theme="dark"] .bar-fill.is-mini {
+    background: var(--acid) !important;
+  }
+
+  :root[data-theme="dark"] textarea,
+  :root[data-theme="dark"] input,
+  :root[data-theme="dark"] select,
+  :root[data-theme="dark"] .anatomy-code,
+  :root[data-theme="dark"] .terminal-body {
+    background: var(--black) !important;
+    color: var(--white) !important;
+  }
+
+  :root[data-theme="dark"] .section-label::after,
+  :root[data-theme="dark"] .hero-eyebrow::before {
+    background: var(--acid) !important;
+  }
 </style>
 </head>
 <body>
@@ -1444,7 +1660,7 @@
     <li><a href="#benchmark">Benchmarks</a></li>
     <li><a href="#irt">IRT & Bloom</a></li>
   </ul>
-  <div class="nav-badge">v1.0 SIMA</div>
+  <a class="nav-badge" href="{% url 'home' %}">Volver a SIMA</a>
 </nav>
 
 <!-- HERO -->

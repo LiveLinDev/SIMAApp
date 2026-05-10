@@ -95,6 +95,7 @@
 }
 
 .nav-badge-button,
+.theme-toggle,
 .topnav .nav-pill {
   min-height: 28px !important;
   display: inline-flex;
@@ -114,6 +115,7 @@
 }
 
 .nav-badge-button:hover,
+.theme-toggle:hover,
 .topnav .nav-pill:hover {
   transform: none !important;
   background: var(--acid-hot) !important;
@@ -123,6 +125,10 @@
 
 .topnav .nav-pill {
   margin-left: clamp(10px, 3vw, 40px);
+}
+
+.theme-toggle {
+  margin-left: clamp(6px, 1.5vw, 16px);
 }
 
 .topnav .nav-pill:hover {

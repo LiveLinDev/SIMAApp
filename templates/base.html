@@ -5,6 +5,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}SIMA Learn{% endblock %}</title>
+  <script>
+    (function() {
+      var saved = localStorage.getItem("sima-theme");
+      if (saved === "dark") {
+        document.documentElement.setAttribute("data-theme", "dark");
+      }
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,300&family=Space+Mono:wght@400;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
@@ -51,5 +59,37 @@
       {% block content %}{% endblock %}
     </main>
   </div>
+  <script>
+    (function() {
+      var root = document.documentElement;
+      var buttons = document.querySelectorAll("[data-theme-toggle]");
+
+      function applyTheme(theme) {
+        if (theme === "dark") {
+          root.setAttribute("data-theme", "dark");
+        } else {
+          root.removeAttribute("data-theme");
+        }
+        localStorage.setItem("sima-theme", theme);
+        buttons.forEach(function(button) {
+          var isDark = theme === "dark";
+          button.dataset.themeState = theme;
+          button.setAttribute("aria-label", isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro");
+          if (!button.classList.contains("theme-icon-toggle")) {
+            button.textContent = isDark ? "Claro" : "Oscuro";
+          }
+        });
+      }
+
+      var current = root.getAttribute("data-theme") === "dark" ? "dark" : "light";
+      applyTheme(current);
+
+      buttons.forEach(function(button) {
+        button.addEventListener("click", function() {
+          applyTheme(root.getAttribute("data-theme") === "dark" ? "light" : "dark");
+        });
+      });
+    })();
+  </script>
 </body>
 </html>

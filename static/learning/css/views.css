@@ -2486,3 +2486,293 @@ button.secondary-button:hover {
   background: var(--acid-hot) !important;
   color: #fff !important;
 }
+
+/* Dark mode: .mini-inspired black + neon system. */
+:root[data-theme="dark"] {
+  --page: #0a0a08;
+  --paper: #111110;
+  --paper-tint: #171814;
+  --ink: #fafaf5;
+  --muted: #9a9a90;
+  --quiet: #6f716a;
+  --line: rgba(212, 255, 0, 0.12);
+  --line-strong: rgba(212, 255, 0, 0.24);
+  --acid: #d4ff00;
+  --acid-hot: #aaff00;
+  --lime-200: #ecfca3;
+  --green: var(--acid);
+  --green-dark: var(--acid);
+  --black: #0a0a08;
+  --gray-900: #111110;
+  --gray-850: #171814;
+  --gray-800: #1c1c1a;
+  --gray-700: #2a2a27;
+  --gray-600: #44443d;
+  --gray-500: #5a5a54;
+  --gray-400: #8a8a82;
+  --gray-200: #d4d4cc;
+  --white: #fafaf5;
+  --surface: #111110;
+  --surface-2: #151512;
+  --soft: rgba(212, 255, 0, 0.08);
+  --shadow: rgba(0, 0, 0, 0.55);
+  --glow: rgba(212, 255, 0, 0.22);
+}
+
+:root[data-theme="dark"] body {
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 84% 8%, rgba(212, 255, 0, 0.18), transparent 25%),
+    radial-gradient(circle at 8% 76%, rgba(212, 255, 0, 0.08), transparent 28%),
+    linear-gradient(180deg, #0a0a08, #0d0d0b 58%, #0a0a08) !important;
+}
+
+:root[data-theme="dark"] body::before {
+  opacity: 1;
+  background:
+    linear-gradient(90deg, rgba(212, 255, 0, 0.055) 1px, transparent 1px),
+    linear-gradient(rgba(212, 255, 0, 0.045) 1px, transparent 1px) !important;
+  background-size: 60px 60px !important;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.92), rgba(0, 0, 0, 0.52) 64%, transparent 96%) !important;
+}
+
+:root[data-theme="dark"] .topbar {
+  border-bottom-color: rgba(212, 255, 0, 0.12) !important;
+  background: rgba(10, 10, 8, 0.96) !important;
+}
+
+:root[data-theme="dark"] .brand,
+:root[data-theme="dark"] .brand-dot,
+:root[data-theme="dark"] .topnav a,
+:root[data-theme="dark"] .topnav button,
+:root[data-theme="dark"] .topnav a:not(.nav-pill),
+:root[data-theme="dark"] .topnav .nav-pill,
+:root[data-theme="dark"] .nav-badge-button,
+:root[data-theme="dark"] .theme-toggle {
+  color: var(--acid) !important;
+}
+
+:root[data-theme="dark"] .brand-slash {
+  color: rgba(250, 250, 245, 0.46) !important;
+}
+
+:root[data-theme="dark"] .topnav a:not(.nav-pill) {
+  color: rgba(250, 250, 245, 0.52) !important;
+}
+
+:root[data-theme="dark"] .topnav a:not(.nav-pill):hover,
+:root[data-theme="dark"] .topnav .nav-link.is-active {
+  color: var(--acid) !important;
+  box-shadow: inset 0 -1px 0 var(--acid) !important;
+}
+
+:root[data-theme="dark"] .nav-badge-button,
+:root[data-theme="dark"] .theme-toggle,
+:root[data-theme="dark"] .topnav .nav-pill {
+  background: var(--acid) !important;
+  color: var(--black) !important;
+}
+
+:root[data-theme="dark"] .nav-badge-button:hover,
+:root[data-theme="dark"] .theme-toggle:hover,
+:root[data-theme="dark"] .topnav .nav-pill:hover,
+:root[data-theme="dark"] .primary-button:hover,
+:root[data-theme="dark"] .secondary-button:hover,
+:root[data-theme="dark"] .lesson-cta:hover,
+:root[data-theme="dark"] .link-button:hover,
+:root[data-theme="dark"] .copy-btn:hover,
+:root[data-theme="dark"] .view-btn:hover,
+:root[data-theme="dark"] .advanced-btn:hover,
+:root[data-theme="dark"] .icon-btn:hover,
+:root[data-theme="dark"] .sidebar-action:hover,
+:root[data-theme="dark"] .dashboard-view-trigger:hover {
+  border-color: var(--acid-hot) !important;
+  background: var(--acid-hot) !important;
+  color: var(--black) !important;
+}
+
+:root[data-theme="dark"] .topbar,
+:root[data-theme="dark"] .dashboard-sidebar,
+:root[data-theme="dark"] .dashboard-hero,
+:root[data-theme="dark"] .dashboard-strip,
+:root[data-theme="dark"] .dashboard-strip article,
+:root[data-theme="dark"] .hero-summary,
+:root[data-theme="dark"] .hero-summary article,
+:root[data-theme="dark"] .form-card,
+:root[data-theme="dark"] .product-preview,
+:root[data-theme="dark"] .course-card,
+:root[data-theme="dark"] .lesson-card,
+:root[data-theme="dark"] .plan-card,
+:root[data-theme="dark"] .pricing-card,
+:root[data-theme="dark"] .bento-card,
+:root[data-theme="dark"] .map-board,
+:root[data-theme="dark"] .empty-dashboard,
+:root[data-theme="dark"] .settings-form,
+:root[data-theme="dark"] .settings-list article,
+:root[data-theme="dark"] .weekday,
+:root[data-theme="dark"] .session-row,
+:root[data-theme="dark"] .course-preview-panel,
+:root[data-theme="dark"] .course-code-card,
+:root[data-theme="dark"] .course-setup-list,
+:root[data-theme="dark"] .course-create-hero,
+:root[data-theme="dark"] .study-meta-card,
+:root[data-theme="dark"] .intensity-card,
+:root[data-theme="dark"] .history-card,
+:root[data-theme="dark"] .ranking-card,
+:root[data-theme="dark"] .advanced-panel,
+:root[data-theme="dark"] .output-block,
+:root[data-theme="dark"] .step-card,
+:root[data-theme="dark"] .status-card,
+:root[data-theme="dark"] .modal-content {
+  border-color: rgba(212, 255, 0, 0.12) !important;
+  background:
+    linear-gradient(145deg, rgba(17, 17, 16, 0.92), rgba(10, 10, 8, 0.82)) !important;
+  color: var(--ink) !important;
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.42) !important;
+}
+
+:root[data-theme="dark"] .dashboard-hero::before,
+:root[data-theme="dark"] .course-create-hero::before,
+:root[data-theme="dark"] .product-preview::before,
+:root[data-theme="dark"] .map-board::before,
+:root[data-theme="dark"] .preview-grid-lines {
+  background-image:
+    linear-gradient(rgba(212, 255, 0, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(212, 255, 0, 0.045) 1px, transparent 1px) !important;
+}
+
+:root[data-theme="dark"] .hero-copy h1,
+:root[data-theme="dark"] .section-toolbar h2,
+:root[data-theme="dark"] .course-card h3,
+:root[data-theme="dark"] .dashboard-lesson-card h3,
+:root[data-theme="dark"] .empty-dashboard h3,
+:root[data-theme="dark"] .session-list h3,
+:root[data-theme="dark"] .section-narrative h2,
+:root[data-theme="dark"] .landing-copy h1,
+:root[data-theme="dark"] .course-create-hero h1,
+:root[data-theme="dark"] label,
+:root[data-theme="dark"] .sidebar-profile h2,
+:root[data-theme="dark"] .plan-price,
+:root[data-theme="dark"] .plan-card h2,
+:root[data-theme="dark"] .lesson-card h3,
+:root[data-theme="dark"] .history-card h3,
+:root[data-theme="dark"] .ranking-card h3,
+:root[data-theme="dark"] .intensity-card h3,
+:root[data-theme="dark"] .advanced-header h3,
+:root[data-theme="dark"] .pipeline-status h2,
+:root[data-theme="dark"] .step-card h3,
+:root[data-theme="dark"] .output-block h3,
+:root[data-theme="dark"] .output-block h4 {
+  color: var(--ink) !important;
+}
+
+:root[data-theme="dark"] .hero-copy h1 span,
+:root[data-theme="dark"] .course-create-hero h1 span {
+  -webkit-text-stroke-color: var(--acid) !important;
+}
+
+:root[data-theme="dark"] .eyebrow,
+:root[data-theme="dark"] .section-label,
+:root[data-theme="dark"] .hero-summary strong,
+:root[data-theme="dark"] .dashboard-strip strong,
+:root[data-theme="dark"] .course-hero-stats strong,
+:root[data-theme="dark"] .stat-card strong,
+:root[data-theme="dark"] .status-card strong,
+:root[data-theme="dark"] .sidebar-plan a,
+:root[data-theme="dark"] .settings-list a,
+:root[data-theme="dark"] .feature-grid span,
+:root[data-theme="dark"] .recommended,
+:root[data-theme="dark"] .plan-note,
+:root[data-theme="dark"] .mini-opt-correct,
+:root[data-theme="dark"] .course-code-body b,
+:root[data-theme="dark"] .course-signal strong,
+:root[data-theme="dark"] .preview-kicker,
+:root[data-theme="dark"] .bento-label {
+  color: var(--acid) !important;
+}
+
+:root[data-theme="dark"] .eyebrow::before,
+:root[data-theme="dark"] .section-label::before,
+:root[data-theme="dark"] .course-hero-copy .eyebrow::before,
+:root[data-theme="dark"] .map-line,
+:root[data-theme="dark"] .summary-lines i,
+:root[data-theme="dark"] .theta-meter span,
+:root[data-theme="dark"] .progress span,
+:root[data-theme="dark"] .progress-fill,
+:root[data-theme="dark"] .preview-progress span {
+  background: var(--acid) !important;
+}
+
+:root[data-theme="dark"] .primary-button,
+:root[data-theme="dark"] .lesson-cta,
+:root[data-theme="dark"] .course-hero-actions .primary-button,
+:root[data-theme="dark"] .recommended,
+:root[data-theme="dark"] .map-node span,
+:root[data-theme="dark"] .step-number,
+:root[data-theme="dark"] .step-num {
+  border-color: var(--acid) !important;
+  background: var(--acid) !important;
+  color: var(--black) !important;
+  box-shadow: 0 12px 30px rgba(212, 255, 0, 0.22) !important;
+}
+
+:root[data-theme="dark"] .secondary-button,
+:root[data-theme="dark"] .link-button,
+:root[data-theme="dark"] .copy-btn,
+:root[data-theme="dark"] .view-btn,
+:root[data-theme="dark"] .advanced-btn,
+:root[data-theme="dark"] .icon-btn,
+:root[data-theme="dark"] .dash-tab,
+:root[data-theme="dark"] .dashboard-view-trigger,
+:root[data-theme="dark"] .sidebar-action,
+:root[data-theme="dark"] .intensity-btn,
+:root[data-theme="dark"] .share-option,
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] textarea,
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] pre,
+:root[data-theme="dark"] .mini-raw,
+:root[data-theme="dark"] .share-link-box,
+:root[data-theme="dark"] .empty-state-mini,
+:root[data-theme="dark"] .preview-toolbar,
+:root[data-theme="dark"] .preview-sidebar,
+:root[data-theme="dark"] .course-code-toolbar,
+:root[data-theme="dark"] .terminal-bar,
+:root[data-theme="dark"] .course-flow div,
+:root[data-theme="dark"] .course-setup-list div,
+:root[data-theme="dark"] .preview-cards article {
+  border-color: rgba(212, 255, 0, 0.12) !important;
+  background: rgba(255, 255, 255, 0.035) !important;
+  color: var(--ink) !important;
+}
+
+:root[data-theme="dark"] .trust-row span,
+:root[data-theme="dark"] .tag-row span,
+:root[data-theme="dark"] .tag-row a,
+:root[data-theme="dark"] .tag-cloud a,
+:root[data-theme="dark"] .course-card-head span,
+:root[data-theme="dark"] .course-card-head small,
+:root[data-theme="dark"] .plan-badge,
+:root[data-theme="dark"] .study-badge,
+:root[data-theme="dark"] .visibility-badge,
+:root[data-theme="dark"] .streak,
+:root[data-theme="dark"] .bento-label,
+:root[data-theme="dark"] .preview-kicker,
+:root[data-theme="dark"] .course-preview-panel .study-badge,
+:root[data-theme="dark"] .dashboard-view-trigger.is-active,
+:root[data-theme="dark"] .sidebar-plan,
+:root[data-theme="dark"] .weekday.is-active,
+:root[data-theme="dark"] .map-node,
+:root[data-theme="dark"] .setup-list li {
+  border-color: rgba(212, 255, 0, 0.42) !important;
+  background: rgba(212, 255, 0, 0.08) !important;
+  color: var(--ink) !important;
+}
+
+:root[data-theme="dark"] .preview-sidebar .active,
+:root[data-theme="dark"] .view-btn--active,
+:root[data-theme="dark"] .dash-tab--active,
+:root[data-theme="dark"] .tag-cloud a.is-active {
+  background: var(--acid) !important;
+  color: var(--black) !important;
+}

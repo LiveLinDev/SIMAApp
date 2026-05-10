@@ -6,7 +6,13 @@
   <aside class="dashboard-sidebar" aria-label="Panel de usuario">
     <div class="sidebar-profile">
       <div>
-        <p class="eyebrow">Cuenta activa</p>
+        <div class="account-topline">
+          <p class="eyebrow">Cuenta activa</p>
+          <button class="theme-icon-toggle" type="button" aria-label="Cambiar modo" data-theme-toggle>
+            <span class="theme-sun" aria-hidden="true"></span>
+            <span class="theme-moon" aria-hidden="true"></span>
+          </button>
+        </div>
         <h2>{{ user.username }}</h2>
         <span>{{ profile.get_plan_display }} - Nivel {{ profile.level }}</span>
       </div>
@@ -1285,6 +1291,74 @@
       border-right: 0;
       border-bottom: 1px solid rgba(20,24,18,.10);
     }
+  }
+
+  .account-topline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-width: 0;
+    margin-bottom: 5px;
+  }
+
+  .account-topline .eyebrow {
+    flex: 1;
+    min-width: 0;
+    margin: 0 !important;
+  }
+
+  .theme-icon-toggle {
+    width: 46px;
+    height: 24px;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 3px;
+    border: 1px solid rgba(20, 24, 18, .16);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .86);
+    padding: 3px;
+    cursor: pointer;
+    transition: background .18s ease, border-color .18s ease, box-shadow .18s ease;
+  }
+
+  .theme-icon-toggle span {
+    width: 14px;
+    height: 14px;
+    display: block;
+    border-radius: 50%;
+  }
+
+  .theme-sun {
+    background: var(--acid);
+    box-shadow: 0 0 0 2px rgba(217, 52, 36, .14);
+  }
+
+  .theme-moon {
+    background: #111110;
+    box-shadow: inset 4px 0 0 rgba(255, 255, 255, .86);
+  }
+
+  .theme-icon-toggle:hover {
+    border-color: var(--acid-hot);
+    box-shadow: 0 0 0 3px rgba(217, 52, 36, .10);
+  }
+
+  .theme-icon-toggle[data-theme-state="dark"] {
+    border-color: rgba(212, 255, 0, .36);
+    background: rgba(255, 255, 255, .06);
+  }
+
+  .theme-icon-toggle[data-theme-state="dark"] .theme-sun {
+    background: rgba(250, 250, 245, .50);
+    box-shadow: none;
+  }
+
+  .theme-icon-toggle[data-theme-state="dark"] .theme-moon {
+    background: var(--acid);
+    box-shadow: 0 0 12px rgba(212, 255, 0, .55);
   }
 </style>
 

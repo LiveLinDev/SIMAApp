@@ -2,6 +2,7 @@ from pathlib import Path
 import csv
 import difflib
 import json
+import math
 import re
 from html import unescape
 from html.parser import HTMLParser
@@ -117,6 +118,15 @@ def chunk_content(text: str, max_words: int = 2000) -> list[str]:
 
     for para in paragraphs:
         para_words = len(para.split())
+        if para_words > max_words:
+            if current:
+                chunks.append("\n\n".join(current))
+                current = []
+                current_words = 0
+            words = para.split()
+            for start in range(0, len(words), max_words):
+                chunks.append(" ".join(words[start:start + max_words]))
+            continue
         if current_words + para_words > max_words and current:
             chunks.append("\n\n".join(current))
             current = [para]
@@ -131,7 +141,144 @@ def chunk_content(text: str, max_words: int = 2000) -> list[str]:
     return chunks if chunks else [text]
 
 
-def generate_items(content: str, backend: str = "auto", language="es", items_requested=None) -> tuple[str, str, str]:
+def parse_items_requested(items_requested) -> int | None:
+    if items_requested is None:
+        return None
+    if isinstance(items_requested, int):
+        return items_requested if items_requested > 0 else None
+    value = str(items_requested).strip().lower()
+    if not value or value == "auto":
+        return None
+    match = re.search(r"\d+", value)
+    if not match:
+        return None
+    parsed = int(match.group(0))
+    return parsed if parsed > 0 else None
+
+
+def clamp_int(value: int, minimum: int, maximum: int) -> int:
+    return max(minimum, min(maximum, int(value)))
+
+
+def estimate_adaptive_item_count(content_or_words, items_requested=None) -> int:
+    """
+    Calcula el tamano del banco IRT. Clases cortas quedan en 5-20 items;
+    clases grandes crecen hasta 100-150 items sin pedir tokens sin contenido.
+    """
+    minimum = max(1, int(getattr(settings, "LOCAL_MIN_ITEMS", 5)))
+    maximum = max(minimum, int(getattr(settings, "LOCAL_MAX_ITEMS", 150)))
+    explicit = parse_items_requested(items_requested)
+    if explicit:
+        return clamp_int(explicit, minimum, maximum)
+
+    if isinstance(content_or_words, int):
+        word_count = max(0, content_or_words)
+    else:
+        word_count = len((content_or_words or "").split())
+
+    if word_count <= 0:
+        return minimum
+    if word_count <= 80:
+        target = minimum
+    elif word_count <= 250:
+        target = math.ceil(word_count / 35)
+    elif word_count <= 600:
+        target = math.ceil(word_count / 50)
+    elif word_count <= 1200:
+        target = math.ceil(word_count / 65)
+    elif word_count <= 2500:
+        target = math.ceil(word_count / 75)
+    elif word_count <= 5000:
+        target = math.ceil(word_count / 85)
+    elif word_count <= 9000:
+        target = math.ceil(word_count / 95)
+    else:
+        target = math.ceil(word_count / 110)
+    return clamp_int(target, minimum, maximum)
+
+
+def generation_chunk_plan(content: str, backend: str, items_requested=None) -> tuple[list[str], list[int], int]:
+    word_count = len((content or "").split())
+    total_items = estimate_adaptive_item_count(word_count, items_requested=items_requested)
+    chunk_words = max(300, int(getattr(settings, "LOCAL_CHUNK_WORDS", 2000)))
+    per_chunk_setting = "CLOUD_ITEMS_PER_CHUNK_MAX" if backend == "anthropic" else "LOCAL_ITEMS_PER_CHUNK_MAX"
+    fallback_per_chunk = 32 if backend == "anthropic" else 22
+    per_chunk_max = max(5, int(getattr(settings, per_chunk_setting, fallback_per_chunk)))
+
+    chunks = chunk_content(content, max_words=chunk_words)
+    needed_by_items = max(1, math.ceil(total_items / per_chunk_max))
+    if needed_by_items > len(chunks):
+        adjusted_words = max(300, math.ceil(max(word_count, 1) / needed_by_items))
+        chunks = chunk_content(content, max_words=min(chunk_words, adjusted_words))
+
+    budgets = allocate_item_budget(chunks, total_items, per_chunk_max=per_chunk_max)
+    return chunks, budgets, sum(budgets)
+
+
+def allocate_item_budget(chunks: list[str], total_items: int, per_chunk_max: int) -> list[int]:
+    if not chunks:
+        return []
+    if len(chunks) == 1:
+        return [min(total_items, per_chunk_max)]
+
+    min_per_chunk = 3 if total_items >= len(chunks) * 3 else 1
+    word_counts = [max(1, len(chunk.split())) for chunk in chunks]
+    total_words = sum(word_counts)
+    capacity = per_chunk_max * len(chunks)
+    target = min(total_items, capacity)
+    raw = [target * (words / total_words) for words in word_counts]
+    budgets = [
+        min(per_chunk_max, max(min_per_chunk, math.floor(value)))
+        for value in raw
+    ]
+
+    while sum(budgets) < target:
+        candidates = sorted(
+            range(len(budgets)),
+            key=lambda idx: (
+                budgets[idx] >= per_chunk_max,
+                budgets[idx],
+                -(raw[idx] - math.floor(raw[idx])),
+                -word_counts[idx],
+            ),
+        )
+        changed = False
+        for idx in candidates:
+            if budgets[idx] < per_chunk_max:
+                budgets[idx] += 1
+                changed = True
+                break
+        if not changed:
+            break
+
+    while sum(budgets) > target:
+        candidates = sorted(
+            range(len(budgets)),
+            key=lambda idx: (budgets[idx] <= min_per_chunk, word_counts[idx], budgets[idx]),
+        )
+        changed = False
+        for idx in candidates:
+            if budgets[idx] > min_per_chunk:
+                budgets[idx] -= 1
+                changed = True
+                break
+        if not changed:
+            break
+
+    return budgets
+
+
+def call_generation_prompt(prompt: str, backend: str) -> str:
+    call_prompt = prompt + "\n/no_think" if backend == "local" else prompt
+    return call_ai(call_prompt, backend=backend, role="generation")
+
+
+def count_mini_items(raw_output: str) -> int:
+    mini = extract_mini_lines(raw_output)
+    return len(re.findall(r"^i\d+\|", mini, flags=re.M))
+
+
+def _generate_items_legacy(content: str, backend: str = "auto", language="es", items_requested=None) -> tuple[str, str, str]:
     """
     Genera ítems IRT desde el contenido.
 
@@ -183,19 +330,92 @@ def generate_items(content: str, backend: str = "auto", language="es", items_req
     return combined_prompt, merged, backend
 
 
+def generate_items(content: str, backend: str = "auto", language="es", items_requested=None) -> tuple[str, str, str]:
+    """
+    Genera bancos MINI con un presupuesto adaptativo y llamadas stateless.
+    Cada chunk recibe un objetivo numerico pequeno para evitar salidas truncadas.
+    """
+    backend = resolve_backend(backend)
+    configured_items = items_requested or getattr(settings, "LOCAL_ITEMS_REQUESTED", "auto")
+    chunks, budgets, total_items = generation_chunk_plan(content, backend, items_requested=configured_items)
+
+    if len(chunks) == 1:
+        prompt = build_generation_prompt(content, language=language, items_requested=budgets[0])
+        result = call_generation_prompt(prompt, backend=backend)
+        if count_mini_items(result) < max(3, math.floor(budgets[0] * 0.75)):
+            retry_prompt = (
+                f"{prompt}\n\n"
+                f"REFUERZO: la respuesta debe contener exactamente {budgets[0]} lineas i<N>|. "
+                "No reduzcas el banco si hay conceptos evaluables suficientes."
+            )
+            retry_result = call_generation_prompt(retry_prompt, backend=backend)
+            if count_mini_items(retry_result) > count_mini_items(result):
+                prompt = retry_prompt
+                result = retry_result
+        return prompt, result, backend
+
+    all_prompts = []
+    all_minis = []
+    for i, (chunk, chunk_items) in enumerate(zip(chunks, budgets), 1):
+        chunk_info = (
+            f"{i} de {len(chunks)}; objetivo_global={total_items}; "
+            f"objetivo_chunk={chunk_items}; generar exactamente {chunk_items} items unicos"
+        )
+        prompt = build_generation_prompt(
+            chunk,
+            language=language,
+            items_requested=chunk_items,
+            chunk_info=chunk_info,
+        )
+        mini = call_generation_prompt(prompt, backend=backend)
+        if count_mini_items(mini) < max(3, math.floor(chunk_items * 0.75)):
+            retry_prompt = (
+                f"{prompt}\n\n"
+                f"REFUERZO: este chunk debe contener exactamente {chunk_items} lineas i<N>|. "
+                "Cubre conceptos distintos del fragmento y evita repetir enunciados."
+            )
+            retry_mini = call_generation_prompt(retry_prompt, backend=backend)
+            if count_mini_items(retry_mini) > count_mini_items(mini):
+                prompt = retry_prompt
+                mini = retry_mini
+        all_prompts.append(f"--- chunk {i}/{len(chunks)} ---\n{prompt}")
+        all_minis.append(mini)
+
+    merged = _get_merge_fn()(all_minis)
+    plan_header = (
+        f"--- generation plan ---\n"
+        f"backend={backend}\n"
+        f"target_items={total_items}\n"
+        f"chunks={len(chunks)}\n"
+        f"chunk_item_budgets={','.join(str(value) for value in budgets)}"
+    )
+    combined_prompt = "\n\n".join([plan_header, *all_prompts])
+    return combined_prompt, merged, backend
+
+
 def get_available_backends() -> dict:
     """
     Devuelve que backends de IA estan disponibles.
     - anthropic: True si ANTHROPIC_API_KEY existe y NO es "local"
     - local:     True siempre, asumiendo API compatible con OpenAI en LOCAL_API_BASE
     """
-    key = (settings.ANTHROPIC_API_KEY or "").strip()
-    anthropic_real = bool(key) and key.lower() != "local"
+    anthropic_real = is_real_anthropic_key(settings.ANTHROPIC_API_KEY)
     return {
         "anthropic": anthropic_real,
         "local": True,
         "default": "anthropic" if anthropic_real else "local",
     }
+
+
+def is_real_anthropic_key(key: str | None) -> bool:
+    value = (key or "").strip()
+    if not value:
+        return False
+    lowered = value.lower()
+    if lowered in {"local", "none", "null", "false", "0", "change-me", "changeme"}:
+        return False
+    placeholder_markers = ("tu_clave", "your_", "example", "placeholder")
+    return not any(marker in lowered for marker in placeholder_markers)
 
 
 def resolve_backend(backend: str = "auto") -> str:

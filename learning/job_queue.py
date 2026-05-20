@@ -10,8 +10,10 @@ from .models import ClassSession, LessonJob, Profile, Transcript
 from .parse_mini import apply_corrections_with_trace, normalize_mini_text, validate_mini_parse
 from .services import (
     clean_ai_error,
+    count_mini_items,
     extract_mini_lines,
     generate_items,
+    generation_chunk_plan,
     mini_item_change_summary,
     repair_mini_coherence,
     repair_transcript_text,
@@ -26,7 +28,7 @@ logger = logging.getLogger(__name__)
 _queue = Queue(maxsize=getattr(settings, "LOCAL_TASK_QUEUE_MAXSIZE", 20))
 _lock = threading.Lock()
 _queued_ids = set()
-_worker_started = False
+_workers_started = 0
 
 
 def enqueue_lesson_job(job_id: int, backend: str = "auto"):
@@ -42,13 +44,17 @@ def enqueue_lesson_job(job_id: int, backend: str = "auto"):
 
 
 def ensure_worker():
-    global _worker_started
+    global _workers_started
     with _lock:
-        if _worker_started:
-            return
-        worker = threading.Thread(target=_worker_loop, name="sima-local-ai-worker", daemon=True)
-        worker.start()
-        _worker_started = True
+        target_workers = max(1, int(getattr(settings, "LOCAL_TASK_WORKERS", 1)))
+        while _workers_started < target_workers:
+            worker = threading.Thread(
+                target=_worker_loop,
+                name=f"sima-local-ai-worker-{_workers_started + 1}",
+                daemon=True,
+            )
+            worker.start()
+            _workers_started += 1
 
 
 def _worker_loop():
@@ -88,7 +94,21 @@ def process_lesson_job(job_id: int, backend: str = "auto"):
         if not content:
             raise RuntimeError("Agrega texto o sube un audio para transcribir.")
 
-        _set_stage(job, "Generando items con IA", f"Backend solicitado: {requested_backend}. EduQG no se usa en el generador MINI.")
+        word_count = len(content.split())
+        configured_items = getattr(settings, "LOCAL_ITEMS_REQUESTED", "auto")
+        chunks, budgets, planned_items = generation_chunk_plan(
+            content,
+            requested_backend,
+            items_requested=configured_items,
+        )
+        _set_stage(
+            job,
+            "Generando items con IA",
+            (
+                f"Backend: {requested_backend}. {word_count} palabras -> objetivo {planned_items} items "
+                f"en {len(chunks)} llamadas ({', '.join(str(value) for value in budgets)})."
+            ),
+        )
         generation_prompt, toon_output, resolved_backend = generate_items(content, backend=requested_backend)
         toon_output, item_count = _compile_mini_for_render(toon_output, "Generacion MINI")
         job.generation_prompt = generation_prompt
@@ -263,6 +283,20 @@ def _auto_repair_mini_coherence(job: LessonJob):
         return
 
     before = job.toon_output
+    item_count = count_mini_items(before)
+    max_items = max(0, int(getattr(settings, "LOCAL_COHERENCE_MAX_ITEMS", 60)))
+    if max_items and item_count > max_items:
+        job.processing_log = _append_log(
+            job.processing_log,
+            "Coherencia MINI por lotes",
+            (
+                f"Banco grande ({item_count} items). Se evita una llamada monolitica local; "
+                "la verificacion final revisara el banco completo."
+            ),
+        )
+        job.save(update_fields=["processing_log", "updated_at"])
+        return
+
     _set_stage(
         job,
         "Revisando coherencia de items con IA local",

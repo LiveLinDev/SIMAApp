@@ -16,7 +16,7 @@
   {% if mode == "api" %}
   {% if credit_estimate %}
   <div class="message">
-    Esta clase consumira aproximadamente {{ credit_estimate.amount }} creditos si usas audio y generacion completa.
+    Esta clase consumira desde {{ credit_estimate.amount }} creditos si usas audio y generacion completa.
   </div>
   {% endif %}
 
@@ -39,6 +39,47 @@
     {{ form.tags.errors }}
     <small class="field-hint">Opcional: separalas con comas.</small>
   </p>
+
+  <fieldset class="backend-selector backend-selector--primary">
+    <legend class="backend-label">Donde quieres generar?</legend>
+    <p class="backend-note">Qwen local usa tu equipo. Nube Claude consume mas creditos y solo se activa con ANTHROPIC_API_KEY configurada.</p>
+    <div class="backend-options">
+      <label class="backend-option" id="lbl-local">
+        <input type="radio" name="backend" value="local"
+          {% if backends.default == 'local' %}checked{% endif %}
+          onchange="updateBackendUI()">
+        <span class="backend-card">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/>
+          </svg>
+          <span>
+            <strong>Local Qwen</strong>
+            <small>{{ local_model }} · {{ local_credit_estimate.amount }} creditos aprox.</small>
+          </span>
+        </span>
+      </label>
+
+      <label class="backend-option {% if not backends.anthropic %}backend-option--disabled{% endif %}" id="lbl-anthropic">
+        <input type="radio" name="backend" value="anthropic"
+          {% if backends.default == 'anthropic' %}checked{% endif %}
+          {% if not backends.anthropic %}disabled{% endif %}
+          onchange="updateBackendUI()">
+        <span class="backend-card">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+          </svg>
+          <span>
+            <strong>Nube Claude</strong>
+            {% if backends.anthropic %}
+              <small>{{ cloud_credit_estimate.amount }} creditos aprox.; usa mas creditos.</small>
+            {% else %}
+              <small class="disabled-note">Deshabilitado: falta configurar Claude</small>
+            {% endif %}
+          </span>
+        </span>
+      </label>
+    </div>
+  </fieldset>
 
   <fieldset class="input-mode-selector">
     <legend class="backend-label">Que vas a usar?</legend>
@@ -125,49 +166,6 @@
       Ajustes
     </summary>
     <div class="advanced-settings__body">
-  <fieldset class="backend-selector">
-    <legend class="backend-label">Generador</legend>
-    <p class="backend-note">Solo cambia esto si quieres elegir el servicio.</p>
-    <div class="backend-options">
-
-      <label class="backend-option {% if not backends.anthropic %}backend-option--disabled{% endif %}" id="lbl-anthropic">
-        <input type="radio" name="backend" value="anthropic"
-          {% if backends.default == 'anthropic' %}checked{% endif %}
-          {% if not backends.anthropic %}disabled{% endif %}
-          onchange="updateBackendUI()">
-        <span class="backend-card">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
-          </svg>
-          <span>
-            <strong>Anthropic Claude</strong>
-            {% if backends.anthropic %}
-              <small>Disponible</small>
-            {% else %}
-              <small class="disabled-note">No configurado</small>
-            {% endif %}
-          </span>
-        </span>
-      </label>
-
-      <label class="backend-option" id="lbl-local">
-        <input type="radio" name="backend" value="local"
-          {% if backends.default == 'local' %}checked{% endif %}
-          onchange="updateBackendUI()">
-        <span class="backend-card">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/>
-          </svg>
-          <span>
-            <strong>Equipo local</strong>
-            <small>Usar configuracion local</small>
-          </span>
-        </span>
-      </label>
-
-    </div>
-  </fieldset>
-
   <fieldset class="backend-selector" id="verification-selector">
     <legend class="backend-label">Revision final</legend>
     <p class="backend-note">Controla como se revisan las preguntas antes de guardar.</p>
@@ -240,6 +238,13 @@
 {% if mode == "api" %}
 <style>
   .backend-selector { margin: 20px 0; border: none; padding: 0; }
+  .backend-selector--primary {
+    margin: 2px 0 10px;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, .025);
+  }
   .input-mode-selector { margin: 6px 0 10px; border: none; padding: 0; }
   .backend-label { font-weight: 600; margin: 0 0 4px; font-size: .9rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; display: block; }
   .backend-note { margin: 0 0 12px; font-size: .8rem; color: var(--muted); padding: 8px 12px; background: var(--soft); border-radius: 8px; border-left: 3px solid var(--blue); }
@@ -249,13 +254,14 @@
   .backend-option input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
   .backend-card {
     display: flex; align-items: center; gap: 12px;
-    padding: 14px 16px; border-radius: 12px; border: 2px solid var(--line);
+    padding: 14px 16px; border-radius: 8px; border: 2px solid var(--line);
     background: var(--surface); transition: all .2s;
   }
   .backend-option input:checked + .backend-card { border-color: var(--green); background: #f0fce8; }
   .backend-card:hover { border-color: var(--green); }
   .backend-card svg { flex-shrink: 0; color: var(--muted); }
-  .backend-option input:checked + .backend-card svg { color: var(--green-dark); }  .backend-card strong { display: block; font-size: .95rem; }
+  .backend-option input:checked + .backend-card svg { color: var(--green-dark); }
+  .backend-card strong { display: block; font-size: .95rem; }
   .backend-card small { display: block; font-size: .78rem; color: var(--muted); margin-top: 2px; }
   .backend-option--disabled { opacity: .5; cursor: not-allowed; }
   .backend-option--disabled .backend-card:hover { border-color: var(--line); }

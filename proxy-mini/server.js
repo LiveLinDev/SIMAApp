@@ -55,6 +55,18 @@ const TARGET_PORT = SIMA_PC === "erick" ? REMOTE_TARGET_PORT : LOCAL_TARGET_PORT
 const REWRITE_HOST = envBool("PROXY_REWRITE_HOST", false);
 
 const server = http.createServer((req, res) => {
+  if (req.url === "/_proxy/health") {
+    res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+    res.end(
+      JSON.stringify({
+        ok: true,
+        proxy: `0.0.0.0:${PORT}`,
+        target: `${TARGET_HOST}:${TARGET_PORT}`,
+      })
+    );
+    return;
+  }
+
   const headers = { ...req.headers };
   if (REWRITE_HOST) {
     headers.host = `${TARGET_HOST}:${TARGET_PORT}`;
@@ -80,6 +92,7 @@ const server = http.createServer((req, res) => {
       JSON.stringify({
         error: `No se pudo conectar con el servidor en ${TARGET_HOST}:${TARGET_PORT}.`,
         detail: err.message,
+        hint: "Ejecuta start-all.bat para cerrar puertos viejos y levantar Django antes del proxy.",
       })
     );
   });

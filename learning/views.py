@@ -238,7 +238,9 @@ def api_lesson(request):
         return redirect("course_create")
     if request.method == "POST":
         form = ApiLessonForm(request.POST, request.FILES, user=request.user)
-        backend = request.POST.get("backend", "auto")
+        backend = _normalize_ai_backend_choice(request.POST.get("backend"), backends)
+        if request.POST.get("backend") == "anthropic" and backend != "anthropic":
+            messages.info(request, "Claude en nube no esta configurado; se usara Qwen local.")
         verification_mode = request.POST.get("verification_mode") or getattr(settings, "VERIFICATION_DEFAULT_MODE", "web")
         if form.is_valid():
             job = form.save(commit=False)
@@ -253,6 +255,7 @@ def api_lesson(request):
             estimate = estimate_lesson_job_cost(
                 has_audio=bool(request.FILES.get("audio")),
                 has_text=bool(form.cleaned_data.get("source_text", "").strip()),
+                backend=backend,
             )
             if not has_enough_credits(profile, estimate.amount):
                 messages.warning(
@@ -292,7 +295,9 @@ def api_lesson(request):
         "form": form, "mode": "api", "profile": profile, "backends": backends,
         "local_model": getattr(settings, "LOCAL_MODEL", None) or getattr(settings, "ANTHROPIC_MODEL", "local"),
         "verification_default_mode": getattr(settings, "VERIFICATION_DEFAULT_MODE", "web"),
-        "credit_estimate": estimate_lesson_job_cost(has_audio=True, has_text=True),
+        "credit_estimate": estimate_lesson_job_cost(has_audio=True, has_text=True, backend=backends["default"]),
+        "local_credit_estimate": estimate_lesson_job_cost(has_audio=True, has_text=True, backend="local"),
+        "cloud_credit_estimate": estimate_lesson_job_cost(has_audio=True, has_text=True, backend="anthropic"),
     })
 
 
@@ -344,6 +349,8 @@ def lesson_detail(request, pk):
         "pipeline_step": pipeline_step,
         "pipeline_total": pipeline_total,
         "is_owner": job.user_id == request.user.id,
+        "backends": get_available_backends(),
+        "local_model": getattr(settings, "LOCAL_MODEL", None) or getattr(settings, "ANTHROPIC_MODEL", "local"),
     })
 
 
@@ -496,7 +503,10 @@ def retry_api_lesson(request, pk):
         messages.warning(request, "Tu plan actual no tiene clases API disponibles.")
         return redirect("plans")
 
-    backend = request.POST.get("backend", "auto")
+    backends = get_available_backends()
+    backend = _normalize_ai_backend_choice(request.POST.get("backend"), backends)
+    if request.POST.get("backend") == "anthropic" and backend != "anthropic":
+        messages.info(request, "Claude en nube no esta configurado; se reintentara con Qwen local.")
     verification_mode = request.POST.get("verification_mode") or job.verification_mode
     if not has_enough_credits(profile, REGENERATION_COST):
         messages.warning(request, f"Necesitas {REGENERATION_COST} creditos para regenerar esta clase.")
@@ -819,6 +829,25 @@ def download_json(request, pk):
     )
     response["Content-Disposition"] = f'attachment; filename="clase-{job.pk}.json"'
     return response
+
+
+def _normalize_ai_backend_choice(backend: str | None, backends: dict) -> str:
+    value = (backend or "auto").strip().lower()
+    aliases = {
+        "cloud": "anthropic",
+        "claude": "anthropic",
+        "nube": "anthropic",
+        "qwen": "local",
+        "local_qwen": "local",
+    }
+    value = aliases.get(value, value)
+    if value == "auto":
+        return backends["default"]
+    if value == "anthropic" and not backends.get("anthropic"):
+        return "local"
+    if value not in {"local", "anthropic"}:
+        return backends["default"]
+    return value
 
 
 def _normalize_verification_mode(mode: str) -> str:

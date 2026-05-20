@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from django.conf import settings
 from django.db import transaction
 
 from .models import CreditLedgerEntry, LessonJob, Plan, Profile, get_plan_info
@@ -16,6 +17,7 @@ TEXT_QUIZ_COST = 18
 AUDIO_TRANSCRIPTION_COST = 35
 VERIFICATION_COST = 7
 REGENERATION_COST = 12
+CLOUD_BACKEND_SURCHARGE = 15
 
 
 def plan_credit_amount(plan: str) -> int | None:
@@ -50,9 +52,16 @@ def grant_plan_credits(profile: Profile, description: str = "Creditos mensuales 
     return amount
 
 
-def estimate_lesson_job_cost(job: LessonJob | None = None, *, has_audio=False, has_text=False) -> CreditEstimate:
+def estimate_lesson_job_cost(
+    job: LessonJob | None = None,
+    *,
+    has_audio=False,
+    has_text=False,
+    backend: str | None = "local",
+) -> CreditEstimate:
     audio = has_audio or bool(getattr(job, "audio", None))
     text = has_text or bool((getattr(job, "source_text", "") or "").strip())
+    backend = (backend or getattr(job, "ai_backend", "local") or "local").lower()
     details = []
     amount = 0
 
@@ -64,6 +73,11 @@ def estimate_lesson_job_cost(job: LessonJob | None = None, *, has_audio=False, h
         details.append(f"quiz adaptativo {TEXT_QUIZ_COST}")
         amount += VERIFICATION_COST
         details.append(f"revision final {VERIFICATION_COST}")
+    if amount and backend == "anthropic":
+        surcharge = max(0, int(getattr(settings, "CLOUD_BACKEND_SURCHARGE", CLOUD_BACKEND_SURCHARGE)))
+        if surcharge:
+            amount += surcharge
+            details.append(f"nube Claude {surcharge}")
 
     return CreditEstimate(
         action=CreditLedgerEntry.Action.CLASS_TRANSCRIPTION if audio else CreditLedgerEntry.Action.QUIZ_GENERATION,

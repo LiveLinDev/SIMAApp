@@ -44,16 +44,30 @@
       <span class="study-badge">{{ item.demand }}</span>
     </div>
     <h2>{{ item.statement }}</h2>
-    <form method="post" action="{% url 'answer_quiz' job.pk attempt.pk %}" class="answer-form">
+    <form method="post" action="{% url 'answer_quiz' job.pk attempt.pk %}" class="answer-form" id="quiz-form">
       {% csrf_token %}
-      {% for option in item.options %}
-      <label class="answer-option">
-        <input type="radio" name="option" value="{{ forloop.counter0 }}" required>
-        <span>{{ option.text }}</span>
-      </label>
-      {% endfor %}
+      <div id="options-container">
+        {% for option in item.options %}
+        <label class="answer-option" data-original-index="{{ forloop.counter0 }}">
+          <input type="radio" name="option" value="{{ forloop.counter0 }}" required>
+          <span>{{ option.text }}</span>
+        </label>
+        {% endfor %}
+      </div>
       <button class="primary-button full" type="submit">Responder y adaptar</button>
     </form>
+    <script>
+      (function () {
+        var container = document.getElementById("options-container");
+        var labels = Array.from(container.querySelectorAll(".answer-option"));
+        // Fisher-Yates shuffle
+        for (var i = labels.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          container.appendChild(labels[j]);
+          var tmp = labels[i]; labels[i] = labels[j]; labels[j] = tmp;
+        }
+      })();
+    </script>
   </section>
   {% endif %}
 

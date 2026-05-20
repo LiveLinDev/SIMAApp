@@ -1,6 +1,23 @@
 @echo off
 setlocal
+
 cd /d "%~dp0"
-echo Iniciando Django en http://127.0.0.1:8002/
-"C:\Users\Erick\AppData\Local\Python\pythoncore-3.14-64\python.exe" manage.py runserver 127.0.0.1:8002
+
+echo Aplicando migraciones...
+python manage.py migrate --run-syncdb
+if errorlevel 1 (
+    echo.
+    echo [ERROR] No se pudieron aplicar migraciones.
+    pause
+    exit /b 1
+)
+
+echo.
+echo Iniciando Django en http://0.0.0.0:8002/
+echo Acceso local:  http://127.0.0.1:8002/
+echo Via proxy:     http://bellamama.duckdns.org:25564/
+python manage.py runserver 0.0.0.0:8002
+
+echo.
+echo [INFO] Django se detuvo.
 pause

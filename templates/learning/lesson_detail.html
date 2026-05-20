@@ -453,8 +453,29 @@
     {% if job.mode == 'api' %}
     <form method="post" action="{% url 'retry_api_lesson' job.pk %}" class="retry-form" onsubmit="this.querySelector('button').textContent='Reintentando…'; this.querySelector('button').disabled=true;">
       {% csrf_token %}
-      <input type="hidden" name="backend" value="auto">
       <input type="hidden" name="verification_mode" value="{{ job.verification_mode|default:'web' }}">
+      <div class="retry-backend-options" aria-label="Elegir motor de IA">
+        <label class="retry-backend-option">
+          <input type="radio" name="backend" value="local" {% if job.ai_backend != 'anthropic' or not backends.anthropic %}checked{% endif %}>
+          <span class="retry-backend-card">
+            <strong>Local Qwen</strong>
+            <small>{{ local_model }}</small>
+          </span>
+        </label>
+        <label class="retry-backend-option {% if not backends.anthropic %}retry-backend-option--disabled{% endif %}">
+          <input type="radio" name="backend" value="anthropic"
+            {% if job.ai_backend == 'anthropic' and backends.anthropic %}checked{% endif %}
+            {% if not backends.anthropic %}disabled{% endif %}>
+          <span class="retry-backend-card">
+            <strong>Nube Claude</strong>
+            {% if backends.anthropic %}
+              <small>Usa mas creditos</small>
+            {% else %}
+              <small>No configurado</small>
+            {% endif %}
+          </span>
+        </label>
+      </div>
       <button class="primary-button" type="submit">Reintentar</button>
     </form>
     {% endif %}
@@ -958,6 +979,45 @@
   .tag-editor input { width: 100%; padding: 9px 11px; border-radius: 8px; border: 1px solid var(--line); }
   .tag-editor small { color: var(--muted); }
   .queue-status { border-color: rgba(212, 255, 0, .42); }
+  .retry-backend-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin: 14px 0;
+  }
+  .retry-backend-option {
+    cursor: pointer;
+  }
+  .retry-backend-option input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .retry-backend-card {
+    min-height: 68px;
+    display: grid;
+    gap: 3px;
+    padding: 12px 14px;
+    border: 2px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+  }
+  .retry-backend-option input:checked + .retry-backend-card {
+    border-color: var(--green);
+    background: #f0fce8;
+  }
+  .retry-backend-card strong {
+    font-size: .92rem;
+  }
+  .retry-backend-card small {
+    color: var(--muted);
+    font-size: .78rem;
+  }
+  .retry-backend-option--disabled {
+    opacity: .55;
+    cursor: not-allowed;
+  }
   .processing-log {
     max-height: 180px; overflow: auto; padding: 12px; border-radius: 8px;
     background: var(--black); color: var(--gray-200); font-size: .8rem;
@@ -1047,6 +1107,7 @@
     .intensity-options { flex-direction: column; }
     .intensity-btn { min-width: 100%; }
     .audit-change-grid { grid-template-columns: 1fr; }
+    .retry-backend-options { grid-template-columns: 1fr; }
     .inline-ai-form { margin-left: 0; width: 100%; }
     .inline-ai-form .view-btn { width: 100%; }
   }

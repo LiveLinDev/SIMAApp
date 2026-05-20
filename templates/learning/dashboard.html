@@ -60,7 +60,7 @@
   </aside>
 
   <div class="dashboard-main">
-    <header class="dashboard-hero">
+    <header class="dashboard-hero" {% if active_tab %}hidden{% endif %}>
       <div class="hero-copy">
         <p class="eyebrow">Hola, {{ user.username }}</p>
         <h1>Centro de estudio <span>SIMA</span></h1>
@@ -90,7 +90,7 @@
       </div>
     </header>
 
-    <section class="dashboard-strip" aria-label="Estado general">
+    <section class="dashboard-strip" aria-label="Estado general" {% if active_tab %}hidden{% endif %}>
       <article>
         <span>Cursos activos</span>
         <strong>{{ dashboard_stats.course_count }}</strong>
@@ -1366,6 +1366,17 @@
   (function() {
     var triggers = document.querySelectorAll(".dashboard-view-trigger");
     var panels = document.querySelectorAll(".dashboard-panel");
+    var hero = document.querySelector(".dashboard-hero");
+    var strip = document.querySelector(".dashboard-strip");
+
+    function setHeroVisible(visible) {
+      if (hero) hero.hidden = !visible;
+      if (strip) strip.hidden = !visible;
+    }
+
+    // On load: hide hero if a tab is already active (came from URL param)
+    var hasActiveTab = document.querySelector(".dashboard-view-trigger.is-active");
+    setHeroVisible(!hasActiveTab);
 
     triggers.forEach(function(trigger) {
       trigger.addEventListener("click", function() {
@@ -1374,9 +1385,8 @@
         panels.forEach(function(panel) { panel.hidden = true; });
         trigger.classList.add("is-active");
         var panel = document.getElementById("panel-" + tab);
-        if (panel) {
-          panel.hidden = false;
-        }
+        if (panel) panel.hidden = false;
+        setHeroVisible(false);
         if (window.history && window.history.replaceState) {
           var url = new URL(window.location.href);
           url.searchParams.set("tab", tab);

@@ -39,18 +39,22 @@ Extrae TODOS los conceptos evaluables que encuentres — sé exhaustivo.
 INPUT:
   language: <es | en | ...>
   items_requested: <número, o "auto">
+  chunk: <opcional; si existe, genera solo el objetivo de este chunk>
   content: |
     [CONTENIDO DE LA CLASE]
 
 SCALE_GUIDE (aplicar si items_requested es "auto"):
-  ~500 palabras   → 6–8 items
-  ~1.000 palabras → 10–12 items
-  ~1.500 palabras → 14–18 items
-  ~2.000 palabras → 18–22 items
-  ~3.000 palabras → 25–30 items
-  ~6.000 palabras → 40–50 items
-  ~12.000 palabras → 70–90 items
-  >12.000 palabras → extraer todos los conceptos evaluables sin límite artificial
+  NOTA DE LA APP: normalmente `items_requested` llega como numero exacto ya calculado.
+  Si es numero, ignora esta guia y genera EXACTAMENTE esa cantidad de lineas `i<N>|`.
+  Si hay `chunk`, `a|n=` debe contar solo los items del chunk actual; la app fusionara despues.
+  ~250 palabras   → 5–8 items
+  ~600 palabras   → 8–12 items
+  ~1.200 palabras → 12–20 items
+  ~2.500 palabras → 20–34 items
+  ~5.000 palabras → 45–60 items
+  ~9.000 palabras → 80–100 items
+  ~12.000 palabras → 105–125 items
+  >15.000 palabras → 130–150 items, priorizando conceptos no repetidos
 
 ---
 

@@ -7,6 +7,12 @@ set "PROXY_PORT=25564"
 set "DJANGO_URL=http://127.0.0.1:%DJANGO_PORT%/"
 set "PROXY_URL=http://127.0.0.1:%PROXY_PORT%/"
 
+:: Precalcular rutas con parentesis para evitar errores de sintaxis en batch
+set "PF=%ProgramFiles%"
+set "PF86=%ProgramFiles(x86)%"
+set "LAD=%LOCALAPPDATA%"
+set "UPL=%USERPROFILE%\AppData\Local"
+
 :: =============================================================================
 :: MODO CLIENTE REMOTO
 :: =============================================================================
@@ -42,27 +48,27 @@ for /f "delims=" %%i in ('where python.exe 2^>nul') do (
 )
 
 :: 2) Revisar ubicaciones comunes de instalacion (usuario y sistema)
-for /d %%D in ("%LOCALAPPDATA%\Programs\Python\Python*") do (
-    if exist "%%D\python.exe" (
-        set "PYTHON=%%D\python.exe"
+for /f "delims=" %%D in ('dir /b /ad "%LAD%\Programs\Python\Python*" 2^>nul') do (
+    if exist "%LAD%\Programs\Python\%%D\python.exe" (
+        set "PYTHON=%LAD%\Programs\Python\%%D\python.exe"
         goto :python_validate
     )
 )
-for /d %%D in ("%ProgramFiles%\Python*") do (
-    if exist "%%D\python.exe" (
-        set "PYTHON=%%D\python.exe"
+for /f "delims=" %%D in ('dir /b /ad "%UPL%\Programs\Python\Python*" 2^>nul') do (
+    if exist "%UPL%\Programs\Python\%%D\python.exe" (
+        set "PYTHON=%UPL%\Programs\Python\%%D\python.exe"
         goto :python_validate
     )
 )
-for /d %%D in ("%ProgramFiles(x86)%\Python*") do (
-    if exist "%%D\python.exe" (
-        set "PYTHON=%%D\python.exe"
+for /f "delims=" %%D in ('dir /b /ad "%PF%\Python*" 2^>nul') do (
+    if exist "%PF%\%%D\python.exe" (
+        set "PYTHON=%PF%\%%D\python.exe"
         goto :python_validate
     )
 )
-for /d %%D in ("%USERPROFILE%\AppData\Local\Programs\Python\Python*") do (
-    if exist "%%D\python.exe" (
-        set "PYTHON=%%D\python.exe"
+for /f "delims=" %%D in ('dir /b /ad "%PF86%\Python*" 2^>nul') do (
+    if exist "%PF86%\%%D\python.exe" (
+        set "PYTHON=%PF86%\%%D\python.exe"
         goto :python_validate
     )
 )
@@ -94,16 +100,16 @@ for /f "delims=" %%i in ('where node.exe 2^>nul') do (
 )
 
 :: 2) Revisar ubicaciones comunes de instalacion
-if exist "%ProgramFiles%\nodejs\node.exe" (
-    set "NODE=%ProgramFiles%\nodejs\node.exe"
+if exist "%PF%\nodejs\node.exe" (
+    set "NODE=%PF%\nodejs\node.exe"
     goto :node_validate
 )
-if exist "%ProgramFiles(x86)%\nodejs\node.exe" (
-    set "NODE=%ProgramFiles(x86)%\nodejs\node.exe"
+if exist "%PF86%\nodejs\node.exe" (
+    set "NODE=%PF86%\nodejs\node.exe"
     goto :node_validate
 )
-if exist "%LOCALAPPDATA%\Programs\nodejs\node.exe" (
-    set "NODE=%LOCALAPPDATA%\Programs\nodejs\node.exe"
+if exist "%LAD%\Programs\nodejs\node.exe" (
+    set "NODE=%LAD%\Programs\nodejs\node.exe"
     goto :node_validate
 )
 if exist "%APPDATA%\npm\node.exe" (

@@ -1,5 +1,5 @@
 @echo off
-setlocal EnableExtensions
+setlocal EnableExtensions EnableDelayedExpansion
 
 set "ROOT=%~dp0"
 set "DJANGO_PORT=8002"
@@ -38,32 +38,32 @@ echo [INFO] Buscando Python instalado...
 :: 1) Revisar si esta en el PATH actual
 for /f "delims=" %%i in ('where python.exe 2^>nul') do (
     set "PYTHON=%%i"
-    goto :python_found
+    goto :python_validate
 )
 
 :: 2) Revisar ubicaciones comunes de instalacion (usuario y sistema)
 for /d %%D in ("%LOCALAPPDATA%\Programs\Python\Python*") do (
     if exist "%%D\python.exe" (
         set "PYTHON=%%D\python.exe"
-        goto :python_found
+        goto :python_validate
     )
 )
 for /d %%D in ("%ProgramFiles%\Python*") do (
     if exist "%%D\python.exe" (
         set "PYTHON=%%D\python.exe"
-        goto :python_found
+        goto :python_validate
     )
 )
 for /d %%D in ("%ProgramFiles(x86)%\Python*") do (
     if exist "%%D\python.exe" (
         set "PYTHON=%%D\python.exe"
-        goto :python_found
+        goto :python_validate
     )
 )
 for /d %%D in ("%USERPROFILE%\AppData\Local\Programs\Python\Python*") do (
     if exist "%%D\python.exe" (
         set "PYTHON=%%D\python.exe"
-        goto :python_found
+        goto :python_validate
     )
 )
 
@@ -72,7 +72,14 @@ echo Instala Python desde https://python.org o agregalo al PATH.
 pause
 exit /b 1
 
-:python_found
+:python_validate
+"%PYTHON%" --version >nul 2>&1
+if errorlevel 1 (
+    echo [ERROR] Se encontro python.exe pero no responde (puede ser el stub de Microsoft Store).
+    echo Instala Python desde python.org y asegurate de que "python --version" funcione en CMD.
+    pause
+    exit /b 1
+)
 echo [OK] Python detectado: %PYTHON%
 
 :: =============================================================================
@@ -83,25 +90,25 @@ echo [INFO] Buscando Node.js instalado...
 :: 1) Revisar si esta en el PATH actual
 for /f "delims=" %%i in ('where node.exe 2^>nul') do (
     set "NODE=%%i"
-    goto :node_found
+    goto :node_validate
 )
 
 :: 2) Revisar ubicaciones comunes de instalacion
 if exist "%ProgramFiles%\nodejs\node.exe" (
     set "NODE=%ProgramFiles%\nodejs\node.exe"
-    goto :node_found
+    goto :node_validate
 )
 if exist "%ProgramFiles(x86)%\nodejs\node.exe" (
     set "NODE=%ProgramFiles(x86)%\nodejs\node.exe"
-    goto :node_found
+    goto :node_validate
 )
 if exist "%LOCALAPPDATA%\Programs\nodejs\node.exe" (
     set "NODE=%LOCALAPPDATA%\Programs\nodejs\node.exe"
-    goto :node_found
+    goto :node_validate
 )
 if exist "%APPDATA%\npm\node.exe" (
     set "NODE=%APPDATA%\npm\node.exe"
-    goto :node_found
+    goto :node_validate
 )
 
 echo [ERROR] No se encontro node.exe en PATH ni en las rutas comunes.
@@ -109,9 +116,33 @@ echo Instala Node.js desde https://nodejs.org o agregalo al PATH.
 pause
 exit /b 1
 
-:node_found
+:node_validate
+"%NODE%" --version >nul 2>&1
+if errorlevel 1 (
+    echo [ERROR] Se encontro node.exe pero no responde.
+    pause
+    exit /b 1
+)
 echo [OK] Node.js detectado: %NODE%
 echo.
+
+:: =============================================================================
+:: VALIDAR DEPENDENCIAS DE PYTHON
+:: =============================================================================
+echo [INFO] Verificando dependencias de Python (Django, psycopg, openai, whisper)...
+"%PYTHON%" -c "import django, psycopg, openai, whisper" >nul 2>&1
+if errorlevel 1 (
+    echo.
+    echo [ERROR] Faltan librerias de Python necesarias.
+    echo.
+    echo Solucion rapida: ejecuta esto en CMD dentro de esta carpeta:
+    echo.
+    echo    "%PYTHON%" -m pip install -r requirements.txt
+    echo.
+    pause
+    exit /b 1
+)
+echo [OK] Dependencias de Python verificadas.
 
 :: =============================================================================
 :: VALIDAR ARCHIVOS NECESARIOS
@@ -126,7 +157,19 @@ if not exist "%ROOT%proxy-mini\server.js" (
     pause
     exit /b 1
 )
+if not exist "%ROOT%proxy-mini\node_modules" (
+    echo.
+    echo [ERROR] Faltan dependencias de Node en proxy-mini.
+    echo.
+    echo Solucion rapida: ejecuta esto en CMD dentro de esta carpeta:
+    echo.
+    echo    cd proxy-mini ^&^& "%NODE%" npm install
+    echo.
+    pause
+    exit /b 1
+)
 
+echo.
 echo Base de datos remota: %POSTGRES_HOST%:%POSTGRES_PORT%
 echo API IA remota       : %LOCAL_API_BASE%
 echo.
@@ -134,49 +177,88 @@ echo.
 :: =============================================================================
 :: CERRAR PROCESOS ANTERIORES
 :: =============================================================================
-echo [0/3] Cerrando procesos anteriores en %DJANGO_PORT% y %PROXY_PORT%...
+echo [0/4] Cerrando procesos anteriores en %DJANGO_PORT% y %PROXY_PORT%...
 call :stop_port %PROXY_PORT%
 call :stop_port %DJANGO_PORT%
 
 :: =============================================================================
-:: INICIAR DJANGO (directamente con la ruta de Python detectada)
+:: VALIDAR CONEXION A POSTGRESQL REMOTO (rapido, 10 seg max)
+:: =============================================================================
+echo [1/4] Probando conexion a PostgreSQL remoto...
+"%PYTHON%" -c "import os,sys,psycopg; h=os.environ['POSTGRES_HOST']; pt=os.environ['POSTGRES_PORT']; db=os.environ.get('POSTGRES_DB','simaapp'); u=os.environ.get('POSTGRES_USER','simaapp'); pw=os.environ.get('POSTGRES_PASSWORD',''); conn=psycopg.connect(host=h,port=pt,dbname=db,user=u,password=pw,connect_timeout=10); cur=conn.cursor(); cur.execute('SELECT 1'); cur.fetchone(); conn.close(); print('OK')" >nul 2>&1
+if errorlevel 1 (
+    echo.
+    echo [ERROR] No se pudo conectar a PostgreSQL remoto (%POSTGRES_HOST%:%POSTGRES_PORT%).
+    echo.
+    echo Causas mas comunes:
+    echo  1. Tu .env no tiene las credenciales correctas (POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB).
+    echo  2. El host no tiene PostgreSQL escuchando conexiones externas.
+    echo  3. El router/firewall del host no tiene abierto el puerto 5432.
+    echo.
+    pause
+    exit /b 1
+)
+echo [OK] PostgreSQL remoto responde.
+
+:: =============================================================================
+:: INICIAR DJANGO
 :: =============================================================================
 echo.
-echo [1/3] Iniciando Django en 0.0.0.0:%DJANGO_PORT% (modo remoto)...
-start "SIMA Cliente Django :%DJANGO_PORT%" cmd /c "cd /d "%ROOT%" ^&^& echo Aplicando migraciones... ^&^& "%PYTHON%" manage.py migrate --run-syncdb ^&^& if errorlevel 1 ( echo. ^&^& echo [ERROR] No se pudieron aplicar migraciones. ^&^& pause ^&^& exit /b 1 ) ^&^& echo. ^&^& echo Iniciando Django en http://0.0.0.0:%DJANGO_PORT%/ ^&^& echo Acceso local:  http://127.0.0.1:%DJANGO_PORT%/ ^&^& echo Via proxy:     http://bellamama.duckdns.org:%PROXY_PORT%/ ^&^& "%PYTHON%" manage.py runserver 0.0.0.0:%DJANGO_PORT% ^&^& echo. ^&^& echo [INFO] Django se detuvo. ^&^& pause"
+echo [2/4] Iniciando Django en 0.0.0.0:%DJANGO_PORT% (modo remoto)...
+start "SIMA Cliente Django :%DJANGO_PORT%" /D "%ROOT%" cmd /c "echo [INFO] Aplicando migraciones... ^&^& "%PYTHON%" manage.py migrate --run-syncdb ^|^| (echo. ^&^& echo [ERROR] Las migraciones fallaron. Revisa la conexion a la DB remota. ^&^& pause ^&^& exit /b 1) ^&^& echo. ^&^& echo [INFO] Django listo. Iniciando servidor... ^&^& "%PYTHON%" manage.py runserver 0.0.0.0:%DJANGO_PORT% ^&^& echo. ^&^& echo [INFO] Django se detuvo. ^&^& pause"
 
 echo [INFO] Esperando a que Django responda en %DJANGO_URL%...
-call :wait_url "%DJANGO_URL%" 45
+call :wait_url "%DJANGO_URL%" 90 "Django"
 if errorlevel 1 (
-    echo [ERROR] Django no respondio en %DJANGO_URL%.
-    echo Revisa la ventana "SIMA Cliente Django :%DJANGO_PORT%" o los errores de conexion a la DB remota.
+    echo.
+    :: Diagnosticar: revisar si el puerto esta ocupado
+    netstat -ano | findstr /R /C:":%DJANGO_PORT% .*LISTENING" >nul 2>&1
+    if errorlevel 1 (
+        echo [ERROR] Django no arranco. La ventana se cerro o fallo antes de escuchar en el puerto.
+        echo.
+        echo Causas mas comunes:
+        echo  - Error de conexion a PostgreSQL (revisa la ventana SIMA Cliente Django).
+        echo  - Faltan variables en el .env (POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB).
+        echo  - Python no tiene instaladas las dependencias.
+        echo.
+        echo Si la ventana de Django se abrio y se cerro muy rapido, ejecuta manualmente:
+        echo    "%PYTHON%" manage.py migrate --run-syncdb
+        echo    "%PYTHON%" manage.py runserver 0.0.0.0:%DJANGO_PORT%
+        echo.
+    ) else (
+        echo [ERROR] Django esta escuchando en el puerto %DJANGO_PORT% pero no responde HTTP.
+        echo Puede estar atorado en migraciones lentas o hay un error interno.
+    )
     pause
     exit /b 1
 )
-echo [OK] Django listo.
 
 :: =============================================================================
-:: INICIAR PROXY (directamente con la ruta de Node detectada)
+:: INICIAR PROXY
 :: =============================================================================
 echo.
-echo [2/3] Iniciando proxy publico en 0.0.0.0:%PROXY_PORT%...
-start "SIMA Cliente Proxy :%PROXY_PORT%" cmd /c "cd /d "%ROOT%proxy-mini" ^&^& echo Iniciando proxy en http://0.0.0.0:%PROXY_PORT%/ ^&^& echo Publico esperado: http://bellamama.duckdns.org:%PROXY_PORT%/ ^&^& echo Reenvio local: 127.0.0.1:%DJANGO_PORT% ^&^& "%NODE%" server.js ^&^& echo. ^&^& echo [INFO] Proxy se detuvo. ^&^& pause"
+echo [3/4] Iniciando proxy publico en 0.0.0.0:%PROXY_PORT%...
+start "SIMA Cliente Proxy :%PROXY_PORT%" /D "%ROOT%proxy-mini" cmd /c "echo [INFO] Iniciando proxy en http://0.0.0.0:%PROXY_PORT%/... ^&^& echo Publico esperado: http://bellamama.duckdns.org:%PROXY_PORT%/... ^&^& echo Reenvio local: 127.0.0.1:%DJANGO_PORT%... ^&^& "%NODE%" server.js ^&^& echo. ^&^& echo [INFO] Proxy se detuvo. ^&^& pause"
 
 echo [INFO] Esperando a que el proxy responda en %PROXY_URL%...
-call :wait_url "%PROXY_URL%" 20
+call :wait_url "%PROXY_URL%" 20 "Proxy"
 if errorlevel 1 (
-    echo [ERROR] El proxy no respondio en %PROXY_URL%.
-    echo Revisa la ventana "SIMA Cliente Proxy :%PROXY_PORT%".
+    echo.
+    netstat -ano | findstr /R /C:":%PROXY_PORT% .*LISTENING" >nul 2>&1
+    if errorlevel 1 (
+        echo [ERROR] El proxy no arranco. Revisa la ventana SIMA Cliente Proxy.
+    ) else (
+        echo [ERROR] El proxy esta escuchando pero no responde HTTP.
+    )
     pause
     exit /b 1
 )
-echo [OK] Proxy listo.
 
 :: =============================================================================
 :: RESUMEN
 :: =============================================================================
 echo.
-echo [3/3] SIMA Cliente esta arriba.
+echo [4/4] SIMA Cliente esta arriba.
 echo Local : %DJANGO_URL%
 echo Proxy : %PROXY_URL%
 echo Publico esperado: http://bellamama.duckdns.org:%PROXY_PORT%/
@@ -200,9 +282,18 @@ exit /b 0
 :wait_url
 set "URL_TO_WAIT=%~1"
 set "TRIES=%~2"
+set "NAME=%~3"
+echo|set /p="[INFO] Esperando a %NAME% "
 for /L %%I in (1,1,%TRIES%) do (
     powershell -NoProfile -ExecutionPolicy Bypass -Command "try { $r = Invoke-WebRequest -UseBasicParsing -TimeoutSec 2 '%URL_TO_WAIT%'; if ($r.StatusCode -lt 500) { exit 0 } exit 1 } catch { exit 1 }" >nul 2>&1
-    if not errorlevel 1 exit /b 0
+    if not errorlevel 1 (
+        echo.
+        echo [OK] %NAME% listo.
+        exit /b 0
+    )
+    set /a "MOD=%%I %% 5"
+    if "!MOD!"=="0" echo|set /p="."
     timeout /t 1 /nobreak >nul
 )
+echo.
 exit /b 1

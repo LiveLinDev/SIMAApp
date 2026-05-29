@@ -2,75 +2,403 @@
 {% block title %}{{ course.name }} - SIMA{% endblock %}
 {% block content %}
 
-<section class="ld-header">
-  <div>
-    <a href="{% url 'dashboard' %}" class="back-link">Volver al dashboard</a>
-    <p class="eyebrow">{{ course.academic_period|default:"Curso personal" }}</p>
+<section class="course-hero">
+  <div class="course-hero-copy">
+    <div class="course-breadcrumb">
+      <a href="{% url 'dashboard' %}">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Inicio
+      </a>
+      <span>/</span>
+      <span>{{ course.academic_period|default:"Curso personal" }}</span>
+    </div>
     <h1>{{ course.name }}</h1>
     {% if course.student_goal %}
-      <p class="ld-meta">{{ course.student_goal }}</p>
+      <p class="course-goal">{{ course.student_goal }}</p>
+    {% elif course.description %}
+      <p class="course-goal">{{ course.description }}</p>
     {% endif %}
+    <div class="course-meta-row">
+      <span class="course-level">{{ course.get_level_display }}</span>
+      {% if course.instructor %}<span class="course-instructor">{{ course.instructor }}</span>{% endif %}
+    </div>
   </div>
-  <div class="ld-actions">
-    <a class="primary-button" href="{% url 'api_lesson' %}?course={{ course.pk }}">Nueva clase</a>
-    <a class="secondary-button" href="{% url 'free_lesson' %}?course={{ course.pk }}">Clase manual</a>
+  <div class="course-hero-actions">
+    <a class="primary-button" href="{% url 'free_lesson' %}?course={{ course.pk }}">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+      Clase manual
+    </a>
   </div>
 </section>
 
-<div class="dash-stats">
-  <div class="stat-card"><strong>{{ stats.classes }}</strong><small>Clases</small></div>
-  <div class="stat-card"><strong>{{ stats.ready }}</strong><small>Listas</small></div>
-  <div class="stat-card"><strong>{{ stats.processing }}</strong><small>En proceso</small></div>
-  <div class="stat-card"><strong>{{ stats.quizzes }}</strong><small>Intentos</small></div>
+<div class="course-stats-bar">
+  <article class="stat-pill">
+    <strong>{{ stats.classes }}</strong>
+    <span>Clases</span>
+  </article>
+  <article class="stat-pill stat-pill--ready">
+    <strong>{{ stats.ready }}</strong>
+    <span>Listas</span>
+  </article>
+  <article class="stat-pill stat-pill--processing">
+    <strong>{{ stats.processing }}</strong>
+    <span>En proceso</span>
+  </article>
+  <article class="stat-pill stat-pill--quiz">
+    <strong>{{ stats.quizzes }}</strong>
+    <span>Intentos</span>
+  </article>
 </div>
 
-{% if course.main_topics %}
-<section class="study-meta-card" style="margin-top:18px">
-  <h3>Temas principales</h3>
-  <div class="study-meta-row">
-    {% for topic in course.main_topics %}
-      <span class="study-badge">{{ topic }}</span>
-    {% endfor %}
-  </div>
-</section>
-{% endif %}
-
-<section class="dash-panel">
-  <div class="explore-header">
-    <h2>Clases del curso</h2>
-  </div>
-
-  {% if jobs %}
-  <div class="lesson-grid">
-    {% for job in jobs %}
-    <article class="lesson-card">
-      <div class="lesson-card-header">
-        <h3>{{ job.title }}</h3>
-        <span class="visibility-badge">{{ job.get_status_display }}</span>
+<div class="course-layout">
+  <div class="course-content">
+    <div class="section-toolbar" style="border-bottom:0;padding-bottom:8px;">
+      <div>
+        <p class="eyebrow">Contenido</p>
+        <h2>Clases del curso</h2>
       </div>
-      <p class="lesson-meta">{{ job.updated_at|date:"d M Y" }}</p>
-      {% if job.tag_list %}
-      <div class="lesson-tags">
-        {% for tag in job.tag_list %}
-          <span class="tag-chip">{{ tag }}</span>
+    </div>
+
+    {% if jobs %}
+    <div class="lesson-grid course-lesson-grid">
+      {% for job in jobs %}
+      <article class="lesson-card course-lesson-card">
+        <div class="lesson-card-header">
+          <h3>{{ job.title }}</h3>
+          <span class="status-dot status-dot--{{ job.status }}"></span>
+        </div>
+        <p class="lesson-meta">{{ job.updated_at|date:"d M Y" }}</p>
+        {% if job.tag_list %}
+        <div class="tag-row">
+          {% for tag in job.tag_list %}
+            <span>{{ tag }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% if job.corrected_output or job.toon_output %}
+          <a class="lesson-cta" href="{% url 'lesson_detail' job.pk %}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v4"/><path d="M12 18v4"/><path d="M2 12h4"/><path d="M18 12h4"/></svg>
+            Estudiar
+          </a>
+        {% else %}
+          <a class="lesson-cta lesson-cta--secondary" href="{% url 'lesson_detail' job.pk %}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4"/><path d="M12 18v4"/><path d="M2 12h4"/><path d="M18 12h4"/></svg>
+            Ver pipeline
+          </a>
+        {% endif %}
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state course-empty-state">
+      <div class="empty-state-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      </div>
+      <h3>Aun no hay clases en este curso</h3>
+      <p>Sube una grabacion o pega apuntes para empezar a construir el contexto del curso.</p>
+      <a class="primary-button" href="{% url 'free_lesson' %}?course={{ course.pk }}">Crear primera clase</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <aside class="course-sidebar">
+    {% if course.main_topics %}
+    <div class="course-panel">
+      <h3>Temas principales</h3>
+      <div class="topic-cloud">
+        {% for topic in course.main_topics %}
+          <span class="topic-chip">{{ topic }}</span>
         {% endfor %}
       </div>
-      {% endif %}
-      {% if job.corrected_output or job.toon_output %}
-        <a class="lesson-cta" href="{% url 'lesson_detail' job.pk %}">Estudiar</a>
-      {% else %}
-        <a class="lesson-cta lesson-cta--secondary" href="{% url 'lesson_detail' job.pk %}">Ver pipeline</a>
-      {% endif %}
-    </article>
-    {% endfor %}
-  </div>
-  {% else %}
-  <div class="empty-state">
-    <h3>Aun no hay clases en este curso</h3>
-    <p>Sube una grabacion o pega apuntes para empezar a construir el contexto del curso.</p>
-    <a class="primary-button" href="{% url 'api_lesson' %}?course={{ course.pk }}">Crear primera clase</a>
-  </div>
-  {% endif %}
-</section>
+    </div>
+    {% endif %}
+
+    <div class="course-panel">
+      <h3>Acciones rapidas</h3>
+      <div class="course-actions">
+        <a class="sidebar-action" href="{% url 'free_lesson' %}?course={{ course.pk }}">Clase manual</a>
+        <a class="sidebar-action" href="{% url 'course_create' %}">Nuevo curso</a>
+      </div>
+    </div>
+
+    <div class="course-panel course-panel--accent">
+      <h3>Progreso estimado</h3>
+      <div class="course-progress">
+        <div class="progress-track">
+          <div class="progress-fill" style="width:{{ progress_pct }}%"></div>
+        </div>
+        <p class="progress-label">{{ stats.ready }} de {{ stats.classes }} clases listas</p>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<style>
+  .course-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+  .course-hero-copy { flex: 1; min-width: 0; }
+  .course-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-size: .82rem;
+    color: var(--muted);
+  }
+  .course-breadcrumb a {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--muted);
+    transition: color .2s;
+  }
+  .course-breadcrumb a:hover { color: var(--ink); }
+  .course-hero h1 {
+    margin: 0 0 10px;
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    line-height: 1.05;
+  }
+  .course-goal {
+    margin: 0 0 12px;
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.6;
+    max-width: 640px;
+  }
+  .course-meta-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .course-level, .course-instructor {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+    padding: 5px 11px;
+    font-size: .78rem;
+    font-weight: 700;
+    color: var(--muted);
+  }
+  .course-hero-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  .course-hero-actions .primary-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .course-stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .stat-pill {
+    display: grid;
+    gap: 4px;
+    align-content: center;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+    padding: 16px;
+    min-height: 90px;
+  }
+  .stat-pill strong {
+    font-family: var(--font-display);
+    font-size: 1.9rem;
+    line-height: 1;
+    color: var(--ink);
+  }
+  .stat-pill span {
+    font-size: .78rem;
+    font-weight: 800;
+    color: var(--muted);
+  }
+  .stat-pill--ready strong { color: var(--green-dark); }
+  .stat-pill--processing strong { color: var(--blue); }
+  .stat-pill--quiz strong { color: var(--acid); }
+
+  .course-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+    gap: 28px;
+    align-items: start;
+  }
+  .course-content { min-width: 0; }
+  .course-sidebar {
+    display: grid;
+    gap: 16px;
+    position: sticky;
+    top: 94px;
+  }
+  .course-panel {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+    padding: 18px;
+  }
+  .course-panel h3 {
+    margin: 0 0 12px;
+    font-size: 1rem;
+    color: var(--ink);
+  }
+  .topic-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .topic-chip {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid rgba(217, 52, 36, .22);
+    border-radius: 999px;
+    background: rgba(217, 52, 36, .08);
+    color: var(--acid);
+    padding: 6px 12px;
+    font-size: .78rem;
+    font-weight: 900;
+  }
+  .course-actions {
+    display: grid;
+    gap: 8px;
+  }
+  .course-actions .sidebar-action {
+    width: 100%;
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--muted);
+    padding: 10px 11px;
+    font-weight: 800;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .course-actions .sidebar-action:hover {
+    border-color: var(--acid-hot);
+    background: var(--acid-hot);
+    color: var(--paper);
+  }
+  .course-progress .progress-track {
+    height: 8px;
+    border-radius: 999px;
+    background: var(--line);
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .course-progress .progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--acid), var(--acid-hot));
+    transition: width .6s ease;
+  }
+  .course-progress .progress-label {
+    margin: 0;
+    font-size: .82rem;
+    color: var(--muted);
+  }
+
+  .course-lesson-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
+  }
+  .course-lesson-card {
+    grid-template-rows: auto auto 1fr auto;
+  }
+  .course-lesson-card .lesson-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--gray-400);
+    flex-shrink: 0;
+  }
+  .status-dot--corrected,
+  .status-dot--ready {
+    background: var(--green);
+  }
+  .status-dot--toon_ready,
+  .status-dot--verified {
+    background: var(--blue);
+  }
+  .status-dot--queued,
+  .status-dot--processing {
+    background: var(--yellow);
+  }
+  .status-dot--error {
+    background: var(--red);
+  }
+  .course-empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    border: 1px dashed var(--line);
+    border-radius: 16px;
+    background: var(--surface);
+  }
+  .empty-state-icon {
+    color: var(--line-strong);
+    margin-bottom: 14px;
+  }
+  .course-empty-state h3 {
+    margin: 0 0 8px;
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+  }
+  .course-empty-state p {
+    margin: 0 0 18px;
+    color: var(--muted);
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  @media (max-width: 980px) {
+    .course-layout {
+      grid-template-columns: 1fr;
+    }
+    .course-sidebar {
+      position: static;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .course-stats-bar {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 640px) {
+    .course-sidebar {
+      grid-template-columns: 1fr;
+    }
+    .course-stats-bar {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .course-hero {
+      flex-direction: column;
+    }
+  }
+</style>
 
 {% endblock %}

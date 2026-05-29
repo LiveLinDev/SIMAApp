@@ -33,4 +33,7 @@ urlpatterns = [
     path("clase/<int:pk>/renombrar/", views.rename_lesson, name="rename_lesson"),
     path("clase/<int:pk>/eliminar/", views.delete_lesson, name="delete_lesson"),
     path("clase/<int:pk>/descargar/", views.download_json, name="download_json"),
+    path("clase/<int:pk>/flashcards/", views.flashcards, name="flashcards"),
+    path("clase/<int:pk>/flashcards/repasar/", views.review_flashcard, name="review_flashcard"),
+    path("clase/<int:pk>/mapa/", views.class_map, name="class_map"),
 ]

@@ -12,7 +12,7 @@
       <h1>{{ job.title }}</h1>
       {% if is_owner %}
       <button class="edit-title-btn" onclick="startEditTitle()" title="Editar nombre">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
       </button>
       {% endif %}
     </div>
@@ -30,14 +30,14 @@
   <div class="ld-actions">
     {% if job.corrected_output or job.toon_output %}
     <button class="icon-btn" title="Compartir / Visibilidad" onclick="openShareModal()">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
     </button>
     <button class="icon-btn" title="Descargar JSON" onclick="window.location='{% url 'download_json' job.pk %}'">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
     </button>
     {% endif %}
     <button class="icon-btn icon-btn--danger" title="Eliminar clase" onclick="openDeleteModal()">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
     </button>
   </div>
   {% endif %}
@@ -85,17 +85,84 @@
     </div>
   </form>
 
+  {# Perfil gamificado #}
+  <div class="gamify-bar">
+    <div class="gamify-badge">
+      <span class="gamify-icon">⚡</span>
+      <div>
+        <strong>Nivel {{ profile.level }}</strong>
+        <small>{{ profile.total_xp }} XP</small>
+      </div>
+    </div>
+    <div class="gamify-badge">
+      <span class="gamify-icon">🔥</span>
+      <div>
+        <strong>{{ profile.current_streak }} dias</strong>
+        <small>Racha actual</small>
+      </div>
+    </div>
+  </div>
+
   {# CTA principal #}
   <div class="study-cta-card">
-    <button class="study-start-btn" type="submit" form="start-quiz-form">
-      <span class="btn-icon" aria-hidden="true">
-        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v4"/><path d="M12 18v4"/><path d="M2 12h4"/><path d="M18 12h4"/></svg>
-      </span>
-      <span>
-        <strong>Iniciar quiz adaptativo</strong>
-        <small>θ inicial {{ cat_params.theta_init|default:0 }} · parada SE ≤ {{ cat_params.se_stop|default:"0.30" }} · {{ item_count }} ítems disponibles</small>
-      </span>
-    </button>
+    <div class="study-actions-grid">
+      <a class="study-action-btn study-action-btn--review" href="{% url 'flashcards' job.pk %}">
+        <span class="btn-icon" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </span>
+        <span>
+          <strong>Repasar</strong>
+          <small>Flashcards de la clase</small>
+        </span>
+      </a>
+      <a class="study-action-btn study-action-btn--map" href="{% url 'class_map' job.pk %}">
+        <span class="btn-icon" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 21 18 21 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+        </span>
+        <span>
+          <strong>Mapa</strong>
+          <small>Ver temas y conceptos</small>
+        </span>
+      </a>
+      <button class="study-action-btn study-action-btn--quiz" type="submit" form="start-quiz-form">
+        <span class="btn-icon" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v4"/><path d="M12 18v4"/><path d="M2 12h4"/><path d="M18 12h4"/></svg>
+        </span>
+        <span>
+          <strong>Tomar quiz</strong>
+          <small>IRT adaptativo · {{ item_count }} items</small>
+        </span>
+      </button>
+      {% if job.transcript %}
+      <button class="study-action-btn study-action-btn--transcript" type="button" onclick="document.getElementById('transcript-section').scrollIntoView({behavior:'smooth'})">
+        <span class="btn-icon" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </span>
+        <span>
+          <strong>Transcripción</strong>
+          <small>Texto completo de la clase</small>
+        </span>
+      </button>
+      {% endif %}
+      <a class="study-action-btn study-action-btn--download" href="{% url 'download_json' job.pk %}">
+        <span class="btn-icon" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </span>
+        <span>
+          <strong>Descargar</strong>
+          <small>JSON del banco MINI</small>
+        </span>
+      </a>
+      <button class="study-action-btn study-action-btn--items" type="button" onclick="toggleAdvanced(); document.getElementById('advanced-panel').scrollIntoView({behavior:'smooth'})">
+        <span class="btn-icon" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        </span>
+        <span>
+          <strong>Ver banco</strong>
+          <small>Todos los ítems IRT</small>
+        </span>
+      </button>
+    </div>
   </div>
 
   <div class="study-meta-card">
@@ -108,6 +175,19 @@
       {% endfor %}
     </div>
   </div>
+
+  {% if bloom_stats %}
+  <div class="study-meta-card">
+    <h3>Conceptos clave de la clase</h3>
+    <div class="study-meta-row">
+      {% for topic in key_topics %}
+        <span class="study-badge study-badge--tag">{{ topic }}</span>
+      {% empty %}
+        <span class="study-badge">Sin conceptos identificados</span>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
 
   {# historial de intentos #}
   <div class="history-card">
@@ -228,7 +308,7 @@
     {% endif %}
 
     {% if job.transcript %}
-    <section class="output-block">
+    <section class="output-block" id="transcript-section">
       <div class="output-block-header">
         <h4>Transcripción</h4>
         {% if is_owner and job.status != 'queued' and job.status != 'processing' %}
@@ -483,7 +563,7 @@
   {% endif %}
 
   {% if job.transcript %}
-  <section class="output-block">
+  <section class="output-block" id="transcript-section">
     <div class="output-block-header">
       <h3>Transcripción</h3>
       {% if is_owner and job.status != 'queued' and job.status != 'processing' %}
@@ -816,6 +896,77 @@
     font-size: .8rem; font-weight: 600; border: 1px solid var(--line);
   }
   .study-badge--verified { background: #e6f9d8; color: var(--green-dark); border-color: var(--green); }
+
+  /* gamification */
+  .gamify-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .gamify-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface);
+    padding: 10px 14px;
+  }
+  .gamify-icon { font-size: 1.3rem; line-height: 1; }
+  .gamify-badge strong { display: block; font-size: .9rem; color: var(--ink); }
+  .gamify-badge small { display: block; font-size: .72rem; color: var(--muted); }
+
+  /* study actions grid */
+  .study-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .study-action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 12px;
+    border-radius: 14px;
+    border: 2px solid var(--line);
+    background: var(--surface);
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    transition: all .25s;
+  }
+  .study-action-btn strong { display: block; font-size: 1rem; margin-bottom: 3px; color: var(--ink); }
+  .study-action-btn small { display: block; font-size: .78rem; color: var(--muted); }
+  .study-action-btn .btn-icon { color: var(--green-dark); display: inline-flex; }
+  .study-action-btn:hover { transform: translateY(-2px); }
+  .study-action-btn--review { border-color: var(--blue); }
+  .study-action-btn--review:hover { background: rgba(66,133,244,.08); border-color: var(--blue); }
+  .study-action-btn--review .btn-icon { color: var(--blue); }
+  .study-action-btn--map { border-color: var(--yellow); }
+  .study-action-btn--map:hover { background: rgba(255,193,7,.08); border-color: var(--yellow); }
+  .study-action-btn--map .btn-icon { color: var(--yellow); }
+  .study-action-btn--quiz {
+    border-color: var(--green);
+    background: linear-gradient(135deg, rgba(240,252,232,.6), rgba(240,252,232,.2));
+  }
+  .study-action-btn--quiz:hover { background: linear-gradient(135deg, var(--green), var(--green-dark)); color: #111; }
+  .study-action-btn--quiz:hover strong,
+  .study-action-btn--quiz:hover small { color: #111; }
+  .study-action-btn--quiz .btn-icon { color: var(--green-dark); }
+  .study-action-btn--transcript { border-color: var(--violet); }
+  .study-action-btn--transcript:hover { background: rgba(120,98,168,.08); border-color: var(--violet); }
+  .study-action-btn--transcript .btn-icon { color: var(--violet); }
+  .study-action-btn--download { border-color: var(--orange); }
+  .study-action-btn--download:hover { background: rgba(201,121,63,.08); border-color: var(--orange); }
+  .study-action-btn--download .btn-icon { color: var(--orange); }
+  .study-action-btn--items { border-color: var(--red); }
+  .study-action-btn--items:hover { background: rgba(200,77,77,.08); border-color: var(--red); }
+  .study-action-btn--items .btn-icon { color: var(--red); }
+  @media (max-width: 640px) {
+    .study-actions-grid { grid-template-columns: 1fr; }
+  }
 
   /* intensity */
   .intensity-card { padding: 20px; border-radius: 16px; border: 2px solid var(--line); background: var(--surface); margin-bottom: 20px; }

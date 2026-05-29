@@ -55,9 +55,16 @@
       </section>
     {% endif %}
 
-    <main>
-      {% block content %}{% endblock %}
-    </main>
+    {% if user.is_authenticated %}
+    <div class="app-layout">
+      {% include "learning/_sidebar.html" %}
+      <main class="app-main">
+    {% else %}
+      <main>
+    {% endif %}
+        {% block content %}{% endblock %}
+      </main>
+    {% if user.is_authenticated %}</div>{% endif %}
   </div>
   <script>
     (function() {

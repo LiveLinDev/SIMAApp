@@ -819,6 +819,7 @@ form .plan-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 16px;
+  align-items: stretch;
 }
 
 .lesson-card {
@@ -2487,14 +2488,150 @@ button.secondary-button:hover {
   color: #fff !important;
 }
 
+/* App layout with persistent sidebar */
+.app-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
+  gap: clamp(22px, 2.4vw, 38px);
+  max-width: 1720px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+.app-main {
+  min-width: 0;
+}
+
+.app-sidebar {
+  position: sticky;
+  top: 94px;
+  display: grid;
+  gap: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(255,255,255,.72), rgba(250,250,245,.62));
+  box-shadow: none;
+  backdrop-filter: blur(16px);
+  padding: 16px;
+  max-height: calc(100vh - 110px);
+  overflow-y: auto;
+}
+
+.app-sidebar .sidebar-profile {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.app-sidebar .sidebar-profile > div {
+  min-width: 0;
+}
+
+.app-sidebar .sidebar-profile h2 {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  line-height: 1;
+  margin: 0;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-sidebar .sidebar-profile span {
+  color: var(--muted);
+  font-size: .84rem;
+  line-height: 1.55;
+}
+
+.app-sidebar .eyebrow {
+  margin-bottom: 5px;
+  font-size: .62rem;
+}
+
+.app-sidebar .sidebar-nav {
+  display: grid;
+  gap: 8px;
+}
+
+.sidebar-link {
+  width: 100%;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid rgba(20, 24, 18, .10);
+  border-radius: 4px;
+  background: rgba(255,255,255,.64);
+  color: var(--muted);
+  padding: 11px 12px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all .2s;
+}
+
+.sidebar-link small {
+  min-width: 28px;
+  border-radius: 999px;
+  background: rgba(20,24,18,.06);
+  color: var(--ink);
+  padding: 2px 7px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: .72rem;
+}
+
+.sidebar-link.is-active,
+.sidebar-link:hover {
+  border-color: var(--acid-hot);
+  background: var(--acid-hot);
+  color: #fff;
+}
+
+.sidebar-link.is-active small,
+.sidebar-link:hover small {
+  background: rgba(255,255,255,.22);
+  color: #fff;
+}
+
+@media (max-width: 980px) {
+  .app-layout {
+    grid-template-columns: 1fr;
+  }
+  .app-sidebar {
+    position: static;
+    max-height: none;
+  }
+  .app-sidebar .sidebar-nav {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .sidebar-link {
+    flex-direction: column;
+    align-items: flex-start;
+    min-height: 64px;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-sidebar .sidebar-nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 /* Dark mode: .mini-inspired black + neon system. */
 :root[data-theme="dark"] {
   --page: #0a0a08;
   --paper: #111110;
   --paper-tint: #171814;
   --ink: #fafaf5;
-  --muted: #9a9a90;
-  --quiet: #6f716a;
+  --muted: #c0c0b8;
+  --quiet: #8a8a82;
   --line: rgba(212, 255, 0, 0.12);
   --line-strong: rgba(212, 255, 0, 0.24);
   --acid: #d4ff00;
@@ -2774,5 +2911,36 @@ button.secondary-button:hover {
 :root[data-theme="dark"] .dash-tab--active,
 :root[data-theme="dark"] .tag-cloud a.is-active {
   background: var(--acid) !important;
+  color: var(--black) !important;
+}
+
+
+:root[data-theme="dark"] .app-sidebar {
+  background: linear-gradient(180deg, rgba(17,17,16,.92), rgba(10,10,8,.82)) !important;
+  border-color: rgba(212, 255, 0, 0.12) !important;
+  color: var(--ink) !important;
+}
+
+:root[data-theme="dark"] .sidebar-link {
+  background: rgba(255, 255, 255, 0.035) !important;
+  border-color: rgba(212, 255, 0, 0.12) !important;
+  color: var(--ink) !important;
+}
+
+:root[data-theme="dark"] .sidebar-link.is-active,
+:root[data-theme="dark"] .sidebar-link:hover {
+  border-color: var(--acid-hot) !important;
+  background: var(--acid-hot) !important;
+  color: var(--black) !important;
+}
+
+:root[data-theme="dark"] .sidebar-link small {
+  background: rgba(255,255,255,.1) !important;
+  color: var(--ink) !important;
+}
+
+:root[data-theme="dark"] .sidebar-link.is-active small,
+:root[data-theme="dark"] .sidebar-link:hover small {
+  background: rgba(0,0,0,.2) !important;
   color: var(--black) !important;
 }

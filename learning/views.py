@@ -20,7 +20,7 @@ from .credits import (
 )
 from .forms import ApiLessonForm, CourseForm, FreeLessonForm, ManualResultForm, PlanForm, RegisterForm, VerificationResultForm
 from .job_queue import enqueue_lesson_job
-from .models import ClassSession, Course, LessonJob, QuizAttempt, QuizResponse, UserPreference, get_plan_details
+from .models import ClassSession, Course, Difficulty, Flashcard, LessonJob, QuizAttempt, QuizResponse, UserPreference, get_plan_details
 from .parse_mini import apply_corrections_with_trace, assessment_to_dict, normalize_mini_text, parse_mini, render_mini_html, validate_mini_parse
 from .services import (
     build_generation_prompt,
@@ -180,10 +180,12 @@ def course_detail(request, pk):
         "processing": jobs.filter(status__in=[LessonJob.Status.QUEUED, LessonJob.Status.PROCESSING]).count(),
         "quizzes": sum(job.quiz_attempts.filter(user=request.user).count() for job in jobs[:100]),
     }
+    progress_pct = round((stats["ready"] / stats["classes"]) * 100) if stats["classes"] > 0 else 0
     return render(request, "learning/course_detail.html", {
         "course": course,
         "jobs": jobs[:24],
         "stats": stats,
+        "progress_pct": progress_pct,
     })
 
 
@@ -316,6 +318,7 @@ def lesson_detail(request, pk):
     item_count = 0
     cat_params = None
     bloom_stats = []
+    key_topics = set()
     if mini_text:
         from .parse_mini import parse_mini as _parse
         assessment = _parse(mini_text)
@@ -326,6 +329,13 @@ def lesson_detail(request, pk):
             count = sum(1 for item in assessment.items if item.bloom == level)
             if count:
                 bloom_stats.append({"level": level, "label": BLOOM_LABELS[level], "count": count})
+        for item in assessment.items:
+            if item.topic:
+                key_topics.add(item.topic)
+    if job.tags:
+        key_topics.update(t.strip() for t in job.tags.split(",") if t.strip())
+    if job.course and job.course.main_topics:
+        key_topics.update(job.course.main_topics)
 
     # calcular paso actual del pipeline
     pipeline_step = 0
@@ -339,16 +349,19 @@ def lesson_detail(request, pk):
     if job.verification_output or job.corrected_output:
         pipeline_step = 4
 
+    profile = _get_or_create_profile(request.user)
     return render(request, "learning/lesson_detail.html", {
         "job": job,
         "items_html": items_html,
         "item_count": item_count,
         "cat_params": cat_params,
         "bloom_stats": bloom_stats,
+        "key_topics": sorted(key_topics),
         "quiz_attempts": job.quiz_attempts.filter(user=request.user)[:8],
         "pipeline_step": pipeline_step,
         "pipeline_total": pipeline_total,
         "is_owner": job.user_id == request.user.id,
+        "profile": profile,
         "backends": get_available_backends(),
         "local_model": getattr(settings, "LOCAL_MODEL", None) or getattr(settings, "ANTHROPIC_MODEL", "local"),
     })
@@ -419,6 +432,11 @@ def quiz_attempt(request, pk, attempt_id):
         if bloom_counts.get(level, 0)
     ]
 
+    bloom_chart_data = [
+        {"label": BLOOM_LABELS.get(level, level), "count": bloom_counts.get(level, 0), "pct": round((bloom_counts.get(level, 0) / max(attempt.answered_count, 1)) * 100)}
+        for level in ["L1", "L2", "L3", "L4", "L5", "L6"]
+        if bloom_counts.get(level, 0) > 0
+    ]
     return render(request, "learning/quiz_attempt.html", {
         "job": job,
         "attempt": attempt,
@@ -427,6 +445,7 @@ def quiz_attempt(request, pk, attempt_id):
         "responses": responses,
         "progress_pct": progress_pct,
         "bloom_progress": bloom_progress,
+        "bloom_chart_data": bloom_chart_data,
         "bloom_labels": BLOOM_LABELS,
         "cat_params": params,
     })
@@ -1029,3 +1048,135 @@ def _safe_class_session(job: LessonJob) -> ClassSession | None:
         return job.class_session
     except ClassSession.DoesNotExist:
         return None
+
+
+# ══════════════════════════════════════════════════════════════════
+# FLASHCARDS
+# ══════════════════════════════════════════════════════════════════
+
+@login_required
+def flashcards(request, pk):
+    job = _get_accessible_job(request.user, pk)
+    # obtener o generar flashcards desde el MINI
+    session = _safe_class_session(job)
+    if not session and job.course_id:
+        session = _sync_class_session_for_job(job)
+    cards = list(Flashcard.objects.filter(class_session=session).order_by("?") if session else [])
+    if not cards and (job.corrected_output or job.toon_output):
+        cards = _ensure_flashcards_from_mini(job, session)
+    return render(request, "learning/flashcards.html", {
+        "job": job,
+        "cards": cards,
+        "card_count": len(cards),
+        "is_owner": job.user_id == request.user.id,
+    })
+
+
+@login_required
+def review_flashcard(request, pk):
+    if request.method != "POST":
+        raise Http404()
+    job = _get_accessible_job(request.user, pk)
+    flashcard_id = int(request.POST.get("flashcard_id", 0))
+    difficulty = request.POST.get("difficulty", "medium")  # again / hard / medium / easy
+    flashcard = get_object_or_404(Flashcard, pk=flashcard_id)
+    # spaced repetition básico
+    if difficulty == "again":
+        flashcard.mastery_level = max(0, flashcard.mastery_level - 1)
+        flashcard.next_review_at = timezone.now() + timezone.timedelta(minutes=10)
+    elif difficulty == "hard":
+        flashcard.mastery_level = max(0, flashcard.mastery_level)
+        flashcard.next_review_at = timezone.now() + timezone.timedelta(hours=4)
+    elif difficulty == "easy":
+        flashcard.mastery_level = min(5, flashcard.mastery_level + 1)
+        flashcard.next_review_at = timezone.now() + timezone.timedelta(days=3)
+    else:  # medium
+        flashcard.mastery_level = min(5, flashcard.mastery_level + 1)
+        flashcard.next_review_at = timezone.now() + timezone.timedelta(days=1)
+    flashcard.save(update_fields=["mastery_level", "next_review_at"])
+    # award XP
+    profile = _get_or_create_profile(request.user)
+    profile.total_xp += 2
+    profile.save()
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return JsonResponse({"ok": True, "mastery": flashcard.mastery_level, "next_review": flashcard.next_review_at.isoformat()})
+    return redirect("flashcards", pk=job.pk)
+
+
+def _ensure_flashcards_from_mini(job: LessonJob, session: ClassSession | None) -> list[Flashcard]:
+    """Genera flashcards básicas desde los ítems MINI si no existen."""
+    mini_text = job.corrected_output or job.toon_output
+    if not mini_text:
+        return []
+    from .parse_mini import parse_mini as _parse
+    assessment = _parse(mini_text)
+    created = []
+    for item in assessment.items:
+        def _is_correct(opt):
+            return opt.get("correct") if isinstance(opt, dict) else getattr(opt, "correct", False)
+        def _opt_text(opt):
+            return opt.get("text", "") if isinstance(opt, dict) else getattr(opt, "text", "")
+        correct = [opt for opt in item.options if _is_correct(opt)]
+        answer_text = _opt_text(correct[0]) if correct else (_opt_text(item.options[0]) if item.options else "")
+        topic = item.topic or job.tags.split(",")[0].strip() if job.tags else ""
+        card, _ = Flashcard.objects.get_or_create(
+            class_session=session,
+            question=item.statement,
+            defaults={
+                "course": job.course,
+                "answer": answer_text,
+                "topic": topic,
+                "difficulty": Difficulty.MEDIUM,
+            },
+        )
+        created.append(card)
+    return created
+
+
+# ══════════════════════════════════════════════════════════════════
+# MAPA DE CLASE
+# ══════════════════════════════════════════════════════════════════
+
+@login_required
+def class_map(request, pk):
+    job = _get_accessible_job(request.user, pk)
+    session = _safe_class_session(job)
+    if not session and job.course_id:
+        session = _sync_class_session_for_job(job)
+    topics = set()
+    concepts = set()
+    if job.tags:
+        topics.update(t.strip() for t in job.tags.split(",") if t.strip())
+    if job.course and job.course.main_topics:
+        topics.update(job.course.main_topics)
+    # extraer topics del MINI
+    bloom_counts = {}
+    if job.corrected_output or job.toon_output:
+        from .parse_mini import parse_mini as _parse
+        assessment = _parse(job.corrected_output or job.toon_output)
+        for item in assessment.items:
+            if item.topic:
+                topics.add(item.topic)
+            # usar enunciado como concepto si no hay topic
+            if item.statement:
+                concepts.add(item.statement[:120])
+            bloom_counts[item.bloom] = bloom_counts.get(item.bloom, 0) + 1
+    cards = list(Flashcard.objects.filter(class_session=session) if session else [])
+    for card in cards:
+        if card.topic:
+            topics.add(card.topic)
+        if card.answer:
+            concepts.add(card.answer[:120])
+    max_bloom = max(bloom_counts.values()) if bloom_counts else 1
+    bloom_chart_data = [
+        {"label": BLOOM_LABELS.get(level, level), "count": count, "pct": round((count / max_bloom) * 100) if max_bloom else 0}
+        for level, count in sorted(bloom_counts.items())
+    ]
+    return render(request, "learning/class_map.html", {
+        "job": job,
+        "topics": sorted(topics),
+        "concepts": sorted(concepts)[:24],
+        "bloom_chart_data": bloom_chart_data,
+        "card_count": len(cards),
+        "is_owner": job.user_id == request.user.id,
+    })

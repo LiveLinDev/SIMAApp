@@ -1,0 +1,122 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - link "SIMA inicio" [ref=e4] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e5]: //
+      - generic [ref=e6]: .
+      - strong [ref=e7]: SIMA
+    - navigation "Navegacion principal" [ref=e8]:
+      - link "Inicio" [ref=e9] [cursor=pointer]:
+        - /url: /dashboard/
+      - link "Cursos" [ref=e10] [cursor=pointer]:
+        - /url: /cursos/nuevo/
+      - link ".mini" [ref=e11] [cursor=pointer]:
+        - /url: /mini
+      - link "Benchmark" [ref=e12] [cursor=pointer]:
+        - /url: /mini/benchmark/
+      - link "Planes" [ref=e13] [cursor=pointer]:
+        - /url: /planes/
+      - button "Salir" [ref=e15] [cursor=pointer]
+  - generic [ref=e16]:
+    - complementary "Panel de usuario" [ref=e17]:
+      - generic [ref=e19]:
+        - generic [ref=e20]:
+          - paragraph [ref=e21]: Cuenta activa
+          - button "Cambiar a modo oscuro" [ref=e22]
+        - heading "testuser" [level=2] [ref=e23]
+        - text: Gratis - Nivel 1
+      - navigation "Secciones del dashboard" [ref=e24]:
+        - link "Cursos 1" [ref=e25] [cursor=pointer]:
+          - /url: /dashboard/
+          - generic [ref=e26]: Cursos
+          - generic [ref=e27]: "1"
+        - link "Mis clases 1" [ref=e28] [cursor=pointer]:
+          - /url: /dashboard/?tab=mis-clases
+          - generic [ref=e29]: Mis clases
+          - generic [ref=e30]: "1"
+        - link "Horarios 1" [ref=e31] [cursor=pointer]:
+          - /url: /dashboard/?tab=horario
+          - generic [ref=e32]: Horarios
+          - generic [ref=e33]: "1"
+        - link "Explorar 0" [ref=e34] [cursor=pointer]:
+          - /url: /dashboard/?tab=explorar
+          - generic [ref=e35]: Explorar
+          - generic [ref=e36]: "0"
+        - link "Preferencias 10" [ref=e37] [cursor=pointer]:
+          - /url: /dashboard/?tab=preferencias
+          - generic [ref=e38]: Preferencias
+          - generic [ref=e39]: "10"
+      - generic [ref=e40]:
+        - paragraph [ref=e41]: Acciones rapidas
+        - link "Nuevo curso" [ref=e42] [cursor=pointer]:
+          - /url: /cursos/nuevo/
+        - link "Clase manual" [ref=e43] [cursor=pointer]:
+          - /url: /gratis/nueva/
+      - generic [ref=e44]:
+        - text: Creditos disponibles
+        - strong [ref=e45]: "0"
+        - link "Gestionar plan" [ref=e46] [cursor=pointer]:
+          - /url: /planes/
+    - main [ref=e47]:
+      - generic [ref=e49]:
+        - link "Volver a la clase" [ref=e50] [cursor=pointer]:
+          - /url: /clase/8/
+          - img [ref=e51]
+          - text: Volver a la clase
+        - heading "Mapa de la clase" [level=1] [ref=e53]
+        - paragraph [ref=e54]: 6 temas · 3 conceptos
+      - generic [ref=e55]:
+        - generic [ref=e56]:
+          - heading "Temas de la clase" [level=3] [ref=e57]
+          - generic [ref=e58]:
+            - article [ref=e59]:
+              - img [ref=e61]
+              - generic [ref=e65]: Celula
+            - article [ref=e66]:
+              - img [ref=e68]
+              - generic [ref=e72]: Evolucion
+            - article [ref=e73]:
+              - img [ref=e75]
+              - generic [ref=e79]: Fotosintesis
+            - article [ref=e80]:
+              - img [ref=e82]
+              - generic [ref=e86]: biologia
+            - article [ref=e87]:
+              - img [ref=e89]
+              - generic [ref=e93]: celula
+            - article [ref=e94]:
+              - img [ref=e96]
+              - generic [ref=e100]: evolucion
+        - generic [ref=e101]:
+          - heading "Conceptos clave" [level=3] [ref=e102]
+          - generic [ref=e103]:
+            - article [ref=e104]:
+              - img [ref=e106]
+              - generic [ref=e110]: Darwin
+            - article [ref=e111]:
+              - img [ref=e113]
+              - generic [ref=e117]: Durante la fotosintesis las plantas producen
+            - article [ref=e118]:
+              - img [ref=e120]
+              - generic [ref=e124]: La unidad basica de la vida es
+            - article [ref=e125]:
+              - img [ref=e127]
+              - generic [ref=e131]: Quien propuso la teoria de la evolucion
+            - article [ref=e132]:
+              - img [ref=e134]
+              - generic [ref=e138]: la celula
+            - article [ref=e139]:
+              - img [ref=e141]
+              - generic [ref=e145]: oxigeno y glucosa
+        - generic [ref=e146]:
+          - heading "Distribucion Bloom" [level=3] [ref=e147]
+          - generic [ref=e148]:
+            - generic [ref=e149]:
+              - generic [ref=e150]: Recordar
+              - generic [ref=e153]: "1"
+            - generic [ref=e154]:
+              - generic [ref=e155]: Comprender
+              - generic [ref=e158]: "1"
+            - generic [ref=e159]:
+              - generic [ref=e160]: Aplicar
+              - generic [ref=e163]: "1"

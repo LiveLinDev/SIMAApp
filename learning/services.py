@@ -191,9 +191,14 @@ def estimate_adaptive_item_count(content_or_words, items_requested=None) -> int:
     elif word_count <= 5000:
         target = math.ceil(word_count / 85)
     elif word_count <= 9000:
+        target = math.ceil(word_count / 85)
+    elif word_count <= 15000:
         target = math.ceil(word_count / 95)
     else:
         target = math.ceil(word_count / 110)
+    # Garantizar ~100 items para clases largas (>5000 palabras ~30-40 min)
+    if word_count >= 5000:
+        target = max(target, 100)
     return clamp_int(target, minimum, maximum)
 
 

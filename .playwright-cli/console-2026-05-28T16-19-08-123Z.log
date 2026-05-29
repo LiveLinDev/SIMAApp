@@ -1,0 +1,8 @@
+[   18574ms] TypeError: Cannot set properties of null (setting 'value')
+    at updateControls (http://127.0.0.1:8025/clase/8/flashcards/:220:22)
+    at window.flipCard (http://127.0.0.1:8025/clase/8/flashcards/:234:5)
+    at HTMLDivElement.onclick (http://127.0.0.1:8025/clase/8/flashcards/:127:61)
+    at eval (eval at <anonymous> (eval at evaluate (:302:30)), <anonymous>:1:45)
+    at eval (eval at evaluate (:302:30), <anonymous>:2:29)
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)

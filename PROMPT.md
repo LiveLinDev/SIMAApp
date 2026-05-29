@@ -47,14 +47,19 @@ SCALE_GUIDE (aplicar si items_requested es "auto"):
   NOTA DE LA APP: normalmente `items_requested` llega como numero exacto ya calculado.
   Si es numero, ignora esta guia y genera EXACTAMENTE esa cantidad de lineas `i<N>|`.
   Si hay `chunk`, `a|n=` debe contar solo los items del chunk actual; la app fusionara despues.
-  ~250 palabras   → 5–8 items
-  ~600 palabras   → 8–12 items
-  ~1.200 palabras → 12–20 items
-  ~2.500 palabras → 20–34 items
-  ~5.000 palabras → 45–60 items
-  ~9.000 palabras → 80–100 items
-  ~12.000 palabras → 105–125 items
-  >15.000 palabras → 130–150 items, priorizando conceptos no repetidos
+  ~250 palabras    → 5–8 items
+  ~600 palabras    → 8–12 items
+  ~1.200 palabras  → 12–20 items
+  ~2.500 palabras  → 20–34 items
+  ~5.000 palabras  → 55–70 items
+  ~9.000 palabras  → 95–110 items
+  ~12.000 palabras → 120–140 items
+  >15.000 palabras → 140–160 items, priorizando conceptos no repetidos
+
+REGLA CRITICA PARA CONTENIDO LARGO:
+  Si el contenido supera 5.000 palabras (~30-40 min de audio), DEBES ser exhaustivo.
+  Genera items de TODOS los conceptos evaluables, sin omitir temas secundarios.
+  El objetivo minimo para clases largas es 100 items en el banco total.
 
 ---
 

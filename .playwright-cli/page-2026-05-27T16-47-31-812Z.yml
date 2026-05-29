@@ -1,0 +1,1136 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - link "SIMA inicio" [ref=e4] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e5]: //
+      - generic [ref=e6]: .
+      - strong [ref=e7]: SIMA
+    - navigation "Navegacion principal" [ref=e8]:
+      - link "Inicio" [ref=e9] [cursor=pointer]:
+        - /url: /dashboard/
+      - link "Cursos" [ref=e10] [cursor=pointer]:
+        - /url: /cursos/nuevo/
+      - link ".mini" [ref=e11] [cursor=pointer]:
+        - /url: /mini
+      - link "Benchmark" [ref=e12] [cursor=pointer]:
+        - /url: /mini/benchmark/
+      - link "Planes" [ref=e13] [cursor=pointer]:
+        - /url: /planes/
+      - button "Salir" [ref=e15] [cursor=pointer]
+  - generic [ref=e16]:
+    - complementary "Panel de usuario" [ref=e17]:
+      - generic [ref=e19]:
+        - generic [ref=e20]:
+          - paragraph [ref=e21]: Cuenta activa
+          - button "Cambiar a modo oscuro" [ref=e22]
+        - heading "testplaywright" [level=2] [ref=e23]
+        - text: Gratis - Nivel 1
+      - navigation "Secciones del dashboard" [ref=e24]:
+        - link "Cursos 1" [ref=e25] [cursor=pointer]:
+          - /url: /dashboard/
+          - generic [ref=e26]: Cursos
+          - generic [ref=e27]: "1"
+        - link "Mis clases 1" [ref=e28] [cursor=pointer]:
+          - /url: /dashboard/?tab=mis-clases
+          - generic [ref=e29]: Mis clases
+          - generic [ref=e30]: "1"
+        - link "Horarios 1" [ref=e31] [cursor=pointer]:
+          - /url: /dashboard/?tab=horario
+          - generic [ref=e32]: Horarios
+          - generic [ref=e33]: "1"
+        - link "Explorar 0" [ref=e34] [cursor=pointer]:
+          - /url: /dashboard/?tab=explorar
+          - generic [ref=e35]: Explorar
+          - generic [ref=e36]: "0"
+        - link "Preferencias 10" [ref=e37] [cursor=pointer]:
+          - /url: /dashboard/?tab=preferencias
+          - generic [ref=e38]: Preferencias
+          - generic [ref=e39]: "10"
+      - generic [ref=e40]:
+        - paragraph [ref=e41]: Acciones rapidas
+        - link "Nuevo curso" [ref=e42] [cursor=pointer]:
+          - /url: /cursos/nuevo/
+        - link "Clase manual" [ref=e43] [cursor=pointer]:
+          - /url: /gratis/nueva/
+      - generic [ref=e44]:
+        - text: Creditos disponibles
+        - strong [ref=e45]: "0"
+        - link "Gestionar plan" [ref=e46] [cursor=pointer]:
+          - /url: /planes/
+    - main [ref=e47]:
+      - generic [ref=e49]:
+        - link "Volver a la clase" [ref=e50] [cursor=pointer]:
+          - /url: /clase/5/
+          - img [ref=e51]
+          - text: Volver a la clase
+        - 'heading "Repaso: Test Clase Biologia" [level=1] [ref=e53]'
+        - paragraph [ref=e54]: 105 tarjetas · Voltear para ver la respuesta
+      - generic [ref=e55]:
+        - generic [ref=e56]: 1 / 105
+        - generic [ref=e57]:
+          - generic [ref=e59] [cursor=pointer]:
+            - generic [ref=e60]:
+              - generic [ref=e61]: Pregunta
+              - paragraph [ref=e62]: Pregunta 1 sobre ecologia
+              - generic [ref=e63]: Toca para voltear
+            - generic [ref=e64]:
+              - generic [ref=e65]: Respuesta
+              - paragraph [ref=e66]: opcion3
+              - generic [ref=e67]: ecologia
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 2 sobre fotosintesis
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion3
+                - generic: fotosintesis
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 3 sobre genetica
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion1
+                - generic: genetica
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 4 sobre metabolismo
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion1
+                - generic: metabolismo
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 5 sobre genetica
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: genetica
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 6 sobre metabolismo
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion1
+                - generic: metabolismo
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 7 sobre genetica
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion3
+                - generic: genetica
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 8 sobre fotosintesis
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion1
+                - generic: fotosintesis
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 9 sobre metabolismo
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion3
+                - generic: metabolismo
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 10 sobre celula
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: celula
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 11 sobre genetica
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion2
+                - generic: genetica
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 12 sobre metabolismo
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion1
+                - generic: metabolismo
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 13 sobre fotosintesis
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: fotosintesis
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 14 sobre fotosintesis
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion2
+                - generic: fotosintesis
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 15 sobre respiracion
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: respiracion
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 16 sobre respiracion
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: respiracion
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 17 sobre respiracion
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion1
+                - generic: respiracion
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 18 sobre genetica
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion1
+                - generic: genetica
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 19 sobre genetica
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: genetica
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 20 sobre celula
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: celula
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 21 sobre ecologia
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: ecologia
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 22 sobre fotosintesis
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion1
+                - generic: fotosintesis
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 23 sobre metabolismo
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion1
+                - generic: metabolismo
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 24 sobre genetica
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion2
+                - generic: genetica
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 25 sobre fotosintesis
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion3
+                - generic: fotosintesis
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 26 sobre fotosintesis
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: fotosintesis
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 27 sobre celula
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion1
+                - generic: celula
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 28 sobre celula
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion1
+                - generic: celula
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 29 sobre metabolismo
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion2
+                - generic: metabolismo
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 30 sobre genetica
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion3
+                - generic: genetica
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 31 sobre respiracion
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion1
+                - generic: respiracion
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 32 sobre ecologia
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion2
+                - generic: ecologia
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 33 sobre metabolismo
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: metabolismo
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 34 sobre celula
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion3
+                - generic: celula
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 35 sobre ecologia
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion3
+                - generic: ecologia
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 36 sobre genetica
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion1
+                - generic: genetica
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 37 sobre fotosintesis
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion1
+                - generic: fotosintesis
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 38 sobre ecologia
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion1
+                - generic: ecologia
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 39 sobre celula
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion3
+                - generic: celula
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 40 sobre genetica
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion1
+                - generic: genetica
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 41 sobre ecologia
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion2
+                - generic: ecologia
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 42 sobre respiracion
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: respiracion
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 43 sobre metabolismo
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion3
+                - generic: metabolismo
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 44 sobre metabolismo
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion1
+                - generic: metabolismo
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 45 sobre ecologia
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion2
+                - generic: ecologia
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 46 sobre genetica
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion3
+                - generic: genetica
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 47 sobre ecologia
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: ecologia
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 48 sobre ecologia
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion1
+                - generic: ecologia
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 49 sobre genetica
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: genetica
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 50 sobre celula
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: celula
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 51 sobre metabolismo
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion2
+                - generic: metabolismo
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 52 sobre genetica
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion2
+                - generic: genetica
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 53 sobre celula
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion2
+                - generic: celula
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 54 sobre genetica
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion3
+                - generic: genetica
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 55 sobre metabolismo
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion2
+                - generic: metabolismo
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 56 sobre ecologia
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion3
+                - generic: ecologia
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 57 sobre genetica
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion2
+                - generic: genetica
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 58 sobre respiracion
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion1
+                - generic: respiracion
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 59 sobre genetica
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion3
+                - generic: genetica
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 60 sobre respiracion
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: respiracion
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 61 sobre celula
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion1
+                - generic: celula
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 62 sobre fotosintesis
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion2
+                - generic: fotosintesis
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 63 sobre genetica
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion3
+                - generic: genetica
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 64 sobre ecologia
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion2
+                - generic: ecologia
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 65 sobre genetica
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: genetica
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 66 sobre genetica
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion1
+                - generic: genetica
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 67 sobre ecologia
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: ecologia
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 68 sobre metabolismo
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: metabolismo
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 69 sobre genetica
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion3
+                - generic: genetica
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 70 sobre fotosintesis
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: fotosintesis
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 71 sobre metabolismo
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion1
+                - generic: metabolismo
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 72 sobre celula
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion3
+                - generic: celula
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 73 sobre fotosintesis
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: fotosintesis
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 74 sobre celula
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: celula
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 75 sobre celula
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion3
+                - generic: celula
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 76 sobre fotosintesis
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: fotosintesis
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 77 sobre genetica
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion3
+                - generic: genetica
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 78 sobre genetica
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: genetica
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 79 sobre metabolismo
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: metabolismo
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 80 sobre fotosintesis
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: fotosintesis
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 81 sobre celula
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion3
+                - generic: celula
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 82 sobre ecologia
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion1
+                - generic: ecologia
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 83 sobre ecologia
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion3
+                - generic: ecologia
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 84 sobre celula
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion3
+                - generic: celula
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 85 sobre respiracion
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion1
+                - generic: respiracion
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 86 sobre genetica
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion1
+                - generic: genetica
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 87 sobre celula
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: celula
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 88 sobre genetica
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion2
+                - generic: genetica
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 89 sobre celula
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion2
+                - generic: celula
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 90 sobre genetica
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion1
+                - generic: genetica
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 91 sobre metabolismo
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion1
+                - generic: metabolismo
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 92 sobre fotosintesis
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion2
+                - generic: fotosintesis
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 93 sobre respiracion
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: respiracion
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 94 sobre genetica
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: genetica
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 95 sobre metabolismo
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: metabolismo
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 96 sobre metabolismo
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: metabolismo
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 97 sobre metabolismo
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: metabolismo
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 98 sobre respiracion
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion3
+                - generic: respiracion
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 99 sobre celula
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion1
+                - generic: celula
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 100 sobre genetica
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: genetica
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 101 sobre ecologia
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion3
+                - generic: ecologia
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 102 sobre respiracion
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion4
+                - generic: respiracion
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 103 sobre fotosintesis
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion2
+                - generic: fotosintesis
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 104 sobre genetica
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion2
+                - generic: genetica
+          - generic:
+            - generic:
+              - generic:
+                - generic: Pregunta
+                - paragraph: Pregunta 105 sobre genetica
+                - generic: Toca para voltear
+              - generic:
+                - generic: Respuesta
+                - paragraph: opcion2
+                - generic: genetica
+        - generic:
+          - generic:
+            - button "De nuevo < 10 min":
+              - strong: De nuevo
+              - generic: < 10 min
+            - button "Difícil 4 h":
+              - strong: Difícil
+              - generic: 4 h
+            - button "Bien 1 d":
+              - strong: Bien
+              - generic: 1 d
+            - button "Fácil 3 d":
+              - strong: Fácil
+              - generic: 3 d
+        - generic [ref=e68]:
+          - button "Anterior" [disabled] [ref=e69] [cursor=pointer]
+          - button "Siguiente" [ref=e70] [cursor=pointer]

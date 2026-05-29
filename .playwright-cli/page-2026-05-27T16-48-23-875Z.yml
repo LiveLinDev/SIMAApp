@@ -1,0 +1,156 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - link "SIMA inicio" [ref=e4] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e5]: //
+      - generic [ref=e6]: .
+      - strong [ref=e7]: SIMA
+    - navigation "Navegacion principal" [ref=e8]:
+      - link "Inicio" [ref=e9] [cursor=pointer]:
+        - /url: /dashboard/
+      - link "Cursos" [ref=e10] [cursor=pointer]:
+        - /url: /cursos/nuevo/
+      - link ".mini" [ref=e11] [cursor=pointer]:
+        - /url: /mini
+      - link "Benchmark" [ref=e12] [cursor=pointer]:
+        - /url: /mini/benchmark/
+      - link "Planes" [ref=e13] [cursor=pointer]:
+        - /url: /planes/
+      - button "Salir" [ref=e15] [cursor=pointer]
+  - generic [ref=e16]:
+    - complementary "Panel de usuario" [ref=e17]:
+      - generic [ref=e19]:
+        - generic [ref=e20]:
+          - paragraph [ref=e21]: Cuenta activa
+          - button "Cambiar a modo oscuro" [ref=e22]
+        - heading "testplaywright" [level=2] [ref=e23]
+        - text: Gratis - Nivel 1
+      - navigation "Secciones del dashboard" [ref=e24]:
+        - link "Cursos 1" [ref=e25] [cursor=pointer]:
+          - /url: /dashboard/
+          - generic [ref=e26]: Cursos
+          - generic [ref=e27]: "1"
+        - link "Mis clases 1" [ref=e28] [cursor=pointer]:
+          - /url: /dashboard/?tab=mis-clases
+          - generic [ref=e29]: Mis clases
+          - generic [ref=e30]: "1"
+        - link "Horarios 1" [ref=e31] [cursor=pointer]:
+          - /url: /dashboard/?tab=horario
+          - generic [ref=e32]: Horarios
+          - generic [ref=e33]: "1"
+        - link "Explorar 0" [ref=e34] [cursor=pointer]:
+          - /url: /dashboard/?tab=explorar
+          - generic [ref=e35]: Explorar
+          - generic [ref=e36]: "0"
+        - link "Preferencias 10" [ref=e37] [cursor=pointer]:
+          - /url: /dashboard/?tab=preferencias
+          - generic [ref=e38]: Preferencias
+          - generic [ref=e39]: "10"
+      - generic [ref=e40]:
+        - paragraph [ref=e41]: Acciones rapidas
+        - link "Nuevo curso" [ref=e42] [cursor=pointer]:
+          - /url: /cursos/nuevo/
+        - link "Clase manual" [ref=e43] [cursor=pointer]:
+          - /url: /gratis/nueva/
+      - generic [ref=e44]:
+        - text: Creditos disponibles
+        - strong [ref=e45]: "0"
+        - link "Gestionar plan" [ref=e46] [cursor=pointer]:
+          - /url: /planes/
+    - main [ref=e47]:
+      - generic [ref=e48]:
+        - generic [ref=e49]:
+          - link "Volver" [ref=e50] [cursor=pointer]:
+            - /url: /dashboard/
+            - img [ref=e51]
+            - text: Volver
+          - generic [ref=e53]:
+            - heading "Test Clase Biologia" [level=1] [ref=e54]
+            - button "Editar nombre" [ref=e55] [cursor=pointer]:
+              - img [ref=e56]
+          - paragraph [ref=e59]: 27 May 2026 · Corregido y listo
+        - generic [ref=e60]:
+          - button "Compartir / Visibilidad" [ref=e61] [cursor=pointer]:
+            - img [ref=e62]
+          - button "Descargar JSON" [ref=e68] [cursor=pointer]:
+            - img [ref=e69]
+          - button "Eliminar clase" [ref=e72] [cursor=pointer]:
+            - img [ref=e73]
+      - generic [ref=e76]:
+        - generic [ref=e78]:
+          - generic [ref=e79]: 105 preguntas
+          - generic [ref=e80]: IRT adaptativo
+          - generic [ref=e81]: Verificado
+          - generic [ref=e82]: biologia
+          - generic [ref=e83]: fotosintesis
+          - generic [ref=e84]: celula
+        - generic [ref=e85]:
+          - heading "Plan de estudio" [level=3] [ref=e86]
+          - paragraph [ref=e87]: El CAT elegirá cada ítem por información IRT 3PL y cubrirá niveles de Bloom según tu banco.
+          - generic [ref=e88]:
+            - generic [ref=e89] [cursor=pointer]:
+              - radio "5 preguntas Rápido (3 min)" [checked] [active]
+              - text: 5 preguntas
+              - generic [ref=e90]: Rápido (3 min)
+            - generic [ref=e91] [cursor=pointer]:
+              - radio "10 preguntas Estándar (6 min)"
+              - text: 10 preguntas
+              - generic [ref=e92]: Estándar (6 min)
+            - generic [ref=e93] [cursor=pointer]:
+              - radio "15 preguntas Intenso (10 min)"
+              - text: 15 preguntas
+              - generic [ref=e94]: Intenso (10 min)
+        - generic [ref=e95]:
+          - generic [ref=e96]:
+            - generic [ref=e97]: ⚡
+            - generic [ref=e98]:
+              - strong [ref=e99]: Nivel 1
+              - generic [ref=e100]: 0 XP
+          - generic [ref=e101]:
+            - generic [ref=e102]: 🔥
+            - generic [ref=e103]:
+              - strong [ref=e104]: 0 dias
+              - generic [ref=e105]: Racha actual
+        - generic [ref=e107]:
+          - link "Repasar Flashcards de la clase" [ref=e108] [cursor=pointer]:
+            - /url: /clase/5/flashcards/
+            - img [ref=e110]
+            - generic [ref=e113]:
+              - strong [ref=e114]: Repasar
+              - generic [ref=e115]: Flashcards de la clase
+          - link "Mapa Ver temas y conceptos" [ref=e116] [cursor=pointer]:
+            - /url: /clase/5/mapa/
+            - img [ref=e118]
+            - generic [ref=e120]:
+              - strong [ref=e121]: Mapa
+              - generic [ref=e122]: Ver temas y conceptos
+          - button "Tomar quiz IRT adaptativo · 105 items" [ref=e123] [cursor=pointer]:
+            - img [ref=e125]
+            - generic [ref=e128]:
+              - strong [ref=e129]: Tomar quiz
+              - generic [ref=e130]: IRT adaptativo · 105 items
+        - generic [ref=e131]:
+          - heading "Banco IRT y Bloom" [level=3] [ref=e132]
+          - generic [ref=e133]:
+            - generic [ref=e134]: "L1 Recordar: 21"
+            - generic [ref=e135]: "L2 Comprender: 14"
+            - generic [ref=e136]: "L3 Aplicar: 16"
+            - generic [ref=e137]: "L4 Analizar: 14"
+            - generic [ref=e138]: "L5 Evaluar: 24"
+            - generic [ref=e139]: "L6 Crear: 16"
+        - generic [ref=e140]:
+          - heading "Tu historial" [level=3] [ref=e141]
+          - generic [ref=e142]:
+            - img [ref=e143]
+            - paragraph [ref=e144]: Aún no has hecho ningún intento.
+            - paragraph [ref=e145]: Cuando completes el primero, verás precisión, θ, error estándar y recorrido por Bloom.
+        - generic [ref=e146]:
+          - heading "Adaptación CAT" [level=3] [ref=e147]
+          - paragraph [ref=e148]: El siguiente ítem se elige por información máxima cerca de tu θ actual, con balance por Bloom y control de exposición.
+          - generic [ref=e149]:
+            - generic [ref=e150]: Modelo SH
+            - generic [ref=e151]: θ -3,0 a 3,0
+            - generic [ref=e152]: Máx. 105 ítems
+        - button "Modo avanzado (ver pipeline y editar)" [ref=e154] [cursor=pointer]:
+          - img [ref=e156]
+          - text: Modo avanzado (ver pipeline y editar)

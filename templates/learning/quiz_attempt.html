@@ -4,13 +4,16 @@
 
 <section class="ld-header">
   <div class="ld-title-group">
-    <a href="{% url 'lesson_detail' job.pk %}" class="back-link">‹ Volver a la clase</a>
+    <a href="{% url 'lesson_detail' job.pk %}" class="back-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Volver a la clase
+    </a>
     <h1>Quiz adaptativo</h1>
     <p class="ld-meta">{{ job.title }} · θ {{ attempt.theta|floatformat:2 }} · SE {{ attempt.standard_error|floatformat:2 }}</p>
   </div>
   <div class="dash-stats">
     <div class="stat-card"><strong>{{ attempt.correct_count }}/{{ attempt.answered_count }}</strong><small>Correctas</small></div>
-    <div class="stat-card"><strong>{{ attempt.accuracy }}%</strong><small>Precisión</small></div>
+    <div class="stat-card"><strong>{{ attempt.accuracy }}%</strong><small>Precision</small></div>
     <div class="stat-card"><strong>{{ attempt.target_count }}</strong><small>Objetivo</small></div>
   </div>
 </section>
@@ -19,14 +22,55 @@
   <div class="progress quiz-progress"><span style="width: {{ progress_pct }}%"></span></div>
 
   {% if attempt.is_complete %}
+  {# ═════ RESULTADO FINAL ═════ #}
   <section class="quiz-panel quiz-panel--result">
     <p class="eyebrow">Intento completado</p>
     <h2>Resultado adaptativo</h2>
     <div class="result-grid">
       <div><strong>{{ attempt.theta|floatformat:2 }}</strong><span>Habilidad estimada θ</span></div>
-      <div><strong>{{ attempt.standard_error|floatformat:2 }}</strong><span>Error estándar</span></div>
+      <div><strong>{{ attempt.standard_error|floatformat:2 }}</strong><span>Error estandar</span></div>
       <div><strong>{{ attempt.correct_count }}/{{ attempt.answered_count }}</strong><span>Respuestas correctas</span></div>
     </div>
+
+    {# Seccion de adaptacion avanzada #}
+    <div class="adapt-section">
+      <h3>🧠 Como se adapto tu quiz</h3>
+      <p class="adapt-text">
+        Este quiz uso <strong>Teoria de Respuesta al Item (IRT)</strong> con un modelo de 3 parametros.
+        Cada pregunta se eligio en tiempo real para maximizar la informacion cerca de tu nivel de habilidad estimado (θ).
+      </p>
+      <div class="adapt-facts">
+        <div class="adapt-fact">
+          <span class="adapt-fact-icon">📊</span>
+          <span><strong>Seleccion adaptativa</strong><small>Cada item se eligio por informacion maxima en tu θ actual</small></span>
+        </div>
+        <div class="adapt-fact">
+          <span class="adapt-fact-icon">🎯</span>
+          <span><strong>Cobertura Bloom</strong><small>Se balancearon niveles de demanda cognitiva</small></span>
+        </div>
+        <div class="adapt-fact">
+          <span class="adapt-fact-icon">⚡</span>
+          <span><strong>Parada inteligente</strong><small>El quiz termino cuando el error estandar fue ≤ {{ cat_params.se_stop|default:"0.30" }}</small></span>
+        </div>
+      </div>
+    </div>
+
+    {# Bloom bars #}
+    {% if bloom_progress %}
+    <div class="bloom-chart">
+      <h4>Progreso por nivel Bloom</h4>
+      {% for row in bloom_chart_data %}
+      <div class="bloom-chart-row">
+        <span class="bloom-chart-label">{{ row.label }}</span>
+        <div class="bloom-chart-track">
+          <div class="bloom-chart-fill" style="width:{{ row.pct }}%"></div>
+        </div>
+        <span class="bloom-chart-count">{{ row.count }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
     <div class="bloom-strip">
       {% for stat in bloom_progress %}
         <span class="study-badge">{{ stat.level }} {{ stat.label }}: {{ stat.count }}</span>
@@ -34,9 +78,15 @@
         <span class="study-badge">Sin respuestas por Bloom</span>
       {% endfor %}
     </div>
-    <a class="primary-button" href="{% url 'lesson_detail' job.pk %}">Ver historial</a>
+
+    <div class="result-actions">
+      <a class="secondary-button" href="{% url 'flashcards' job.pk %}">Repasar flashcards</a>
+      <a class="primary-button" href="{% url 'lesson_detail' job.pk %}">Volver a la clase</a>
+    </div>
   </section>
+
   {% elif item %}
+  {# ═════ PREGUNTA ACTIVA ═════ #}
   <section class="quiz-panel">
     <div class="quiz-item-head">
       <span class="study-badge">{{ item.bloom }} {{ item_bloom_label }}</span>
@@ -54,13 +104,12 @@
         </label>
         {% endfor %}
       </div>
-      <button class="primary-button full" type="submit">Responder y adaptar</button>
+      <button class="primary-button full" type="submit">Responder y continuar</button>
     </form>
     <script>
       (function () {
         var container = document.getElementById("options-container");
         var labels = Array.from(container.querySelectorAll(".answer-option"));
-        // Fisher-Yates shuffle
         for (var i = labels.length - 1; i > 0; i--) {
           var j = Math.floor(Math.random() * (i + 1));
           container.appendChild(labels[j]);
@@ -84,7 +133,7 @@
       {% endfor %}
     </div>
     {% else %}
-      <p class="muted">Aún no hay respuestas. La primera pregunta parte de θ inicial y luego se adapta.</p>
+      <p class="muted">Aun no hay respuestas. La primera pregunta parte de θ inicial y luego se adapta.</p>
     {% endif %}
   </section>
 </div>
@@ -93,16 +142,16 @@
   .quiz-shell { max-width: 860px; margin: 0 auto; display: grid; gap: 16px; }
   .quiz-progress { margin-bottom: 4px; }
   .quiz-panel {
-    border: 1px solid var(--line); border-radius: var(--radius-lg);
+    border: 1px solid var(--line); border-radius: 16px;
     background: var(--surface); padding: 22px; box-shadow: 0 18px 50px var(--shadow);
   }
-  .quiz-panel h2 { margin: 12px 0 18px; color: var(--white); line-height: 1.25; }
-  .quiz-panel h3 { margin: 0 0 12px; color: var(--white); }
+  .quiz-panel h2 { margin: 12px 0 18px; color: var(--ink); line-height: 1.25; }
+  .quiz-panel h3 { margin: 0 0 12px; color: var(--ink); }
   .quiz-item-head, .bloom-strip { display: flex; flex-wrap: wrap; gap: 8px; }
   .answer-form { display: grid; gap: 10px; }
   .answer-option {
     display: flex; align-items: flex-start; gap: 12px; padding: 14px;
-    border: 1px solid var(--line); border-radius: var(--radius-md);
+    border: 1px solid var(--line); border-radius: 12px;
     background: rgba(255,255,255,.02); cursor: pointer;
   }
   .answer-option:hover { border-color: var(--acid); }
@@ -112,7 +161,7 @@
     display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 16px 0;
   }
   .result-grid div, .response-row {
-    border: 1px solid var(--line); border-radius: var(--radius-md);
+    border: 1px solid var(--line); border-radius: 12px;
     background: rgba(255,255,255,.02); padding: 14px;
   }
   .result-grid strong { display: block; color: var(--acid); font-family: var(--font-mono); font-size: 1.6rem; }
@@ -120,7 +169,65 @@
   .response-list { display: grid; gap: 8px; }
   .response-row--ok { border-color: rgba(212,255,0,.45); }
   .response-row--bad { border-color: rgba(255,95,87,.45); }
-  @media (max-width: 640px) { .result-grid { grid-template-columns: 1fr; } }
+
+  /* Adapt section */
+  .adapt-section {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: rgba(212,255,0,.04);
+    padding: 18px;
+    margin: 18px 0;
+  }
+  .adapt-section h3 { margin: 0 0 10px; font-size: 1rem; }
+  .adapt-text { margin: 0 0 14px; color: var(--muted); font-size: .9rem; line-height: 1.6; }
+  .adapt-facts { display: grid; gap: 10px; }
+  .adapt-fact {
+    display: flex; align-items: flex-start; gap: 10px;
+    border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); padding: 12px;
+  }
+  .adapt-fact-icon { font-size: 1.3rem; line-height: 1; }
+  .adapt-fact strong { display: block; color: var(--ink); font-size: .9rem; }
+  .adapt-fact small { display: block; color: var(--muted); font-size: .78rem; }
+
+  /* Bloom chart */
+  .bloom-chart { margin: 18px 0; }
+  .bloom-chart h4 { margin: 0 0 12px; font-size: .95rem; color: var(--ink); }
+  .bloom-chart-row {
+    display: grid;
+    grid-template-columns: 110px 1fr 32px;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .bloom-chart-label { font-size: .8rem; font-weight: 700; color: var(--muted); }
+  .bloom-chart-track {
+    height: 10px;
+    border-radius: 999px;
+    background: var(--line);
+    overflow: hidden;
+  }
+  .bloom-chart-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--acid), var(--acid-hot));
+    transition: width .6s ease;
+  }
+  .bloom-chart-count { font-size: .8rem; font-weight: 900; color: var(--ink); text-align: right; }
+
+  .result-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 18px;
+  }
+  .result-actions a { flex: 1; min-width: 160px; text-align: center; }
+
+  @media (max-width: 640px) {
+    .result-grid { grid-template-columns: 1fr; }
+    .bloom-chart-row { grid-template-columns: 90px 1fr 28px; }
+    .result-actions a { width: 100%; }
+  }
 </style>
 
 {% endblock %}

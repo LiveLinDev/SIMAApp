@@ -1,0 +1,53 @@
+{% load static %}
+{% if user.is_authenticated %}
+<aside class="app-sidebar" aria-label="Panel de usuario">
+  <div class="sidebar-profile">
+    <div>
+      <div class="account-topline">
+        <p class="eyebrow">Cuenta activa</p>
+        <button class="theme-icon-toggle" type="button" aria-label="Cambiar modo" data-theme-toggle>
+          <span class="theme-sun" aria-hidden="true"></span>
+          <span class="theme-moon" aria-hidden="true"></span>
+        </button>
+      </div>
+      <h2>{{ user.username }}</h2>
+      <span>{{ sidebar_profile.get_plan_display }} - Nivel {{ sidebar_profile.level }}</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav" aria-label="Secciones del dashboard">
+    <a class="sidebar-link {% if sidebar_active_tab == 'cursos' %}is-active{% endif %}" href="{% url 'dashboard' %}">
+      <span>Cursos</span>
+      <small>{{ sidebar_stats.course_count }}</small>
+    </a>
+    <a class="sidebar-link {% if sidebar_active_tab == 'mis-clases' %}is-active{% endif %}" href="{% url 'dashboard' %}?tab=mis-clases">
+      <span>Mis clases</span>
+      <small>{{ sidebar_stats.lesson_count }}</small>
+    </a>
+    <a class="sidebar-link {% if sidebar_active_tab == 'horario' %}is-active{% endif %}" href="{% url 'dashboard' %}?tab=horario">
+      <span>Horarios</span>
+      <small>{{ sidebar_stats.session_count }}</small>
+    </a>
+    <a class="sidebar-link {% if sidebar_active_tab == 'explorar' %}is-active{% endif %}" href="{% url 'dashboard' %}?tab=explorar">
+      <span>Explorar</span>
+      <small>0</small>
+    </a>
+    <a class="sidebar-link {% if sidebar_active_tab == 'preferencias' %}is-active{% endif %}" href="{% url 'dashboard' %}?tab=preferencias">
+      <span>Preferencias</span>
+      <small>{{ sidebar_preferences.daily_goal }}</small>
+    </a>
+  </nav>
+
+  <div class="sidebar-block">
+    <p class="sidebar-label">Acciones rapidas</p>
+    <a class="sidebar-action" href="{% url 'course_create' %}">Nuevo curso</a>
+    <a class="sidebar-action" href="{% url 'free_lesson' %}">Clase manual</a>
+  </div>
+
+  <div class="sidebar-plan">
+    <span>Creditos disponibles</span>
+    <strong>{{ sidebar_profile.credits_label }}</strong>
+    <a href="{% url 'plans' %}">Gestionar plan</a>
+  </div>
+</aside>
+{% endif %}

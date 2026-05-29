@@ -1,0 +1,118 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - link "SIMA inicio" [ref=e4] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e5]: //
+      - generic [ref=e6]: .
+      - strong [ref=e7]: SIMA
+    - navigation "Navegacion principal" [ref=e8]:
+      - link "Inicio" [ref=e9] [cursor=pointer]:
+        - /url: /dashboard/
+      - link "Cursos" [ref=e10] [cursor=pointer]:
+        - /url: /cursos/nuevo/
+      - link ".mini" [ref=e11] [cursor=pointer]:
+        - /url: /mini
+      - link "Benchmark" [ref=e12] [cursor=pointer]:
+        - /url: /mini/benchmark/
+      - link "Planes" [ref=e13] [cursor=pointer]:
+        - /url: /planes/
+      - button "Salir" [ref=e15] [cursor=pointer]
+  - generic [ref=e16]:
+    - complementary "Panel de usuario" [ref=e17]:
+      - generic [ref=e19]:
+        - generic [ref=e20]:
+          - paragraph [ref=e21]: Cuenta activa
+          - button "Cambiar a modo oscuro" [ref=e22]
+        - heading "testplaywright" [level=2] [ref=e23]
+        - text: Gratis - Nivel 1
+      - navigation "Secciones del dashboard" [ref=e24]:
+        - link "Cursos 1" [ref=e25] [cursor=pointer]:
+          - /url: /dashboard/
+          - generic [ref=e26]: Cursos
+          - generic [ref=e27]: "1"
+        - link "Mis clases 0" [ref=e28] [cursor=pointer]:
+          - /url: /dashboard/?tab=mis-clases
+          - generic [ref=e29]: Mis clases
+          - generic [ref=e30]: "0"
+        - link "Horarios 0" [ref=e31] [cursor=pointer]:
+          - /url: /dashboard/?tab=horario
+          - generic [ref=e32]: Horarios
+          - generic [ref=e33]: "0"
+        - link "Explorar 0" [ref=e34] [cursor=pointer]:
+          - /url: /dashboard/?tab=explorar
+          - generic [ref=e35]: Explorar
+          - generic [ref=e36]: "0"
+        - link "Preferencias 10" [ref=e37] [cursor=pointer]:
+          - /url: /dashboard/?tab=preferencias
+          - generic [ref=e38]: Preferencias
+          - generic [ref=e39]: "10"
+      - generic [ref=e40]:
+        - paragraph [ref=e41]: Acciones rapidas
+        - link "Nuevo curso" [ref=e42] [cursor=pointer]:
+          - /url: /cursos/nuevo/
+        - link "Clase manual" [ref=e43] [cursor=pointer]:
+          - /url: /gratis/nueva/
+      - generic [ref=e44]:
+        - text: Creditos disponibles
+        - strong [ref=e45]: "0"
+        - link "Gestionar plan" [ref=e46] [cursor=pointer]:
+          - /url: /planes/
+    - main [ref=e47]:
+      - generic [ref=e48]:
+        - generic [ref=e49]:
+          - generic [ref=e50]:
+            - link "Inicio" [ref=e51] [cursor=pointer]:
+              - /url: /dashboard/
+              - img [ref=e52]
+              - text: Inicio
+            - generic [ref=e54]: /
+            - generic [ref=e55]: 2026-1
+          - heading "Biologia General Test" [level=1] [ref=e56]
+          - paragraph [ref=e57]: prepararme para parciales
+          - generic [ref=e59]: Introductorio
+        - link "Clase manual" [ref=e61] [cursor=pointer]:
+          - /url: /gratis/nueva/?course=7
+          - img [ref=e62]
+          - text: Clase manual
+      - generic [ref=e64]:
+        - article [ref=e65]:
+          - strong [ref=e66]: "0"
+          - generic [ref=e67]: Clases
+        - article [ref=e68]:
+          - strong [ref=e69]: "0"
+          - generic [ref=e70]: Listas
+        - article [ref=e71]:
+          - strong [ref=e72]: "0"
+          - generic [ref=e73]: En proceso
+        - article [ref=e74]:
+          - strong [ref=e75]: "0"
+          - generic [ref=e76]: Intentos
+      - generic [ref=e77]:
+        - generic [ref=e78]:
+          - generic [ref=e80]:
+            - paragraph [ref=e81]: Contenido
+            - heading "Clases del curso" [level=2] [ref=e82]
+          - generic [ref=e83]:
+            - img [ref=e85]
+            - heading "Aun no hay clases en este curso" [level=3] [ref=e88]
+            - paragraph [ref=e89]: Sube una grabacion o pega apuntes para empezar a construir el contexto del curso.
+            - link "Crear primera clase" [ref=e90] [cursor=pointer]:
+              - /url: /gratis/nueva/?course=7
+        - complementary [ref=e91]:
+          - generic [ref=e92]:
+            - heading "Temas principales" [level=3] [ref=e93]
+            - generic [ref=e94]:
+              - generic [ref=e95]: fotosintesis
+              - generic [ref=e96]: celula
+              - generic [ref=e97]: genetica
+              - generic [ref=e98]: ecologia
+          - generic [ref=e99]:
+            - heading "Acciones rapidas" [level=3] [ref=e100]
+            - generic [ref=e101]:
+              - link "Clase manual" [ref=e102] [cursor=pointer]:
+                - /url: /gratis/nueva/?course=7
+              - link "Nuevo curso" [ref=e103] [cursor=pointer]:
+                - /url: /cursos/nuevo/
+          - generic [ref=e104]:
+            - heading "Progreso estimado" [level=3] [ref=e105]
+            - paragraph [ref=e108]: 0 de 0 clases listas

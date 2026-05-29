@@ -2,64 +2,7 @@
 {% block title %}Inicio - SIMA{% endblock %}
 {% block content %}
 
-<section class="dashboard-workspace">
-  <aside class="dashboard-sidebar" aria-label="Panel de usuario">
-    <div class="sidebar-profile">
-      <div>
-        <div class="account-topline">
-          <p class="eyebrow">Cuenta activa</p>
-          <button class="theme-icon-toggle" type="button" aria-label="Cambiar modo" data-theme-toggle>
-            <span class="theme-sun" aria-hidden="true"></span>
-            <span class="theme-moon" aria-hidden="true"></span>
-          </button>
-        </div>
-        <h2>{{ user.username }}</h2>
-        <span>{{ profile.get_plan_display }} - Nivel {{ profile.level }}</span>
-      </div>
-    </div>
-
-    <nav class="sidebar-nav" aria-label="Secciones del dashboard">
-      <button type="button" class="dashboard-view-trigger {% if active_tab == 'cursos' %}is-active{% endif %}" data-tab="cursos">
-        <span>Cursos</span>
-        <small>{{ dashboard_stats.course_count }}</small>
-      </button>
-      <button type="button" class="dashboard-view-trigger {% if active_tab == 'mis-clases' %}is-active{% endif %}" data-tab="mis-clases">
-        <span>Mis clases</span>
-        <small>{{ dashboard_stats.lesson_count }}</small>
-      </button>
-      <button type="button" class="dashboard-view-trigger {% if active_tab == 'horario' %}is-active{% endif %}" data-tab="horario">
-        <span>Horarios</span>
-        <small>{{ class_sessions|length }}</small>
-      </button>
-      <button type="button" class="dashboard-view-trigger {% if active_tab == 'explorar' %}is-active{% endif %}" data-tab="explorar">
-        <span>Explorar</span>
-        <small>{{ popular_tags|length }}</small>
-      </button>
-      <button type="button" class="dashboard-view-trigger {% if active_tab == 'preferencias' %}is-active{% endif %}" data-tab="preferencias">
-        <span>Preferencias</span>
-        <small>{{ preferences.daily_goal }}</small>
-      </button>
-      <button type="button" class="dashboard-view-trigger {% if active_tab == 'guardadas' %}is-active{% endif %}" data-tab="guardadas">
-        <span>Guardadas</span>
-        <small>0</small>
-      </button>
-    </nav>
-
-    <div class="sidebar-block">
-      <p class="sidebar-label">Acciones rapidas</p>
-      <a class="sidebar-action" href="{% url 'course_create' %}">Nuevo curso</a>
-      <a class="sidebar-action" href="{% url 'api_lesson' %}">Subir clase API</a>
-      <a class="sidebar-action" href="{% url 'free_lesson' %}">Clase manual</a>
-    </div>
-
-    <div class="sidebar-plan">
-      <span>Creditos disponibles</span>
-      <strong>{{ profile.credits_label }}</strong>
-      <a href="{% url 'plans' %}">Gestionar plan</a>
-    </div>
-  </aside>
-
-  <div class="dashboard-main">
+<div class="dashboard-main">
     <header class="dashboard-hero" {% if active_tab %}hidden{% endif %}>
       <div class="hero-copy">
         <p class="eyebrow">Hola, {{ user.username }}</p>
@@ -185,7 +128,7 @@
                 <form method="post" action="{% url 'delete_lesson' job.pk %}" onsubmit="return confirm('Estas seguro de eliminar esta clase? Esta accion no se puede deshacer.')">
                   {% csrf_token %}
                   <button type="submit" class="delete-button" title="Eliminar clase" aria-label="Eliminar clase">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                   </button>
                 </form>
               </div>
@@ -365,7 +308,6 @@
       </div>
     </section>
   </div>
-</section>
 
 <style>
   .dashboard-workspace {
@@ -633,6 +575,15 @@
     gap: 12px;
     align-content: start;
     padding: 18px;
+    grid-template-rows: auto auto 1fr auto;
+  }
+  .dashboard-lesson-card h3 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-clamp: 2;
   }
 
   .course-card-head,
@@ -690,8 +641,8 @@
   }
 
   .delete-button {
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
     display: grid;
     place-items: center;
     border: 1px solid var(--line);

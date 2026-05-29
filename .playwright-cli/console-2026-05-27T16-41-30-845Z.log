@@ -1,0 +1,2 @@
+[     680ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:8015/favicon.ico:0
+[   53692ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:8015/clase/5/flashcards/:0

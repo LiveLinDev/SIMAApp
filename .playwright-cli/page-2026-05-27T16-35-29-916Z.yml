@@ -1,0 +1,169 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - link "SIMA inicio" [ref=e4] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e5]: //
+      - generic [ref=e6]: .
+      - strong [ref=e7]: SIMA
+    - navigation "Navegacion principal" [ref=e8]:
+      - link "Inicio" [ref=e9] [cursor=pointer]:
+        - /url: /dashboard/
+      - link "Cursos" [ref=e10] [cursor=pointer]:
+        - /url: /cursos/nuevo/
+      - link ".mini" [ref=e11] [cursor=pointer]:
+        - /url: /mini
+      - link "Benchmark" [ref=e12] [cursor=pointer]:
+        - /url: /mini/benchmark/
+      - link "Planes" [ref=e13] [cursor=pointer]:
+        - /url: /planes/
+      - button "Salir" [ref=e15] [cursor=pointer]
+  - generic [ref=e16]:
+    - complementary "Panel de usuario" [ref=e17]:
+      - generic [ref=e19]:
+        - generic [ref=e20]:
+          - paragraph [ref=e21]: Cuenta activa
+          - button "Cambiar a modo oscuro" [ref=e22]
+        - heading "testplaywright" [level=2] [ref=e23]
+        - text: Gratis - Nivel 1
+      - navigation "Secciones del dashboard" [ref=e24]:
+        - link "Cursos 0" [ref=e25] [cursor=pointer]:
+          - /url: /dashboard/
+          - generic [ref=e26]: Cursos
+          - generic [ref=e27]: "0"
+        - link "Mis clases 0" [ref=e28] [cursor=pointer]:
+          - /url: /dashboard/?tab=mis-clases
+          - generic [ref=e29]: Mis clases
+          - generic [ref=e30]: "0"
+        - link "Horarios 0" [ref=e31] [cursor=pointer]:
+          - /url: /dashboard/?tab=horario
+          - generic [ref=e32]: Horarios
+          - generic [ref=e33]: "0"
+        - link "Explorar 0" [ref=e34] [cursor=pointer]:
+          - /url: /dashboard/?tab=explorar
+          - generic [ref=e35]: Explorar
+          - generic [ref=e36]: "0"
+        - link "Preferencias 10" [ref=e37] [cursor=pointer]:
+          - /url: /dashboard/?tab=preferencias
+          - generic [ref=e38]: Preferencias
+          - generic [ref=e39]: "10"
+      - generic [ref=e40]:
+        - paragraph [ref=e41]: Acciones rapidas
+        - link "Nuevo curso" [ref=e42] [cursor=pointer]:
+          - /url: /cursos/nuevo/
+        - link "Clase manual" [ref=e43] [cursor=pointer]:
+          - /url: /gratis/nueva/
+      - generic [ref=e44]:
+        - text: Creditos disponibles
+        - strong [ref=e45]: "0"
+        - link "Gestionar plan" [ref=e46] [cursor=pointer]:
+          - /url: /planes/
+    - main [ref=e47]:
+      - generic [ref=e48]:
+        - generic [ref=e49]:
+          - generic [ref=e50]:
+            - link "Volver al dashboard" [ref=e51] [cursor=pointer]:
+              - /url: /dashboard/
+            - paragraph [ref=e52]: Nuevo espacio academico
+            - heading "Curso inteligente" [level=1] [ref=e53]:
+              - text: Curso
+              - generic [ref=e54]: inteligente
+            - paragraph [ref=e55]: SIMA usa este contexto para clasificar clases, generar materiales, medir progreso y recomendar el siguiente bloque de estudio.
+            - generic [ref=e56]:
+              - link "Configurar curso" [ref=e57] [cursor=pointer]:
+                - /url: "#course-form"
+              - link "Ver dashboard" [ref=e58] [cursor=pointer]:
+                - /url: /dashboard/
+            - generic "Beneficios del curso" [ref=e59]:
+              - generic [ref=e60]:
+                - strong [ref=e61]: "01"
+                - generic [ref=e62]: Contexto central
+              - generic [ref=e63]:
+                - strong [ref=e64]: IRT
+                - generic [ref=e65]: Quiz adaptativo
+              - generic [ref=e66]:
+                - strong [ref=e67]: "24"
+                - generic [ref=e68]: Temas maximos
+          - complementary "Vista previa tecnica del curso" [ref=e69]:
+            - generic [ref=e74]: course.context
+            - generic [ref=e75]:
+              - paragraph [ref=e76]:
+                - emphasis [ref=e77]: // Cabecera del curso
+              - paragraph [ref=e78]: course=nuevo | periodo=2026-1
+              - paragraph [ref=e79]: nivel=introductorio | temas=24
+              - paragraph [ref=e80]: ruta=resumen, quiz, repaso
+              - paragraph [ref=e81]:
+                - emphasis [ref=e82]: // Salida SIMA
+              - paragraph [ref=e83]: IA genera materiales con contexto academico.
+        - generic [ref=e84]:
+          - generic [ref=e85]:
+            - generic [ref=e86]:
+              - generic [ref=e87]: A
+              - generic [ref=e88]:
+                - heading "Identidad del curso" [level=2] [ref=e89]
+                - paragraph [ref=e90]: Define como se vera en tu tablero y en tus clases procesadas.
+            - generic [ref=e91]:
+              - paragraph [ref=e92]:
+                - generic [ref=e93]: "Nombre del curso:"
+                - textbox "Nombre del curso:" [ref=e94]:
+                  - /placeholder: "Ej: Biologia General"
+              - paragraph [ref=e95]:
+                - generic [ref=e96]: "Ciclo o periodo:"
+                - textbox "Ciclo o periodo:" [ref=e97]:
+                  - /placeholder: "Ej: 2026-1"
+              - paragraph [ref=e98]:
+                - generic [ref=e99]: "Docente:"
+                - textbox "Docente:" [ref=e100]:
+                  - /placeholder: Opcional
+              - paragraph [ref=e101]:
+                - generic [ref=e102]: "Nivel:"
+                - combobox "Nivel:" [ref=e103]:
+                  - option "Introductorio" [selected]
+                  - option "Intermedio"
+                  - option "Avanzado"
+              - paragraph [ref=e104]:
+                - generic [ref=e105]: "Temas principales:"
+                - textbox "Temas principales:" [ref=e106]:
+                  - /placeholder: fotosintesis, celula, genetica
+                - generic [ref=e107]: Separalos con comas.
+            - generic [ref=e108]:
+              - generic [ref=e109]: B
+              - generic [ref=e110]:
+                - heading "Objetivo de aprendizaje" [level=2] [ref=e111]
+                - paragraph [ref=e112]: Ayuda a SIMA a priorizar resumenes, quizzes y repasos.
+            - generic [ref=e113]:
+              - paragraph [ref=e114]:
+                - generic [ref=e115]: "Descripcion:"
+                - textbox "Descripcion:" [ref=e116]:
+                  - /placeholder: "Opcional: que cubre este curso"
+              - paragraph [ref=e117]:
+                - generic [ref=e118]: "Objetivo de estudio:"
+                - textbox "Objetivo de estudio:" [ref=e119]:
+                  - /placeholder: "Ej: prepararme para parciales y reforzar conceptos semanales"
+            - generic [ref=e120]:
+              - button "Crear curso" [ref=e121] [cursor=pointer]
+              - link "Cancelar" [ref=e122] [cursor=pointer]:
+                - /url: /dashboard/
+          - complementary "Guia del curso" [ref=e123]:
+            - generic [ref=e124]:
+              - generic [ref=e125]: SIMA Course Core
+              - heading "Centro de operacion academica" [level=2] [ref=e126]
+              - generic [ref=e127]:
+                - generic [ref=e128]:
+                  - strong [ref=e129]: Clase
+                  - generic [ref=e130]: Audio o texto
+                - generic [ref=e131]:
+                  - strong [ref=e132]: IA
+                  - generic [ref=e133]: Resumen + quiz
+                - generic [ref=e134]:
+                  - strong [ref=e135]: Repaso
+                  - generic [ref=e136]: Ruta adaptativa
+            - generic [ref=e137]:
+              - generic [ref=e138]:
+                - strong [ref=e139]: Nombre claro
+                - generic [ref=e140]: Usa el nombre real del curso o asignatura.
+              - generic [ref=e141]:
+                - strong [ref=e142]: Temas separados
+                - generic [ref=e143]: Agrega palabras clave para ordenar las clases.
+              - generic [ref=e144]:
+                - strong [ref=e145]: Meta concreta
+                - generic [ref=e146]: Indica si estudias para examenes, practica o seguimiento semanal.

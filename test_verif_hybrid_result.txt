@@ -1,0 +1,34 @@
+```
+v|d=20260602|n=31|e=31|s=CORREGIDO
+e1|i1|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e2|i2|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e3|i3|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e4|i4|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e5|i5|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e6|i6|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e7|i7|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e8|i8|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e9|i9|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e10|i10|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e11|i11|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e12|i12|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e13|i13|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e14|i14|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e15|i15|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e16|i16|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e17|i17|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e18|i18|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e19|i19|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e20|i20|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e21|i21|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e22|i22|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e23|i45|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e24|i46|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e25|i47|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e26|i48|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e27|i49|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e28|i50|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e29|i51|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e30|i52|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e31|i53|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+```

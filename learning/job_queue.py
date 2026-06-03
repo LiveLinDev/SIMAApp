@@ -7,15 +7,25 @@ from django.db import close_old_connections
 from django.utils import timezone
 
 from .models import ClassSession, LessonJob, Profile, Transcript
-from .parse_mini import apply_corrections_with_trace, normalize_mini_text, validate_mini_parse
+from .parse_mini import (
+    apply_corrections_with_trace,
+    filter_incoherent_items,
+    filter_nonuniform_items,
+    merge_mini_chunks,
+    normalize_mini_text,
+    validate_mini_parse,
+)
 from .services import (
+    call_ai,
     clean_ai_error,
     count_mini_items,
     extract_mini_lines,
     generate_items,
     generation_chunk_plan,
     mini_item_change_summary,
+    repair_incoherent_mini,
     repair_mini_coherence,
+    repair_option_uniformity,
     repair_transcript_text,
     resolve_backend,
     text_change_summary,
@@ -110,7 +120,24 @@ def process_lesson_job(job_id: int, backend: str = "auto"):
             ),
         )
         generation_prompt, toon_output, resolved_backend = generate_items(content, backend=requested_backend)
-        toon_output, item_count = _compile_mini_for_render(toon_output, "Generacion MINI")
+        toon_output, item_count, incoherent_mini = _compile_mini_for_render(toon_output, "Generacion MINI")
+
+        # Recuperar items incoherentes (enunciados sin ? ni ____)
+        if incoherent_mini:
+            toon_output = _recover_incoherent_items(job, toon_output, incoherent_mini, resolved_backend)
+            toon_output, item_count, _ = _compile_mini_for_render(toon_output, "Recuperacion MINI")
+
+        # Recuperar items con opciones malformadas (fusionadas por comas, sesgo de longitud)
+        uniform_mini, bad_opts_log, bad_opts_mini = filter_nonuniform_items(toon_output)
+        if bad_opts_mini:
+            job.processing_log = _append_log(
+                job.processing_log,
+                "Opciones no uniformes detectadas",
+                f"{len(bad_opts_log)} items con opciones malformadas.",
+            )
+            toon_output = _recover_nonuniform_items(job, uniform_mini, bad_opts_mini, resolved_backend)
+            toon_output, item_count, _ = _compile_mini_for_render(toon_output, "Uniformidad MINI")
+
         job.generation_prompt = generation_prompt
         job.toon_output = toon_output
         job.ai_backend = resolved_backend
@@ -119,6 +146,14 @@ def process_lesson_job(job_id: int, backend: str = "auto"):
 
         if resolved_backend == "local":
             _auto_repair_mini_coherence(job)
+
+        # Generar items de relleno si el conteo es bajo para IRT
+        toon_output = _fill_items_if_needed(job, toon_output, content, item_count, planned_items, resolved_backend)
+        if toon_output != job.toon_output:
+            job.toon_output = toon_output
+            toon_output, item_count, _ = _compile_mini_for_render(toon_output, "Relleno MINI")
+            job.processing_log = _append_log(job.processing_log, "Relleno MINI", f"{item_count} items tras generacion de relleno.")
+            job.save(update_fields=["toon_output", "processing_log", "updated_at"])
 
         verification_mode = _normalize_verification_mode(job.verification_mode)
         _set_stage(job, _verification_stage_label(verification_mode), f"Modo de verificacion: {verification_mode}.")
@@ -137,7 +172,7 @@ def process_lesson_job(job_id: int, backend: str = "auto"):
         )
         _set_stage(job, "Aplicando correcciones", "Interpretando el reporte y generando la version final.")
         job.corrected_output, job.correction_trace = apply_corrections_with_trace(job.toon_output, verification_output)
-        job.corrected_output, corrected_count = _compile_mini_for_render(job.corrected_output, "Correccion MINI")
+        job.corrected_output, corrected_count, _ = _compile_mini_for_render(job.corrected_output, "Correccion MINI")
         job.error = ""
         job.status = LessonJob.Status.CORRECTED
         job.processing_stage = "Listo"
@@ -186,9 +221,12 @@ def _append_log(current: str, stage: str, detail: str = "") -> str:
 
 def _compile_mini_for_render(mini_text: str, stage: str) -> tuple[str, int]:
     mini_block = extract_mini_lines(mini_text) or mini_text
-    normalized = normalize_mini_text(mini_block, stage=stage)
+    filtered, dropped, incoherent_mini = filter_incoherent_items(mini_block)
+    if dropped:
+        logger.info("[%s] Items incoherentes detectados: %s", stage, dropped)
+    normalized = normalize_mini_text(filtered, stage=stage)
     assessment = validate_mini_parse(normalized, stage=stage)
-    return normalized, len(assessment.items)
+    return normalized, len(assessment.items), incoherent_mini
 
 
 def _discard_processed_audio(job: LessonJob):
@@ -307,7 +345,7 @@ def _auto_repair_mini_coherence(job: LessonJob):
         source_context=_job_context_for_ai(job),
         backend="local",
     )
-    repaired, item_count = _compile_mini_for_render(repaired, "Coherencia MINI")
+    repaired, item_count, _ = _compile_mini_for_render(repaired, "Coherencia MINI")
     changed = bool(trace.get("changed")) or repaired.strip() != before.strip()
     job.mini_coherence_prompt = prompt
     job.mini_coherence_trace = [
@@ -336,6 +374,109 @@ def _auto_repair_mini_coherence(job: LessonJob):
 
 def _safe_trace_list(value) -> list:
     return value if isinstance(value, list) else []
+
+
+def _recover_nonuniform_items(job: LessonJob, uniform_mini: str, bad_opts_mini: str, backend: str) -> str:
+    """
+    Repara items con opciones malformadas y los mergea de vuelta al MINI principal.
+    """
+    try:
+        _set_stage(job, "Reparando opciones malformadas", f"{count_mini_items(bad_opts_mini)} items a reparar.")
+        prompt, repaired, _backend, trace = repair_option_uniformity(
+            bad_opts_mini,
+            source_context=_job_context_for_ai(job),
+            backend=backend,
+        )
+        if repaired and repaired.strip():
+            combined = merge_mini_chunks([uniform_mini, repaired])
+            job.processing_log = _append_log(
+                job.processing_log,
+                "Opciones reparadas",
+                f"Reparados {count_mini_items(repaired)} items con opciones malformadas. "
+                f"Trace: {trace.get('note', 'OK')}.",
+            )
+            return combined
+    except Exception as exc:
+        job.processing_log = _append_log(
+            job.processing_log,
+            "Reparacion de opciones fallida",
+            f"Error reparando opciones: {clean_ai_error(exc)}",
+        )
+    return uniform_mini
+
+
+def _recover_incoherent_items(job: LessonJob, coherent_mini: str, incoherent_mini: str, backend: str) -> str:
+    """
+    Repara items incoherentes y los mergea de vuelta al MINI principal.
+    Retorna el MINI combinado.
+    """
+    try:
+        _set_stage(job, "Recuperando items incoherentes", f"{count_mini_items(incoherent_mini)} items a reparar.")
+        prompt, repaired, _backend, trace = repair_incoherent_mini(
+            incoherent_mini,
+            source_context=_job_context_for_ai(job),
+            backend=backend,
+        )
+        if repaired and repaired.strip():
+            combined = merge_mini_chunks([coherent_mini, repaired])
+            job.processing_log = _append_log(
+                job.processing_log,
+                "Recuperacion MINI",
+                f"Reparados {count_mini_items(repaired)} items incoherentes. "
+                f"Trace: {trace.get('note', 'OK')}.",
+            )
+            return combined
+    except Exception as exc:
+        job.processing_log = _append_log(
+            job.processing_log,
+            "Recuperacion MINI fallida",
+            f"Error reparando items incoherentes: {clean_ai_error(exc)}",
+        )
+    return coherent_mini
+
+
+def _fill_items_if_needed(
+    job: LessonJob,
+    current_mini: str,
+    source_content: str,
+    current_count: int,
+    planned_count: int,
+    backend: str,
+) -> str:
+    """
+    Genera items de relleno si el conteo actual es significativamente menor al objetivo.
+    Umbral: menos del 80% del objetivo planificado.
+    """
+    if current_count >= planned_count * 0.8:
+        return current_mini
+
+    needed = planned_count - current_count
+    needed = min(needed, 15)  # max 15 items por llamada de relleno para evitar timeout
+    if needed <= 0:
+        return current_mini
+
+    try:
+        _set_stage(job, "Generando items de relleno", f"Objetivo: {planned_count}, actual: {current_count}, faltan: {needed}.")
+        fill_prompt = (
+            f"Genera exactamente {needed} items MINI adicionales sobre el siguiente contenido. "
+            f"Cada item debe ser una pregunta con ? o una completacion con ____. "
+            f"Distribuye las respuestas correctas entre A, B, C, D. "
+            f"Varia los niveles Bloom (L1-L6).\n\n"
+            f"CONTENIDO:\n{source_content[:4000]}\n\n"
+            f"Responde SOLO con el bloque MINI (cabecera a| + items iN|)."
+        )
+        raw_output = call_ai(fill_prompt, backend=backend, role="generation")
+        fill_mini = extract_mini_lines(raw_output)
+        if fill_mini:
+            combined = merge_mini_chunks([current_mini, fill_mini])
+            return combined
+    except Exception as exc:
+        job.processing_log = _append_log(
+            job.processing_log,
+            "Relleno MINI fallido",
+            f"Error generando items de relleno: {clean_ai_error(exc)}",
+        )
+    return current_mini
 
 
 def _transcript_repair_entry(before: str, after: str, trace: dict, backend: str, downstream_action: str) -> dict:

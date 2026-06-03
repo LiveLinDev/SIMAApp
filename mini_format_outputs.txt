@@ -1,0 +1,424 @@
+============================================================
+EJEMPLO 1: Assessment IRT estandar (.mini)
+============================================================
+{
+  "type": "assessment",
+  "assessment": {
+    "meta": {
+      "model": "IRT3PL",
+      "generated_at": "20250602",
+      "total_items": 3,
+      "language": "es",
+      "topic": "Fotosíntesis",
+      "bloom_distribution": [
+        1,
+        1,
+        1
+      ],
+      "cat_params": {
+        "theta_init": 0,
+        "theta_min": -3,
+        "theta_max": 3,
+        "se_stop": 0.3,
+        "max_items": 12,
+        "exposure_control": "SH"
+      },
+      "raw": {
+        "m": "IRT3PL",
+        "d": "20250602",
+        "n": "3",
+        "l": "es",
+        "t": "Fotosíntesis",
+        "bd": "1,1,1",
+        "cat": "0,-3,3,0.3,12,SH"
+      }
+    },
+    "items": [
+      {
+        "id": "i1",
+        "bloom_level": "L1",
+        "topic": "Botánica",
+        "statement": "¿Dónde ocurre la fotosíntesis?",
+        "options": [
+          {
+            "text": "cloroplastos",
+            "correct": true
+          },
+          {
+            "text": "núcleo",
+            "correct": false
+          },
+          {
+            "text": "mitocondria",
+            "correct": false
+          },
+          {
+            "text": "citoplasma",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 1.2,
+          "b": 0.0,
+          "c": 0.25
+        },
+        "difficulty_level": 1,
+        "cat_meta": {
+          "content_area": "botánica",
+          "exposure_cap": 0.2,
+          "cognitive_demand": "low"
+        }
+      },
+      {
+        "id": "i2",
+        "bloom_level": "L2",
+        "topic": "Biología",
+        "statement": "¿Qué gas liberan las plantas?",
+        "options": [
+          {
+            "text": "oxígeno",
+            "correct": true
+          },
+          {
+            "text": "dióxido de carbono",
+            "correct": false
+          },
+          {
+            "text": "nitrógeno",
+            "correct": false
+          },
+          {
+            "text": "hidrógeno",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 1.0,
+          "b": -0.5,
+          "c": 0.2
+        },
+        "difficulty_level": 2,
+        "cat_meta": {
+          "content_area": "botánica",
+          "exposure_cap": 0.3,
+          "cognitive_demand": "medium"
+        }
+      },
+      {
+        "id": "i3",
+        "bloom_level": "L3",
+        "topic": "Fisiología vegetal",
+        "statement": "Explique relación entre luz y clorofila",
+        "options": [
+          {
+            "text": "La clorofila absorbe luz para convertir CO2 y agua en glucosa",
+            "correct": true
+          }
+        ],
+        "irt": {
+          "a": 1.5,
+          "b": 1.0,
+          "c": 0.15
+        },
+        "difficulty_level": 3,
+        "cat_meta": {
+          "content_area": "fisiología",
+          "exposure_cap": 0.25,
+          "cognitive_demand": "high"
+        }
+      }
+    ]
+  }
+}
+
+============================================================
+EJEMPLO 2: Cuestionario con retroalimentacion (.mini-q)
+============================================================
+{
+  "type": "quiz",
+  "assessment": {
+    "meta": {
+      "model": "Qwen2.5",
+      "generated_at": "20250602",
+      "total_items": 2,
+      "language": "es",
+      "topic": "Genética Molecular",
+      "bloom_distribution": [],
+      "cat_params": {
+        "theta_init": "",
+        "theta_min": "",
+        "theta_max": "",
+        "se_stop": "",
+        "max_items": "",
+        "exposure_control": ""
+      },
+      "raw": {
+        "m": "Qwen2.5",
+        "d": "20250602",
+        "n": "2",
+        "l": "es",
+        "t": "Genética Molecular"
+      }
+    },
+    "items": [
+      {
+        "id": "i1",
+        "bloom_level": "L2",
+        "topic": "ADN",
+        "statement": "¿Qué base nitrogenada NO existe en el ADN?",
+        "options": [
+          {
+            "text": "uracilo",
+            "correct": true
+          },
+          {
+            "text": "timina",
+            "correct": false
+          },
+          {
+            "text": "citosina",
+            "correct": false
+          },
+          {
+            "text": "adenina",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 1.0,
+          "b": 0.0,
+          "c": 0.25
+        },
+        "difficulty_level": 2,
+        "cat_meta": {
+          "content_area": "genética",
+          "exposure_cap": 0.2,
+          "cognitive_demand": "medium"
+        },
+        "feedback": "El uracilo solo aparece en ARN; el ADN usa timina en su lugar."
+      },
+      {
+        "id": "i2",
+        "bloom_level": "L3",
+        "topic": "Replicación",
+        "statement": "Durante la replicación, ¿qué enzima une los fragmentos de Okazaki?",
+        "options": [
+          {
+            "text": "ADN polimerasa I",
+            "correct": true
+          },
+          {
+            "text": "ADN polimerasa III",
+            "correct": false
+          },
+          {
+            "text": "ligasa",
+            "correct": false
+          },
+          {
+            "text": "primasa",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 1.2,
+          "b": 0.5,
+          "c": 0.2
+        },
+        "difficulty_level": 3,
+        "cat_meta": {
+          "content_area": "genética",
+          "exposure_cap": 0.3,
+          "cognitive_demand": "high"
+        },
+        "feedback": "La ligasa es la encargada de unir los fragmentos de Okazaki, no la polimerasa I."
+      }
+    ]
+  }
+}
+
+============================================================
+EJEMPLO 3: Desviacion de pipes (fallback robusto)
+============================================================
+{
+  "type": "assessment",
+  "assessment": {
+    "meta": {
+      "model": "LocalLLM",
+      "generated_at": "20250602",
+      "total_items": 2,
+      "language": "es",
+      "topic": "Química",
+      "bloom_distribution": [
+        1,
+        1
+      ],
+      "cat_params": {
+        "theta_init": 0,
+        "theta_min": -3,
+        "theta_max": 3,
+        "se_stop": 0.3,
+        "max_items": 10,
+        "exposure_control": "SH"
+      },
+      "raw": {
+        "m": "LocalLLM",
+        "d": "20250602",
+        "n": "2",
+        "l": "es",
+        "t": "Química",
+        "bd": "1,1",
+        "cat": "0,-3,3,0.3,10,SH"
+      }
+    },
+    "items": [
+      {
+        "id": "i1",
+        "bloom_level": "L1",
+        "topic": "Átomos",
+        "statement": "¿Qué parte del átomo tiene carga positiva?",
+        "options": [
+          {
+            "text": "protón",
+            "correct": true
+          },
+          {
+            "text": "neutrón",
+            "correct": false
+          },
+          {
+            "text": "electrón",
+            "correct": false
+          },
+          {
+            "text": "núcleo",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 1.0,
+          "b": 0.0,
+          "c": 0.25
+        },
+        "difficulty_level": 1,
+        "cat_meta": {
+          "content_area": "química",
+          "exposure_cap": 0.2,
+          "cognitive_demand": "low"
+        }
+      },
+      {
+        "id": "i2",
+        "bloom_level": "L2",
+        "topic": "Enlaces",
+        "statement": "Tipo de enlace en el NaCl",
+        "options": [
+          {
+            "text": "iónico",
+            "correct": true
+          },
+          {
+            "text": "covalente",
+            "correct": false
+          },
+          {
+            "text": "metálico",
+            "correct": false
+          },
+          {
+            "text": "puente de hidrógeno",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 1.1,
+          "b": -0.3,
+          "c": 0.2
+        },
+        "difficulty_level": 2,
+        "cat_meta": {
+          "content_area": "química",
+          "exposure_cap": 0.25,
+          "cognitive_demand": "medium"
+        }
+      }
+    ]
+  }
+}
+
+============================================================
+EJEMPLO 4: CSV entrecomillado con comas internas
+============================================================
+{
+  "type": "assessment",
+  "assessment": {
+    "meta": {
+      "model": "GPT-4",
+      "generated_at": "20250602",
+      "total_items": 1,
+      "language": "es",
+      "topic": "Citas",
+      "bloom_distribution": [
+        1
+      ],
+      "cat_params": {
+        "theta_init": 0,
+        "theta_min": -3,
+        "theta_max": 3,
+        "se_stop": 0.3,
+        "max_items": 5,
+        "exposure_control": "SH"
+      },
+      "raw": {
+        "m": "GPT-4",
+        "d": "20250602",
+        "n": "1",
+        "l": "es",
+        "t": "Citas",
+        "bd": "1",
+        "cat": "0,-3,3,0.3,5,SH"
+      }
+    },
+    "items": [
+      {
+        "id": "i1",
+        "bloom_level": "L4",
+        "topic": "Literatura",
+        "statement": "Según García [2021, p. 45], ¿qué tema central aborda?",
+        "options": [
+          {
+            "text": "La identidad, la memoria y el olvido",
+            "correct": true
+          },
+          {
+            "text": "El amor romántico",
+            "correct": false
+          },
+          {
+            "text": "La guerra civil",
+            "correct": false
+          },
+          {
+            "text": "La naturaleza",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 1.3,
+          "b": 0.8,
+          "c": 0.15
+        },
+        "difficulty_level": 4,
+        "cat_meta": {
+          "content_area": "literatura",
+          "exposure_cap": 0.2,
+          "cognitive_demand": "high"
+        }
+      }
+    ]
+  }
+}
+
+============================================================
+TODAS LAS PRUEBAS PASARON
+============================================================

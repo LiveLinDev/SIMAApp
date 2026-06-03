@@ -1,0 +1,16 @@
+Watching for file changes with StatReloader
+[03/Jun/2026 11:07:25] "GET / HTTP/1.1" 200 9128
+[03/Jun/2026 11:09:25] "GET /login/ HTTP/1.1" 200 3487
+[03/Jun/2026 11:09:25] "GET /static/learning/app.css HTTP/1.1" 200 133
+[03/Jun/2026 11:09:25] "GET /static/learning/css/tokens.css HTTP/1.1" 200 1169
+[03/Jun/2026 11:09:25] "GET /static/learning/css/base.css HTTP/1.1" 200 3403
+[03/Jun/2026 11:09:25] "GET /static/learning/css/components.css HTTP/1.1" 200 7395
+[03/Jun/2026 11:09:25] "GET /static/learning/css/views.css HTTP/1.1" 200 61698
+[03/Jun/2026 11:09:29] "POST /login/ HTTP/1.1" 302 0
+[03/Jun/2026 11:09:29] "GET /dashboard/ HTTP/1.1" 200 39853
+[03/Jun/2026 11:09:31] "GET /dashboard/ HTTP/1.1" 200 39853
+[03/Jun/2026 11:10:03] "GET / HTTP/1.1" 302 0
+[03/Jun/2026 11:10:03] "GET /dashboard/ HTTP/1.1" 200 39853
+[03/Jun/2026 11:10:03] "GET /static/learning/css/base.css HTTP/1.1" 304 0
+[03/Jun/2026 11:10:03] "GET /static/learning/css/tokens.css HTTP/1.1" 304 0
+[03/Jun/2026 11:10:03] "GET /static/learning/css/components.css HTTP/1.1" 304 0

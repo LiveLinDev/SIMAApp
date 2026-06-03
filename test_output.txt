@@ -1,0 +1,68 @@
+
+######################################################################
+# COMPARACION 1: FOTOSINTESIS
+######################################################################
+
+======================================================================
+TEST: Fotosintesis | Prompt: ANTIGUO
+======================================================================
+
+--- MINI GENERADO ---
+a|m=3PL|d=20231015|n=5|l=es|t=Fotosíntesis|bd=CLOROPLASTOS,CLOROFILA,DIÓXIDO DE CARBONO,AGUA,GLUCOSA|cat=-1.0,-3.0,3.0,0.2,20,0
+i1|L1|Fotosíntesis|La fotosíntesis ocurre principalmente en los ____|cloroplastos*,ribosomas,mitocondrias,núcleo|...
+i2|L2|Fotosíntesis|El pigmento principal que absorbe la luz durante la fotosíntesis es el ____|clorofila*,carotenoides,ficoeritrina,melanina|...
+i3|L3|Fotosíntesis|Durante la fotosíntesis, el dióxido de carbono y el agua se transforman en ____ y oxígeno|glucosa*,almidón,celulosa,sacarosa|...
+i4|L4|Fotosíntesis|La fotosíntesis convierte la energía luminosa en energía ____|química*,térmica,mecánica(eléctrica|...
+i5|L5|Fotosíntesis|El objetivo principal de la fotosíntesis es producir ____|glucosa y oxígeno*,ATP y NADPH,agua y dióxido de carbono,proteínas y lípidos|...
+
+--- VALIDACION ---
+
+Resumen: 0 items, 0 errores
+
+======================================================================
+TEST: Fotosintesis | Prompt: NUEVO
+======================================================================
+
+--- MINI GENERADO ---
+a|m=3PL|d=20231015|n=5|l=es|t=Fotosintesis|bd=CLOROPLASTOS,ENERGIA,LUMINOSA,CLOROFILA|cat=-1.0,-3.0,3.0,0.2,10,0
+i1|L1|Fotosintesis|La fotosíntesis es el proceso mediante el cual las plantas, algas y algunas bacterias convierten la ______ en energía química|energía luminica*,energía térmica,energía cinética,energía eléctrica|a=1.2,b=-0.8,d=1.5,l=Biología,10,3
+i2|L2|Fotosintesis|El proceso de fotosíntesis ocurre principalmente en los ______|cloroplastos*,mitocondrias,núcleo,ribosomas|a=1.3,b=-0.5,d=1.2,l=Biología,10,3
+i3|L3|Fotosintesis|Durante la fotosíntesis, el dióxido de carbono y el agua se transforman en ______ y oxígeno|glucosa*,proteína,almidón,azúcar|a=1.4,b=0.0,d=1.0,l=Biología,10,3
+i4|L4|Fotosintesis|La clorofila es el pigmento principal que absorbe la luz, especialmente en las longitudes de onda ______|roja y azul*,roja y verde,amarilla y azul,roja y morada|a=1.5,b=0.3,d=0.8,l=Biología,10,3
+i5|L5|Fotosintesis|¿Cuáles son los productos principales de la fotosíntesis?|glucosa y oxígeno*,dióxido de carbono y agua,luz solar y agua,clorofila y luz|a=1.6,b=0.7,d=0.5,l=Biología,10,3
+
+--- VALIDACION ---
+
+Resumen: 0 items, 0 errores
+
+######################################################################
+# COMPARACION 2: MANUEL PARDO
+######################################################################
+
+======================================================================
+TEST: Manuel Pardo | Prompt: ANTIGUO
+======================================================================
+
+--- MINI GENERADO ---
+a|m=3PL|d=20231015|n=5|l=es|t=Manuel Pardo|bd=POLITICA,HISTORIA,GOBERNANZA|cat=-1.0,-3.0,3.0,0.2,10,0
+i1|L1|HISTORIA|¿Quién fue el primer presidente civil de Perú?|Manuel Pardo*,José Balta,Andrés Cáceres,Mariano Ignacio Prado|1|POLITICA,1,1
+i2|L2|HISTORIA|El hecho de que Manuel Pardo fuera el primer presidente civil implica que su gobierno no estaba liderado por un ____|militar*,religioso,economista,ingeniero|1|POLITICA,1,2
+i3|L3|HISTORIA|¿Cuál fue una de las consecuencias directas del asesinato de Manuel Pardo?|crisis política*,aumento de impuestos,expansión territorial,mejora económica|2|HISTORIA,1,3
+i4|L4|HISTORIA|La promoción de la educación pública durante el gobierno de Manuel Pardo se alineaba con su enfoque en ____|desarrollo social*,defensa nacional,comercio exterior,religión|2|GOBERNANZA,1,4
+i5|L5|HISTORIA|¿Qué tipo de evento se considera el asesinato de Manuel Pardo en el contexto histórico peruano?|punto de inflexión*,cumbre diplomática,proceso electoral,convenio internacional|3|HISTORIA,1,5
+
+--- VALIDACION ---
+
+Resumen: 0 items, 0 errores
+
+======================================================================
+TEST: Manuel Pardo | Prompt: NUEVO
+======================================================================
+
+--- MINI GENERADO ---
+a|m=<modelo>|d=<YYYYMMDD>|n=<total>|l=<idioma>|t=<tema>|bd=<L1,L2,L3,L4,L5,L6>|cat=<theta_init,theta_min,theta_max,se_stop,max_items,exposure_ctrl>
+a|m=3PL|d=2023101
+
+--- VALIDACION ---
+
+Resumen: 0 items, 0 errores

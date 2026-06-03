@@ -1,0 +1,34 @@
+```
+v|d=20260602|n=31|e=31|s=CORREGIDO
+e1|i1|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e2|i2|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e3|i3|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e4|i4|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e5|i5|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e6|i6|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e7|i7|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e8|i8|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e9|i9|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e10|i10|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e11|i11|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e12|i12|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e13|i13|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e14|i14|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e15|i15|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e16|i16|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e17|i17|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e18|i18|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e19|i19|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e20|i20|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e21|i21|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e22|i22|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e23|i45|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e24|i46|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e25|i47|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e26|i48|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e27|i49|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e28|i50|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e29|i51|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e30|i52|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e31|i53|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+```

@@ -1,0 +1,410 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e3]: // .mini
+    - list [ref=e4]:
+      - listitem [ref=e5]:
+        - link "Por qué" [ref=e6] [cursor=pointer]:
+          - /url: "#why"
+      - listitem [ref=e7]:
+        - link "Formato" [ref=e8] [cursor=pointer]:
+          - /url: "#formato"
+      - listitem [ref=e9]:
+        - link "Playground" [ref=e10] [cursor=pointer]:
+          - /url: "#playground"
+      - listitem [ref=e11]:
+        - link "Benchmarks" [ref=e12] [cursor=pointer]:
+          - /url: "#benchmark"
+      - listitem [ref=e13]:
+        - link "IRT & Bloom" [ref=e14] [cursor=pointer]:
+          - /url: "#irt"
+    - link "Volver a SIMA" [ref=e15] [cursor=pointer]:
+      - /url: /
+  - generic [ref=e16]:
+    - generic [ref=e18]:
+      - generic [ref=e19]: Formato de Evaluación Adaptativa
+      - heading "El formato .mini" [level=1] [ref=e20]:
+        - text: El formato
+        - generic [ref=e21]: .mini
+      - paragraph [ref=e22]: Una cabecera. Una línea por pregunta. Evaluaciones psicométricas con IRT, Bloom y CAT generadas por IA sin pagar el impuesto de la sintaxis repetida.
+      - generic [ref=e23]:
+        - link "Probar playground" [ref=e24] [cursor=pointer]:
+          - /url: "#playground"
+        - link "Ver el formato" [ref=e25] [cursor=pointer]:
+          - /url: "#formato"
+        - link "Benchmark completo" [ref=e26] [cursor=pointer]:
+          - /url: /mini/benchmark/
+      - generic [ref=e27]:
+        - generic [ref=e28]:
+          - generic [ref=e29]: ~60%
+          - generic [ref=e30]: Menos tokens vs JSON
+        - generic [ref=e31]:
+          - generic [ref=e32]: 3PL
+          - generic [ref=e33]: Modelo IRT nativo
+        - generic [ref=e34]:
+          - generic [ref=e35]: "6"
+          - generic [ref=e36]: Niveles Bloom
+    - generic [ref=e38]:
+      - generic [ref=e43]: output.mini
+      - generic [ref=e44]:
+        - generic [ref=e45]: // Línea de cabecera
+        - generic [ref=e46]: a|m=IRT3PL|d=20260506|n=25|l=es
+        - generic [ref=e47]: "|t=fotosíntesis|bd=1,1,1,0,0,0"
+        - generic [ref=e48]: "|cat=0,-3,3,0.3,10,SH"
+        - generic [ref=e50]: // Ítem L1 — Recordar
+        - generic [ref=e51]: i1|L1|Organelo|La fotosíntesis ocurre en ____
+        - generic [ref=e52]: "|raíces,cloroplastos*,flores,tallo"
+        - generic [ref=e53]: "|0.9,-1.2,0.25|1|Fund,0.2,low"
+        - generic [ref=e55]: // Ítem L3 — Aplicar
+        - generic [ref=e56]: i2|L3|Presión|Al aumentar presión...
+        - generic [ref=e57]: "|aumenta*,disminuye,no cambia,desaparece"
+        - generic [ref=e58]: "|1.5,0.3,0.25|3|Física,0.2,medium"
+  - generic [ref=e60]:
+    - generic [ref=e61]: El problema
+    - generic [ref=e62]: Por qué nació .mini
+    - generic [ref=e63]:
+      - generic [ref=e64]:
+        - paragraph [ref=e65]: "SIMA convierte contenido educativo real en evaluaciones adaptativas. Para hacerlo bien, la IA no necesitaba decorar datos: necesitaba un recipiente mínimo, estable y barato de generar."
+        - generic [ref=e66]:
+          - paragraph [ref=e67]: "\"Queríamos la claridad de JSON sin su peso. Queríamos que la IA extrajera lo importante de una clase y lo entregara en un formato que pudiera vivir en producción, no solo en una demo.\""
+          - generic [ref=e68]: — Adrián Palma & Erick Palomino, creadores de .mini
+      - generic [ref=e69]:
+        - generic [ref=e70]:
+          - img [ref=e72]
+          - generic [ref=e74]:
+            - heading "JSON es demasiado verboso" [level=4] [ref=e75]
+            - paragraph [ref=e76]: Cada campo repite su nombre en cada registro. Para 45 preguntas con 4 opciones, el costo en tokens se vuelve prohibitivo en producción.
+        - generic [ref=e77]:
+          - img [ref=e79]
+          - generic [ref=e81]:
+            - heading ".toon falla en contenido largo" [level=4] [ref=e82]
+            - paragraph [ref=e83]: En transcripciones extensas, .toon exige más estructura de la que la IA mantiene de forma consistente. .mini reduce la superficie de error.
+        - generic [ref=e84]:
+          - img [ref=e86]
+          - generic [ref=e89]:
+            - heading ".mini resuelve ambos problemas" [level=4] [ref=e90]
+            - paragraph [ref=e91]: Una línea de cabecera + N líneas de ítems. Lo bastante humano para auditarlo. Lo bastante pequeño para producirlo miles de veces.
+  - generic [ref=e92]:
+    - generic [ref=e93]: Eficiencia de tokens
+    - heading ".mini vs los demás formatos" [level=2] [ref=e94]
+    - paragraph [ref=e95]: Comparativa de tokens consumidos para representar los mismos datos psicométricos.
+    - link "Ver fuentes del benchmark" [ref=e97] [cursor=pointer]:
+      - /url: /mini/benchmark/
+    - generic [ref=e99]:
+      - heading "Benchmark de eficiencia de tokens entre formatos JSON, MINI, TOON, YAML y XML para el mismo cuestionario APA 7ma edición" [level=2] [ref=e100]
+      - generic [ref=e101]:
+        - generic [ref=e102]:
+          - generic [ref=e103]:
+            - generic [ref=e105]: JSON
+            - generic [ref=e106]: "3962"
+            - generic [ref=e107]: tokens estimados
+            - generic [ref=e110]: 7590 chars · overhead 20.5%
+          - generic [ref=e111]:
+            - generic [ref=e112]:
+              - generic [ref=e113]: MINI
+              - generic [ref=e114]: más eficiente
+            - generic [ref=e115]: "1970"
+            - generic [ref=e116]: tokens estimados
+            - generic [ref=e119]: 3959 chars · overhead 5.3%
+          - generic [ref=e120]:
+            - generic [ref=e122]: TOON
+            - generic [ref=e123]: "3127"
+            - generic [ref=e124]: tokens estimados
+            - generic [ref=e127]: 8129 chars · overhead 4.9%
+          - generic [ref=e128]:
+            - generic [ref=e130]: YAML
+            - generic [ref=e131]: "3448"
+            - generic [ref=e132]: tokens estimados
+            - generic [ref=e135]: 8426 chars · overhead 4.1%
+          - generic [ref=e136]:
+            - generic [ref=e138]: XML
+            - generic [ref=e139]: "4084"
+            - generic [ref=e140]: tokens estimados
+            - generic [ref=e143]: 9057 chars · overhead 12.0%
+        - generic [ref=e144]:
+          - button "Tokens" [ref=e145] [cursor=pointer]
+          - button "Caracteres" [ref=e146] [cursor=pointer]
+          - button "% Overhead" [ref=e147] [cursor=pointer]
+          - button "Líneas" [ref=e148] [cursor=pointer]
+        - img "Gráfico de barras comparando tokens por formato" [ref=e150]
+        - generic [ref=e151]:
+          - generic [ref=e152]: Desglose comparativo
+          - table [ref=e154]:
+            - rowgroup [ref=e155]:
+              - row "Formato Tokens Chars Overhead vs MINI Líneas" [ref=e156]:
+                - columnheader "Formato" [ref=e157]
+                - columnheader "Tokens" [ref=e158]
+                - columnheader "Chars" [ref=e159]
+                - columnheader "Overhead" [ref=e160]
+                - columnheader "vs MINI" [ref=e161]
+                - columnheader "Líneas" [ref=e162]
+            - rowgroup [ref=e163]:
+              - row "JSON 3962 7590 20.5% +101.1% 27" [ref=e164]:
+                - cell "JSON" [ref=e165]:
+                  - generic [ref=e168]: JSON
+                - cell "3962" [ref=e169]
+                - cell "7590" [ref=e170]
+                - cell "20.5%" [ref=e171]
+                - cell "+101.1%" [ref=e172]
+                - cell "27" [ref=e173]
+              - row "MINI 1970 3959 5.3% baseline 13" [ref=e174]:
+                - cell "MINI" [ref=e175]:
+                  - generic [ref=e178]: MINI
+                - cell "1970" [ref=e179]
+                - cell "3959" [ref=e180]
+                - cell "5.3%" [ref=e181]
+                - cell "baseline" [ref=e182]
+                - cell "13" [ref=e183]
+              - row "TOON 3127 8129 4.9% +58.7% 258" [ref=e184]:
+                - cell "TOON" [ref=e185]:
+                  - generic [ref=e188]: TOON
+                - cell "3127" [ref=e189]
+                - cell "8129" [ref=e190]
+                - cell "4.9%" [ref=e191]
+                - cell "+58.7%" [ref=e192]
+                - cell "258" [ref=e193]
+              - row "YAML 3448 8426 4.1% +75.0% 208" [ref=e194]:
+                - cell "YAML" [ref=e195]:
+                  - generic [ref=e198]: YAML
+                - cell "3448" [ref=e199]
+                - cell "8426" [ref=e200]
+                - cell "4.1%" [ref=e201]
+                - cell "+75.0%" [ref=e202]
+                - cell "208" [ref=e203]
+              - row "XML 4084 9057 12.0% +107.3% 153" [ref=e204]:
+                - cell "XML" [ref=e205]:
+                  - generic [ref=e208]: XML
+                - cell "4084" [ref=e209]
+                - cell "9057" [ref=e210]
+                - cell "12.0%" [ref=e211]
+                - cell "+107.3%" [ref=e212]
+                - cell "153" [ref=e213]
+        - generic [ref=e214]:
+          - generic [ref=e215]: Veredicto del benchmark
+          - generic [ref=e216]:
+            - strong [ref=e217]: MINI
+            - text: "es el formato más eficiente:"
+            - strong [ref=e218]: 1970 tokens
+            - text: frente a
+            - strong [ref=e219]: "3962"
+            - text: de JSON,
+            - strong [ref=e220]: "3127"
+            - text: de TOON,
+            - strong [ref=e221]: "3448"
+            - text: de YAML y
+            - strong [ref=e222]: "4084"
+            - text: de XML. Ahorra un
+            - strong [ref=e223]: 52%
+            - text: respecto al formato más costoso (XML). Su overhead estructural es de solo
+            - strong [ref=e224]: 5.3%
+            - text: — los delimitadores
+            - code [ref=e225]: "|"
+            - text: ","
+            - code [ref=e226]: ","
+            - text: "y"
+            - code [ref=e227]: "*"
+            - text: son mínimos comparados con las etiquetas repetidas de XML o las claves verbosas de JSON.
+  - generic [ref=e228]:
+    - generic [ref=e229]: Anatomía del formato
+    - heading "Cada byte cuenta" [level=2] [ref=e230]
+    - generic [ref=e231]:
+      - generic [ref=e232]:
+        - generic [ref=e233]:
+          - generic [ref=e234]:
+            - generic [ref=e235]: a|
+            - text: Línea de cabecera
+          - generic [ref=e236]: a|m=IRT3PL|d=20260506|n=25|l=es |t=fotosíntesis|bd=1,1,1,0,0,0 |cat=0,-3,3,0.3,10,SH
+        - generic [ref=e237]:
+          - generic [ref=e238]:
+            - generic [ref=e239]: m=
+            - generic [ref=e240]:
+              - strong [ref=e241]: Modelo IRT
+              - text: — 1PL, 2PL o 3PL
+          - generic [ref=e242]:
+            - generic [ref=e243]: d=
+            - generic [ref=e244]:
+              - strong [ref=e245]: Fecha
+              - text: YYYYMMDD de generación
+          - generic [ref=e246]:
+            - generic [ref=e247]: n=
+            - generic [ref=e248]:
+              - strong [ref=e249]: Total de ítems
+              - text: en la evaluación
+          - generic [ref=e250]:
+            - generic [ref=e251]: t=
+            - generic [ref=e252]:
+              - strong [ref=e253]: Tema principal
+              - text: extraído del contenido
+          - generic [ref=e254]:
+            - generic [ref=e255]: bd=
+            - generic [ref=e256]:
+              - strong [ref=e257]: Bloom Distribution
+              - text: — L1 a L6 (1=presente, 0=ausente)
+          - generic [ref=e258]:
+            - generic [ref=e259]: cat=
+            - generic [ref=e260]:
+              - strong [ref=e261]: Parámetros CAT
+              - text: — theta init, min, max, SE stop, max items, exposure control
+      - generic [ref=e262]:
+        - generic [ref=e263]:
+          - generic [ref=e264]:
+            - generic [ref=e265]: i|
+            - text: Línea de ítem
+          - generic [ref=e266]: i1|L1|Organelo|La fotosíntesis ocurre en ____|raíces,cloroplastos*, flores,tallo|0.9,-1.2,0.25|1|Fund,0.2,low
+        - generic [ref=e267]:
+          - generic [ref=e268]:
+            - generic [ref=e269]: i<N>
+            - generic [ref=e270]:
+              - strong [ref=e271]: Identificador
+              - text: secuencial del ítem
+          - generic [ref=e272]:
+            - generic [ref=e273]: L1–L6
+            - generic [ref=e274]:
+              - strong [ref=e275]: Nivel Bloom
+              - text: — del más simple al más complejo
+          - generic [ref=e276]:
+            - generic [ref=e277]: topic
+            - generic [ref=e278]:
+              - strong [ref=e279]: Subtema
+              - text: exacto del contenido de clase
+          - generic [ref=e280]:
+            - generic [ref=e281]: A*
+            - generic [ref=e282]:
+              - strong [ref=e283]: Opción correcta
+              - text: marcada con
+              - code [ref=e284]: "*"
+              - text: al final del texto
+          - generic [ref=e285]:
+            - generic [ref=e286]: a,b,c
+            - generic [ref=e287]:
+              - strong [ref=e288]: Parámetros IRT
+              - text: — discriminación, dificultad, pseudo-azar
+          - generic [ref=e289]:
+            - generic [ref=e290]: diff
+            - generic [ref=e291]:
+              - strong [ref=e292]: Nivel de dificultad
+              - text: del 1 (fácil) al 5 (muy difícil)
+  - generic [ref=e293]:
+    - generic [ref=e294]:
+      - generic [ref=e295]:
+        - generic [ref=e296]: Playground
+        - heading "Convierte .mini ⇄ JSON" [level=2] [ref=e297]
+        - paragraph [ref=e298]: "El formato es pequeño, pero no cerrado. Prueba el ejemplo, edítalo y cambia el deslizador: de .mini a JSON para integraciones, o de JSON a .mini para volver al formato compacto que la IA puede emitir sin ruido."
+      - generic [ref=e299]:
+        - generic [ref=e300]: .mini → JSON
+        - checkbox ".mini → JSON JSON → .mini"
+        - generic [ref=e303]: JSON → .mini
+    - generic [ref=e304]:
+      - generic [ref=e305]:
+        - generic [ref=e306]:
+          - strong [ref=e307]: Entrada .mini
+          - generic [ref=e308]: editable
+        - textbox [ref=e309]: "a|m=IRT3PL|d=20260504|n=12|l=es|t=Norma APA 7ma edición|bd=2,3,2,2,2,1|cat=0,-3,3,0.3,12,SH i1|L1|Portada|En la portada de un trabajo estudiantil según APA 7ma ed., ¿cuál de los siguientes elementos NO debe aparecer?|Nombre del autor,Nombre del curso,Nombre de la institución,Fecha*|0.9,-1.4,0.25|1|Estructura,0.2,low i2|L1|Resumen|Según APA 7ma edición, el resumen debe tener como máximo ____ palabras.|250*,150,100,300|0.9,-1.1,0.25|1|Resumen,0.2,low i3|L2|Palabras_clave|¿Cómo se escriben correctamente las palabras clave en formato APA 7ma edición?|En mayúsculas y entre comillas,Solo la primera en mayúscula,En minúsculas separadas por comas*,En negrita y centradas|1.1,-0.4,0.25|2|Resumen,0.2,medium i4|L2|Niveles_título|¿Cuál es la diferencia entre el título de nivel 1 y el de nivel 2 en APA 7ma edición?|Ambos van centrados pero distinto tamaño,El nivel 1 va centrado en negrita y el nivel 2 alineado a la izquierda en negrita*,El nivel 1 va en cursiva y el nivel 2 en negrita,Solo el nivel 2 va en negrita|1.2,-0.3,0.25|2|Estructura,0.2,medium i5|L2|Referencias|¿Cómo se ordena la lista de referencias en APA 7ma edición?|Por fecha de publicación de más reciente a más antigua,Por orden de aparición en el texto,Alfabéticamente por el apellido del primer autor*,Por tipo de fuente (libros, artículos, sitios web)|1.1,-0.2,0.25|2|Referencias,0.2,medium i6|L3|Sangría_francesa|En la lista de referencias APA 7ma ed., la sangría francesa implica que ____.|la primera línea de cada referencia está sangrada y las siguientes van al margen,la primera línea va al margen y las siguientes están sangradas*,todas las líneas están igualmente sangradas,solo se aplica sangría cuando la referencia ocupa más de dos líneas|1.4,0.1,0.25|3|Referencias,0.2,medium i7|L3|Paráfrasis|Un estudiante resume con sus propias palabras la idea de García (2021) en mitad de una oración. ¿Cuál es el formato de cita correcto?|García (2021) al inicio o (García, 2021) al final*,(García: 2021) entre paréntesis,García, 2021 sin paréntesis,\"García [2021], p. 1\" al final|1.4,0.2,0.25|3|Citas,0.2,medium i8|L3|Cita_directa_corta|Una cita directa de 38 palabras tomadas del autor García (2021) en la página 25 debe escribirse ____.|en un bloque separado con sangría de 1.27 cm,entre comillas en el párrafo con García (2021, p. 25) al final*,entre comillas y con el número de página solo en la bibliografía,en cursiva dentro del párrafo sin número de página|1.5,0.3,0.25|3|Citas,0.2,medium i9|L4|Cita_bloque|Una cita directa de 55 palabras debe presentarse como bloque. ¿En qué se diferencia del formato de cita corta en cuanto al paréntesis de cierre?|El paréntesis va inmediatamente después de las comillas de cierre,El paréntesis va antes del punto final igual que en citas cortas,El paréntesis con autor, año y página va después del punto final*,No se incluye número de página en las citas de bloque|1.7,0.6,0.25|4|Citas,0.2,high i10|L4|Norma_institucional|La docente afirma que el uso de APA 7ma edición es de carácter obligatorio en la institución. ¿Qué implica esto para los trabajos que usen una versión anterior?|Pueden usar APA 6ta con una nota aclaratoria,Se aceptan siempre que citen correctamente,No se aceptan porque la norma vigente institucional es APA 7ma*,Depende del criterio de cada docente|1.6,0.7,0.25|4|Normativa,0.2,high i11|L5|Evaluación_citas|Un estudiante escribe: García (2021) afirmó \"el aprendizaje activo mejora la retención de conocimientos en un 40 por ciento\" y no incluye número de página. Según APA 7ma ed., ¿qué error cometió?|Omitió el número de página obligatorio en citas directas*,Usó la palabra \"afirmó\" en lugar de \"señaló\",Debió poner el año entre corchetes en lugar de paréntesis,La cita debía ir en bloque por superar 40 palabras|1.9,1.1,0.25|5|Citas,0.15,high i12|L5|Evaluación_formato|Especificar que cada elemento listado debe evaluarse como correcto/incorrecto según norma APA 7ma|Uno,Dos,Tres*,Cuatro|2.1,1.3,0.25|5|Normativa,0.15,high"
+      - generic [ref=e310]:
+        - generic [ref=e311]:
+          - strong [ref=e312]: Salida JSON
+          - generic [ref=e313]: generada en vivo
+        - textbox [ref=e314]: "{ \"assessment\": { \"meta\": { \"model\": \"IRT3PL\", \"generated_at\": \"20260504\", \"language\": \"es\", \"topic\": \"Norma APA 7ma edición\", \"bloom_distribution\": [ 2, 3, 2, 2, 2, 1 ], \"cat_params\": { \"theta_init\": 0, \"theta_min\": -3, \"theta_max\": 3, \"se_stop\": 0.3, \"max_items\": 12, \"exposure_control\": \"SH\" }, \"raw\": { \"m\": \"IRT3PL\", \"d\": \"20260504\", \"n\": \"12\", \"l\": \"es\", \"t\": \"Norma APA 7ma edición\", \"bd\": \"2,3,2,2,2,1\", \"cat\": \"0,-3,3,0.3,12,SH\" }, \"total_items\": 12 }, \"items\": [ { \"id\": \"i1\", \"bloom_level\": \"L1\", \"topic\": \"Portada\", \"statement\": \"En la portada de un trabajo estudiantil según APA 7ma ed., ¿cuál de los siguientes elementos NO debe aparecer?\", \"options\": [ { \"text\": \"Nombre del autor\", \"correct\": false }, { \"text\": \"Nombre del curso\", \"correct\": false }, { \"text\": \"Nombre de la institución\", \"correct\": false }, { \"text\": \"Fecha\", \"correct\": true } ], \"irt\": { \"a\": 0.9, \"b\": -1.4, \"c\": 0.25 }, \"difficulty_level\": 1, \"cat_meta\": { \"content_area\": \"Estructura\", \"exposure_cap\": 0.2, \"cognitive_demand\": \"low\" } }, { \"id\": \"i2\", \"bloom_level\": \"L1\", \"topic\": \"Resumen\", \"statement\": \"Según APA 7ma edición, el resumen debe tener como máximo ____ palabras.\", \"options\": [ { \"text\": \"250\", \"correct\": true }, { \"text\": \"150\", \"correct\": false }, { \"text\": \"100\", \"correct\": false }, { \"text\": \"300\", \"correct\": false } ], \"irt\": { \"a\": 0.9, \"b\": -1.1, \"c\": 0.25 }, \"difficulty_level\": 1, \"cat_meta\": { \"content_area\": \"Resumen\", \"exposure_cap\": 0.2, \"cognitive_demand\": \"low\" } }, { \"id\": \"i3\", \"bloom_level\": \"L2\", \"topic\": \"Palabras_clave\", \"statement\": \"¿Cómo se escriben correctamente las palabras clave en formato APA 7ma edición?\", \"options\": [ { \"text\": \"En mayúsculas y entre comillas\", \"correct\": false }, { \"text\": \"Solo la primera en mayúscula\", \"correct\": false }, { \"text\": \"En minúsculas separadas por comas\", \"correct\": true }, { \"text\": \"En negrita y centradas\", \"correct\": false } ], \"irt\": { \"a\": 1.1, \"b\": -0.4, \"c\": 0.25 }, \"difficulty_level\": 2, \"cat_meta\": { \"content_area\": \"Resumen\", \"exposure_cap\": 0.2, \"cognitive_demand\": \"medium\" } }, { \"id\": \"i4\", \"bloom_level\": \"L2\", \"topic\": \"Niveles_título\", \"statement\": \"¿Cuál es la diferencia entre el título de nivel 1 y el de nivel 2 en APA 7ma edición?\", \"options\": [ { \"text\": \"Ambos van centrados pero distinto tamaño\", \"correct\": false }, { \"text\": \"El nivel 1 va centrado en negrita y el nivel 2 alineado a la izquierda en negrita\", \"correct\": true }, { \"text\": \"El nivel 1 va en cursiva y el nivel 2 en negrita\", \"correct\": false }, { \"text\": \"Solo el nivel 2 va en negrita\", \"correct\": false } ], \"irt\": { \"a\": 1.2, \"b\": -0.3, \"c\": 0.25 }, \"difficulty_level\": 2, \"cat_meta\": { \"content_area\": \"Estructura\", \"exposure_cap\": 0.2, \"cognitive_demand\": \"medium\" } }, { \"id\": \"i5\", \"bloom_level\": \"L2\", \"topic\": \"Referencias\", \"statement\": \"¿Cómo se ordena la lista de referencias en APA 7ma edición?\", \"options\": [ { \"text\": \"Por fecha de publicación de más reciente a más antigua\", \"correct\": false }, { \"text\": \"Por orden de aparición en el texto\", \"correct\": false }, { \"text\": \"Alfabéticamente por el apellido del primer autor\", \"correct\": true }, { \"text\": \"Por tipo de fuente (libros\", \"correct\": false }, { \"text\": \" artículos\", \"correct\": false }, { \"text\": \" sitios web)\", \"correct\": false } ], \"irt\": { \"a\": 1.1, \"b\": -0.2, \"c\": 0.25 }, \"difficulty_level\": 2, \"cat_meta\": { \"content_area\": \"Referencias\", \"exposure_cap\": 0.2, \"cognitive_demand\": \"medium\" } }, { \"id\": \"i6\", \"bloom_level\": \"L3\", \"topic\": \"Sangría_francesa\", \"statement\": \"En la lista de referencias APA 7ma ed., la sangría francesa implica que ____.\", \"options\": [ { \"text\": \"la primera línea de cada referencia está sangrada y las siguientes van al margen\", \"correct\": false }, { \"text\": \"la primera línea va al margen y las siguientes están sangradas\", \"correct\": true }, { \"text\": \"todas las líneas están igualmente sangradas\", \"correct\": false }, { \"text\": \"solo se aplica sangría cuando la referencia ocupa más de dos líneas\", \"correct\": false } ], \"irt\": { \"a\": 1.4, \"b\": 0.1, \"c\": 0.25 }, \"difficulty_level\": 3, \"cat_meta\": { \"content_area\": \"Referencias\", \"exposure_cap\": 0.2, \"cognitive_demand\": \"medium\" } }, { \"id\": \"i7\", \"bloom_level\": \"L3\", \"topic\": \"Paráfrasis\", \"statement\": \"Un estudiante resume con sus propias palabras la idea de García (2021) en mitad de una oración. ¿Cuál es el formato de cita correcto?\", \"options\": [ { \"text\": \"García (2021) al inicio o (García\", \"correct\": false }, { \"text\": \" 2021) al final\", \"correct\": true }, { \"text\": \"(García: 2021) entre paréntesis\", \"correct\": false }, { \"text\": \"García\", \"correct\": false }, { \"text\": \" 2021 sin paréntesis\", \"correct\": false }, { \"text\": \"García [2021], p. 1 al final\", \"correct\": false } ], \"irt\": { \"a\": 1.4, \"b\": 0.2, \"c\": 0.25 }, \"difficulty_level\": 3, \"cat_meta\": { \"content_area\": \"Citas\", \"exposure_cap\": 0.2, \"cognitive_demand\": \"medium\" } }, { \"id\": \"i8\", \"bloom_level\": \"L3\", \"topic\": \"Cita_directa_corta\", \"statement\": \"Una cita directa de 38 palabras tomadas del autor García (2021) en la página 25 debe escribirse ____.\", \"options\": [ { \"text\": \"en un bloque separado con sangría de 1.27 cm\", \"correct\": false }, { \"text\": \"entre comillas en el párrafo con García (2021\", \"correct\": false }, { \"text\": \" p. 25) al final\", \"correct\": true }, { \"text\": \"entre comillas y con el número de página solo en la bibliografía\", \"correct\": false }, { \"text\": \"en cursiva dentro del párrafo sin número de página\", \"correct\": false } ], \"irt\": { \"a\": 1.5, \"b\": 0.3, \"c\": 0.25 }, \"difficulty_level\": 3, \"cat_meta\": { \"content_area\": \"Citas\", \"exposure_cap\": 0.2, \"cognitive_demand\": \"medium\" } }, { \"id\": \"i9\", \"bloom_level\": \"L4\", \"topic\": \"Cita_bloque\", \"statement\": \"Una cita directa de 55 palabras debe presentarse como bloque. ¿En qué se diferencia del formato de cita corta en cuanto al paréntesis de cierre?\", \"options\": [ { \"text\": \"El paréntesis va inmediatamente después de las comillas de cierre\", \"correct\": false }, { \"text\": \"El paréntesis va antes del punto final igual que en citas cortas\", \"correct\": false }, { \"text\": \"El paréntesis con autor\", \"correct\": false }, { \"text\": \" año y página va después del punto final\", \"correct\": true }, { \"text\": \"No se incluye número de página en las citas de bloque\", \"correct\": false } ], \"irt\": { \"a\": 1.7, \"b\": 0.6, \"c\": 0.25 }, \"difficulty_level\": 4, \"cat_meta\": { \"content_area\": \"Citas\", \"exposure_cap\": 0.2, \"cognitive_demand\": \"high\" } }, { \"id\": \"i10\", \"bloom_level\": \"L4\", \"topic\": \"Norma_institucional\", \"statement\": \"La docente afirma que el uso de APA 7ma edición es de carácter obligatorio en la institución. ¿Qué implica esto para los trabajos que usen una versión anterior?\", \"options\": [ { \"text\": \"Pueden usar APA 6ta con una nota aclaratoria\", \"correct\": false }, { \"text\": \"Se aceptan siempre que citen correctamente\", \"correct\": false }, { \"text\": \"No se aceptan porque la norma vigente institucional es APA 7ma\", \"correct\": true }, { \"text\": \"Depende del criterio de cada docente\", \"correct\": false } ], \"irt\": { \"a\": 1.6, \"b\": 0.7, \"c\": 0.25 }, \"difficulty_level\": 4, \"cat_meta\": { \"content_area\": \"Normativa\", \"exposure_cap\": 0.2, \"cognitive_demand\": \"high\" } }, { \"id\": \"i11\", \"bloom_level\": \"L5\", \"topic\": \"Evaluación_citas\", \"statement\": \"Un estudiante escribe: García (2021) afirmó \\\"el aprendizaje activo mejora la retención de conocimientos en un 40 por ciento\\\" y no incluye número de página. Según APA 7ma ed., ¿qué error cometió?\", \"options\": [ { \"text\": \"Omitió el número de página obligatorio en citas directas\", \"correct\": true }, { \"text\": \"Usó la palabra afirmó en lugar de señaló\", \"correct\": false }, { \"text\": \"Debió poner el año entre corchetes en lugar de paréntesis\", \"correct\": false }, { \"text\": \"La cita debía ir en bloque por superar 40 palabras\", \"correct\": false } ], \"irt\": { \"a\": 1.9, \"b\": 1.1, \"c\": 0.25 }, \"difficulty_level\": 5, \"cat_meta\": { \"content_area\": \"Citas\", \"exposure_cap\": 0.15, \"cognitive_demand\": \"high\" } }, { \"id\": \"i12\", \"bloom_level\": \"L5\", \"topic\": \"Evaluación_formato\", \"statement\": \"Especificar que cada elemento listado debe evaluarse como correcto/incorrecto según norma APA 7ma\", \"options\": [ { \"text\": \"Uno\", \"correct\": false }, { \"text\": \"Dos\", \"correct\": false }, { \"text\": \"Tres\", \"correct\": true }, { \"text\": \"Cuatro\", \"correct\": false } ], \"irt\": { \"a\": 2.1, \"b\": 1.3, \"c\": 0.25 }, \"difficulty_level\": 5, \"cat_meta\": { \"content_area\": \"Normativa\", \"exposure_cap\": 0.15, \"cognitive_demand\": \"high\" } } ] } }"
+    - generic [ref=e315]:
+      - button "Convertir ahora" [ref=e316] [cursor=pointer]
+      - button "Cargar ejemplo .mini" [ref=e317] [cursor=pointer]
+      - button "Usar salida como entrada" [ref=e318] [cursor=pointer]
+    - generic [ref=e319]: .mini convertido a JSON.
+  - generic [ref=e320]:
+    - generic [ref=e321]: Flujo de trabajo
+    - heading "De la clase a la evaluación" [level=2] [ref=e322]
+    - generic [ref=e323]:
+      - generic [ref=e324]:
+        - generic [ref=e325]: PASO 01
+        - img [ref=e327]
+        - heading "Scan de contenido" [level=3] [ref=e329]
+        - paragraph [ref=e330]: La IA identifica conceptos esenciales de la transcripción. Descarta anécdotas y ejemplos no evaluables.
+      - generic [ref=e331]:
+        - generic [ref=e332]: PASO 02
+        - img [ref=e334]
+        - heading "Clasificación Bloom" [level=3] [ref=e336]
+        - paragraph [ref=e337]: Cada concepto se clasifica en L1–L6. Se garantiza distribución uniforme por dificultad.
+      - generic [ref=e338]:
+        - generic [ref=e339]: PASO 03
+        - img [ref=e341]
+        - heading "Calibración IRT" [level=3] [ref=e342]
+        - paragraph [ref=e343]: Asignación de parámetros a, b, c según nivel cognitivo. Discriminación desde 0.8 hasta 2.5.
+      - generic [ref=e344]:
+        - generic [ref=e345]: PASO 04
+        - img [ref=e347]
+        - heading "Output .mini" [level=3] [ref=e349]
+        - paragraph [ref=e350]: Una cabecera + N líneas. Parseable con un simple split por pipe. Sin overhead sintáctico.
+  - generic [ref=e351]:
+    - generic [ref=e352]: Psicometría integrada
+    - heading "IRT 3PL + Taxonomía de Bloom" [level=2] [ref=e353]
+    - generic [ref=e354]:
+      - generic [ref=e355]:
+        - paragraph [ref=e356]: El modelo IRT de 3 parámetros permite calibrar cada ítem de manera precisa. Los parámetros se asignan automáticamente según el nivel cognitivo de Bloom.
+        - generic [ref=e357]:
+          - generic [ref=e358]:
+            - generic [ref=e359]: a
+            - generic [ref=e360]:
+              - heading "Discriminación" [level=4] [ref=e361]
+              - paragraph [ref=e362]: Qué tan bien distingue el ítem entre estudiantes con diferente nivel de dominio.
+              - generic [ref=e363]: "L1: 0.8–1.0 → L6: 2.0–2.5"
+          - generic [ref=e364]:
+            - generic [ref=e365]: b
+            - generic [ref=e366]:
+              - heading "Dificultad" [level=4] [ref=e367]
+              - paragraph [ref=e368]: Nivel de habilidad theta donde la probabilidad de respuesta correcta es 50%.
+              - generic [ref=e369]: "L1: -1.5 a -0.5 → L6: 1.5 a 2.0"
+          - generic [ref=e370]:
+            - generic [ref=e371]: c
+            - generic [ref=e372]:
+              - heading "Pseudo-azar" [level=4] [ref=e373]
+              - paragraph [ref=e374]: Probabilidad mínima de acertar por azar. Base 1/num_opciones para 4 alternativas.
+              - generic [ref=e375]: "Base: 0.25 — Máximo: 0.35"
+      - generic [ref=e376]:
+        - paragraph [ref=e377]: Cada ítem se etiqueta con un nivel de la Taxonomía de Bloom revisada, garantizando cobertura cognitiva completa.
+        - generic [ref=e378]:
+          - generic [ref=e379]:
+            - generic [ref=e380]: L1
+            - generic [ref=e381]: Recordar
+            - generic [ref=e382]: Recuperar hechos y conceptos básicos de la memoria.
+          - generic [ref=e383]:
+            - generic [ref=e384]: L2
+            - generic [ref=e385]: Comprender
+            - generic [ref=e386]: Explicar ideas o conceptos con palabras propias.
+          - generic [ref=e387]:
+            - generic [ref=e388]: L3
+            - generic [ref=e389]: Aplicar
+            - generic [ref=e390]: Usar información en nuevas situaciones.
+          - generic [ref=e391]:
+            - generic [ref=e392]: L4
+            - generic [ref=e393]: Analizar
+            - generic [ref=e394]: Descomponer información en partes y establecer relaciones.
+          - generic [ref=e395]:
+            - generic [ref=e396]: L5
+            - generic [ref=e397]: Evaluar
+            - generic [ref=e398]: Justificar una decisión o acción con criterios.
+          - generic [ref=e399]:
+            - generic [ref=e400]: L6
+            - generic [ref=e401]: Crear
+            - generic [ref=e402]: Producir trabajo nuevo combinando elementos.
+  - generic [ref=e403]:
+    - generic [ref=e404]: El equipo
+    - heading "Creado para SIMA" [level=2] [ref=e405]
+    - generic [ref=e406]:
+      - generic [ref=e407]:
+        - generic [ref=e408]: AP
+        - generic [ref=e409]: Adrián Palma
+        - generic [ref=e410]: Co-creador de .mini
+        - generic [ref=e411]: Diseñó la arquitectura del formato y los criterios de esencialidad para extracción de conocimiento desde contenido educativo.
+      - generic [ref=e412]:
+        - generic [ref=e413]: EP
+        - generic [ref=e414]: Erick Palomino
+        - generic [ref=e415]: Co-creador de .mini
+        - generic [ref=e416]: Desarrolló el sistema de calibración IRT automática y la integración con la Taxonomía de Bloom para el motor de evaluación adaptativa.
+    - generic [ref=e417]:
+      - img [ref=e418]
+      - text: Desarrollado en el contexto de SIMA — App de transcripción de clase con IA
+  - contentinfo [ref=e420]:
+    - generic [ref=e421]: .mini
+    - generic [ref=e422]: Formato de evaluación adaptativa psicométrica · SIMA 2026
+    - generic [ref=e423]:
+      - text: Parte de
+      - generic [ref=e424]: SIMA

@@ -472,6 +472,107 @@ def repair_mini_coherence(mini_content: str, source_context: str = "", backend: 
     return prompt, repaired, resolved_backend, trace
 
 
+def repair_incoherent_mini(incoherent_mini: str, source_context: str = "", backend: str = "local") -> tuple[str, str, str, dict]:
+    """
+    Repara especificamente items incoherentes (enunciados declarativos sin ? ni ____).
+    Es mas rapido que repair_mini_coherence porque actua sobre un subset pequeno.
+    """
+    if not incoherent_mini.strip():
+        return "", "", backend, {"changed": False, "note": "No hay items incoherentes"}
+
+    resolved_backend = "local" if backend in {"auto", "", None, "local"} else resolve_backend(backend)
+    prompt = (
+        "Eres un editor de items de evaluacion. Los siguientes items tienen enunciados "
+        "declarativos (sin ? ni ____) en lugar de preguntas o completaciones.\n\n"
+        "REGLAS DE REPARACION:\n"
+        "1. Convierte CADA enunciado en una PREGUNTA con ? al final, o una COMPLETACION con ____\n"
+        "2. Conserva el contenido factual exacto (fechas, nombres, causas, consecuencias)\n"
+        "3. Conserva las 4 opciones; si no tienen sentido con la nueva pregunta, ajustalas minimamente\n"
+        "4. Conserva los parametros IRT (a,b,c), dificultad, area y nivel Bloom\n"
+        "5. Marca la opcion correcta con * al final de su texto\n"
+        "6. NO inventes items nuevos; solo repara los que te doy\n"
+        "7. Responde UNICAMENTE con el bloque MINI, sin explicaciones\n\n"
+        f"CONTEXTO_ORIGEN:\n{source_context.strip() or 'Sin contexto adicional.'}\n\n"
+        f"MINI_INCOHERENTE_A_REPARAR:\n{incoherent_mini}"
+    )
+    call_prompt = prompt + "\n/no_think" if resolved_backend == "local" else prompt
+    raw_output = call_ai(call_prompt, backend=resolved_backend, role="coherence")
+    repaired = extract_mini_lines(raw_output)
+
+    from .parse_mini import parse_mini
+
+    trace = {
+        "backend": resolved_backend,
+        "prompt_chars": len(prompt),
+        "output_chars": len(raw_output),
+        "changed": bool(repaired and repaired.strip() != incoherent_mini.strip()),
+    }
+
+    if not repaired:
+        return prompt, "", resolved_backend, {**trace, "note": "La IA no devolvio MINI valido"}
+
+    assessment = parse_mini(repaired)
+    if not assessment.header or not assessment.items:
+        return prompt, "", resolved_backend, {**trace, "note": "Reparacion no produjo items parseables"}
+
+    return prompt, repaired, resolved_backend, trace
+
+
+def repair_option_uniformity(mini_content: str, source_context: str = "", backend: str = "local") -> tuple[str, str, str, dict]:
+    """
+    Repara items donde las opciones estan malformadas:
+    - Opciones fusionadas por comas (3 en 1)
+    - Distractores de longitud muy diferente a la correcta
+    - Categorias semanticas inconsistentes entre opciones
+    """
+    if not mini_content.strip():
+        return "", "", backend, {"changed": False, "note": "No hay items a reparar"}
+
+    resolved_backend = "local" if backend in {"auto", "", None, "local"} else resolve_backend(backend)
+    prompt = (
+        "Eres un editor de items de evaluacion. Los siguientes items tienen opciones "
+        "MAL FORMATEADAS. Debes reescribir UNICAMENTE las opciones de cada item, "
+        "conservando el enunciado y la respuesta correcta.\n\n"
+        "REGLAS DE REPARACION DE OPCIONES:\n"
+        "1. Cada item DEBE tener exactamente 4 opciones separadas por comas\n"
+        "2. Las 4 opciones deben ser de la MISMA categoria semantica y longitud similar\n"
+        "3. Si una opcion tiene comas internas, usa comillas: \"texto con, comas\"\n"
+        "4. La opcion correcta NO debe ser siempre la mas corta ni la mas larga\n"
+        "5. Todas las opciones deben ser PLAUSIBLES pero inequivocamente incorrectas (excepto la correcta)\n"
+        "6. Conserva el enunciado exacto, solo cambia las opciones\n"
+        "7. Marca la opcion correcta con * al final de su texto\n"
+        "8. Responde UNICAMENTE con el bloque MINI, sin explicaciones\n\n"
+        "EJEMPLO DE OPCIONES MALAS (no hacer esto):\n"
+        "ciudad de Lima,centro de Ica,valle de Cañete,costa del sur\n"
+        "(aqui la primera 'opcion' en realidad son 3 distractores fusionados)\n\n"
+        "EJEMPLO DE OPCIONES BUENAS:\n"
+        "costa del sur,sierra central,selva alta,costa norte*\n\n"
+        f"CONTEXTO_ORIGEN:\n{source_context.strip() or 'Sin contexto adicional.'}\n\n"
+        f"MINI_CON_OPCIONES_MALAS:\n{mini_content}"
+    )
+    call_prompt = prompt + "\n/no_think" if resolved_backend == "local" else prompt
+    raw_output = call_ai(call_prompt, backend=resolved_backend, role="coherence")
+    repaired = extract_mini_lines(raw_output)
+
+    from .parse_mini import parse_mini
+
+    trace = {
+        "backend": resolved_backend,
+        "prompt_chars": len(prompt),
+        "output_chars": len(raw_output),
+        "changed": bool(repaired and repaired.strip() != mini_content.strip()),
+    }
+
+    if not repaired:
+        return prompt, "", resolved_backend, {**trace, "note": "La IA no devolvio MINI valido"}
+
+    assessment = parse_mini(repaired)
+    if not assessment.header or not assessment.items:
+        return prompt, "", resolved_backend, {**trace, "note": "Reparacion no produjo items parseables"}
+
+    return prompt, repaired, resolved_backend, trace
+
+
 def repair_transcript_text(transcript: str, source_context: str = "", backend: str = "local") -> tuple[str, str, str, dict]:
     """
     Corrige errores obvios de transcripcion usando contexto local de la clase.
@@ -694,27 +795,25 @@ def build_verification_queries(mini_content: str) -> list[str]:
 
 
 def search_web(query: str, max_results: int = 3, timeout: int = 8) -> list[dict]:
-    search_url = f"https://duckduckgo.com/html/?q={quote_plus(query)}"
+    """Busca en DuckDuckGo usando la libreria ddgs (maneja bloqueos y rate limits)."""
     try:
-        req = Request(search_url, headers={"User-Agent": "SIMA verifier/1.0"})
-        with urlopen(req, timeout=timeout) as response:
-            raw = response.read(250_000)
-            charset = response.headers.get_content_charset() or "utf-8"
-        html = raw.decode(charset, errors="replace")
+        from ddgs import DDGS
+    except Exception:
+        return []
+
+    try:
+        with DDGS() as ddgs:
+            raw_results = ddgs.text(query, max_results=max(max_results, 5))
     except Exception:
         return []
 
     results = []
-    pattern = re.compile(
-        r'<a[^>]+class="result__a"[^>]+href="(?P<href>[^"]+)"[^>]*>(?P<title>.*?)</a>',
-        flags=re.I | re.S,
-    )
-    for match in pattern.finditer(html):
-        url = normalize_search_result_url(unescape(match.group("href")))
-        title = strip_html(match.group("title"))
+    for result in raw_results:
+        url = normalize_search_result_url(result.get("href", ""))
+        title = strip_html(result.get("title", ""))
         if not url or "duckduckgo.com" in urlparse(url).netloc:
             continue
-        if any(result["url"] == url for result in results):
+        if any(r["url"] == url for r in results):
             continue
         results.append({"url": url, "title": title})
         if len(results) >= max_results:

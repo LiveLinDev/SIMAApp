@@ -1,0 +1,104 @@
+
+######################################################################
+# COMPARACION 1: FOTOSINTESIS
+######################################################################
+
+======================================================================
+TEST: Fotosintesis | Prompt: ANTIGUO
+======================================================================
+
+--- MINI GENERADO ---
+a|m=3PL|d=20231015|n=5|l=es|t=Fotosíntesis|bd=CLOROPLASTOS,FOTOSÍNTESIS,CLOROFILA,DIÓXIDO DE CARBONO,GLUCOSA|cat=-1.0,-3.0,1.0,0.2,10,0
+i1|L1|Fotosíntesis|La fotosíntesis ocurre principalmente en los ____|cloroplastos*,mitocondrias,núcleo,ribosomas|1|BIOLOGÍA,1,1
+i2|L2|Fotosíntesis|¿Cuál es el principal pigmento que absorbe luz en la fotosíntesis?|clorofila*,glucosa,ribosa,ácido clorhídrico|1|BIOLOGÍA,1,2
+i3|L3|Fotosíntesis|La fotosíntesis convierte el dióxido de carbono y el agua en ____ y oxígeno|glucosa*,proteína,almidón,ácido clorhídrico|1|BIOLOGÍA,1,3
+i4|L4|Fotosíntesis|¿Qué longitud de onda es especialmente absorbida por la clorofila?|roja y azul*,roja y verde,azul y verde,amarilla y roja|1|BIOLOGÍA,1,4
+i5|L5|Fotosíntesis|La energía luminosa se transforma en energía química mediante el proceso de ____|fotosíntesis*,respiración celular,fermentación,transpiración|1|BIOLOGÍA,1,5
+
+--- VALIDACION ---
+
+Resumen: 0 items, 0 errores
+
+======================================================================
+TEST: Fotosintesis | Prompt: NUEVO
+======================================================================
+
+--- MINI GENERADO ---
+a|m=IRT3PL|d=20260503|n=5|l=es|t=fotosintesis|bd=1,1,0,0,0,0|cat=0,-3,3,0.3,10,SH
+i1|L1|Proceso|La fotosintesis es el proceso mediante el cual los organismos convierten la energia luminica en energia quimica|respiracion celular,fermentacion,fotosintesis*,descomposicion|1.0,-1.0,0.25|1|Biologia,0.2,low
+i2|L2|Organelo|El proceso de fotosintesis ocurre principalmente en ____|mitocondrias,cloroplastos*,ribosomas,nucleo|1.2,-0.8,0.25|1|Biologia,0.2,medium
+i3|L3|Pigmento|El pigmento principal que absorbe luz en la fotosintesis es ____|carotenoides,clorofila*,xantofila,antocianos|1.4,0.5,0.25|2|Biologia,0.2,medium
+i4|L4|Reactivos|Los reactivos principales en la fotosintesis son ____|glucosa y oxigeno,dióxido de carbono y agua*,clorofila y luz,agua y oxigeno|1.6,0.7,0.25|3|Quimica,0.2,high
+i5|L5|Productos|Los productos finales de la fotosintesis son ____|glucosa y oxigeno*,dióxido de carbono y agua,clorofila y luz,agua y dióxido de carbono|1.8,1.0,0.25|4|Biologia,0.2,high
+
+--- VALIDACION ---
+
+[i1] [La fotosintesis es el proceso mediante el cual los...]
+  X RS-1: Enunciado no es Tipo A ni Tipo B: [La fotosintesis es el proceso mediante el cual los organismos convierten la energia luminica en energia quimica]
+  X RS-1: Enunciado sin hueco ni pregunta, opciones flotantes: ['respiracion celular', 'fermentacion', 'fotosintesis', 'descomposicion']
+
+[i2] [OK] Coherente
+
+[i3] [OK] Coherente
+
+[i4] [OK] Coherente
+
+[i5] [OK] Coherente
+
+Resumen: 5 items, 2 errores
+
+######################################################################
+# COMPARACION 2: MANUEL PARDO
+######################################################################
+
+======================================================================
+TEST: Manuel Pardo | Prompt: ANTIGUO
+======================================================================
+
+--- MINI GENERADO ---
+a|m=3PL|d=20231015|n=5|l=es|t=Manuel Pardo|bd=1,2,3,4,5,6|cat=-1.0,-3.0,3.0,0.2,10,0.5
+i1|L2|Historia|Manuel Pardo fue el primer presidente ____ de la República|civil*,militar,progresista,conservador|1.2,0.8,0.5,0.3|1|tema,5,2
+i2|L2|Historia|¿Durante qué período fue presidente Manuel Pardo?|1872-1876*,1865-1870,1880-1885,1890-1895|1.3,0.9,0.6,0.4|1|tema,5,2
+i3|L2|Historia|El gobierno de Manuel Pardo promovió la ____ pública, la inmigración europea y la construcción de infraestructura|educación*,salud,industria,agricultura|1.1,0.7,0.5,0.3|1|tema,5,2
+i4|L2|Historia|¿Qué consecuencia tuvo el asesinato de Manuel Pardo en el Perú?|Crisis política*,Estabilidad económica,Revolución social,Paz internacional|1.0,0.6,0.4,0.2|1|tema,5,2
+i5|L2|Historia|El asesinato de Manuel Pardo fue cometido por un ____ del barco de guerra La Unión|artillero*,capitán,soldado,médico|1.2,0.8,0.5,0.3|1|tema,5,2
+
+--- VALIDACION ---
+
+[i1] [OK] Coherente
+
+[i2] [OK] Coherente
+
+[i3] [OK] Coherente
+
+[i4] [OK] Coherente
+
+[i5] [OK] Coherente
+
+Resumen: 5 items, 0 errores
+
+======================================================================
+TEST: Manuel Pardo | Prompt: NUEVO
+======================================================================
+
+--- MINI GENERADO ---
+a|m=IRT3PL|d=20260503|n=5|l=es|t=Manuel Pardo|bd=1,1,0,0,0,0|cat=0,-3,3,0.3,10,SH
+i1|L1|Rol|Manuel Pardo fue el ____ de Perú|primer presidente militar,primer presidente civil*,primer presidente socialista,primer presidente indígena|0.9,-1.2,0.25|1|Historia,0.2,low
+i2|L1|Período|¿En qué años fue presidente Manuel Pardo?|1865-1870,1872-1876*,1880-1885,1890-1895|0.8,-0.8,0.25|1|Historia,0.2,low
+i3|L2|Políticas|¿Qué iniciativas promovió el gobierno de Manuel Pardo?|educación pública, inmigración europea, infraestructura*, todas las anteriores|1.0,0.0,0.25|2|Historia,0.2,medium
+i4|L3|Consecuencia|¿Qué sucedió tras el asesinato de Manuel Pardo?|crisis política*, aumento de impuestos, guerra civil, expansión territorial|1.2,0.5,0.25|3|Historia,0.2,medium
+i5|L1|Fecha|¿En qué fecha fue asesinado Manuel Pardo?|16 de noviembre de 1878*, 25 de diciembre de 1880, 3 de mayo de 1875, 12 de agosto de 1882|0.9,-0.5,0.25|1|Historia,0.2,low
+
+--- VALIDACION ---
+
+[i1] [OK] Coherente
+
+[i2] [OK] Coherente
+
+[i3] [OK] Coherente
+
+[i4] [OK] Coherente
+
+[i5] [OK] Coherente
+
+Resumen: 5 items, 0 errores

@@ -1,0 +1,84 @@
+============================================================
+PRUEBA DE VERIFICACION REAL
+============================================================
+Items a verificar: 31
+
+--- MODO WEB ---
+Contexto web chars: 0
+Queries: 3
+EduQG enabled: False
+Prompt chars: 9784
+
+Resultado (primeros 2000 chars):
+v|d=20260602|n=53|e=53|s=CORREGIDO
+e1|L1|position_bias|opA|falta de tropas*|falta de tropas|EduQG: La respuesta correcta no debe estar siempre en la posición A (sesgo de posición)
+e2|L2|position_bias|opA|la muerte de un líder español*|la muerte de un líder español|EduQG: La respuesta correcta no debe estar siempre en la posición A (sesgo de posición)
+e3|L3|position_bias|opA|falta de apoyo local*|falta de apoyo local|EduQG: La respuesta correcta no debe estar siempre en la posición A (sesgo de posición)
+e4|L1|position_bias|opA|Riva Huerto*|Riva Huerto|EduQG: La respuesta correcta no debe estar siempre en la posición A (sesgo de posición)
+e5|L2|position_bias|opA|la resistencia organizada de los españoles*|la resistencia organizada de los españoles|EduQG: La respuesta correcta no debe estar siempre en la posición A (sesgo de posición)
+e6|L3|position_bias|opA|la falta de apoyo local*|la falta de apoyo local|EduQG: La respuesta correcta no debe estar siempre en la posición A (sesgo de posición)
+e7|L1|position_bias|opA|22 de septiembre de 1822*|22 de septiembre de 1822|EduQG: La respuesta correcta no debe estar siempre en la posición A (sesgo de posición)
+e8|L2|position_bias|opA|con el pago a los dueños*|con el pago a los dueños|EduQG: La respuesta correcta no debe estar siempre en la posición A (sesgo de posición)
+e9|L3|position_bias|opA|la falta de apoyo popular*|la falta de apoyo popular|EduQG: La respuesta correcta no debe estar siempre en la posición A (sesgo de posición)
+e10|L1|position_bias|opA|Manuel Pardo*|Manuel Pardo|EduQG: La respuesta correcta no debe estar siempre en la posición A (sesgo de posición)
+e11|L2|position_bias|opA|la formación de un gobierno civil*|la formación de un gobierno civil|EduQG: La respuesta correcta no debe estar siempre en la posición A (sesgo de posición)
+e12|L3|position_bias|opA|la deuda generada por la independencia*|la deuda generada por la independencia|EduQG: La respuesta correcta no debe estar siempre en la posición A (sesgo de 
+
+--- MODO EDUQG ---
+Contexto EduQG chars: 7527
+EduQG enabled: True
+EduQG records loaded: 3397
+EduQG matches: 5
+  Match: principles_of_accounting,_volume_1:_financial_accounting cap | Score: 0.05
+  Match: principles_of_accounting,_volume_1:_financial_accounting cap | Score: 0.05
+  Match: principles_of_accounting,_volume_1:_financial_accounting cap | Score: 0.05
+
+Resultado EduQG (primeros 2000 chars):
+```
+v|d=20260602|n=31|e=31|s=CORREGIDO
+e1|i1|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e2|i2|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e3|i3|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e4|i4|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e5|i5|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e6|i6|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e7|i7|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e8|i8|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e9|i9|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e10|i10|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e11|i11|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e12|i12|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e13|i13|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e14|i14|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e15|i15|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e16|i16|position_bias|a|*|A|EduQG: La respuesta correcta está siempre en posición A, lo que introduce sesgo de posición.
+e17|i17|position_bias|a|*|A|EduQG: La respu
+
+--- MODO HYBRID ---
+Contexto hibrido chars: 7527
+Web queries: 3
+EduQG matches: 5
+
+Resultado Hybrid (primeros 2000 chars):
+```
+v|d=20260602|n=31|e=31|s=CORREGIDO
+e1|i1|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e2|i2|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e3|i3|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e4|i4|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e5|i5|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e6|i6|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e7|i7|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e8|i8|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e9|i9|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e10|i10|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e11|i11|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e12|i12|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e13|i13|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e14|i14|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e15|i15|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los items.
+e16|i16|position_bias|a|A|B|EduQG: La respuesta correcta no debe estar siempre en la misma posición (A) en todos los it
+
+============================================================
+PRUEBA COMPLETADA
+============================================================

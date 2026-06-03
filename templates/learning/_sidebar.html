@@ -50,4 +50,17 @@
     <a href="{% url 'plans' %}">Gestionar plan</a>
   </div>
 </aside>
+
+<style>
+  .sidebar-block { display: grid; gap: 6px; }
+  .sidebar-plan {
+    display: grid;
+    gap: 4px;
+    padding: 12px 14px !important;
+    border-radius: 10px !important;
+  }
+  .sidebar-plan span { font-size: .78rem; color: var(--muted); }
+  .sidebar-plan strong { font-size: 1.1rem; color: var(--ink); }
+  .sidebar-plan a { font-size: .82rem; font-weight: 800; }
+</style>
 {% endif %}

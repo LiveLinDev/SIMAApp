@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+{% block title %}Emparejar - {{ job.title }}{% endblock %}
+{% block content %}
+
+<section class="ld-header">
+  <div class="ld-title-group">
+    <a href="{% url 'lesson_detail' job.pk %}" class="back-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Volver a la clase
+    </a>
+    <h1>Emparejar conceptos</h1>
+    <p class="ld-meta">{{ job.title }} · Une cada concepto con su definicion</p>
+  </div>
+</section>
+
+<div class="match-shell">
+  <div class="match-board" id="match-board"
+       data-pairs="{{ pairs_json|escape }}"
+       data-definitions="{{ definitions_json|escape }}">
+    <div class="match-col">
+      <h3 class="match-col__title">Conceptos</h3>
+      {% for p in pairs %}
+      <div class="match-tile match-tile--concept" draggable="true" data-id="{{ p.id }}" data-type="concept">
+        <span class="match-tile__num">{{ forloop.counter }}</span>
+        <span class="match-tile__text">{{ p.concept }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="match-col">
+      <h3 class="match-col__title">Definiciones</h3>
+      {% for d in definitions %}
+      <div class="match-tile match-tile--def" draggable="true" data-def="{{ d }}" data-type="def">
+        <span class="match-tile__text">{{ d }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="match-hud">
+    <div class="match-score">
+      <strong id="match-score">0</strong>
+      <span>/ {{ pairs|length }} aciertos</span>
+    </div>
+    <button class="secondary-button" id="match-reset" type="button">Reiniciar</button>
+  </div>
+
+  <div class="match-result" id="match-result" hidden>
+    <div class="match-result__box">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <h3>Completado</h3>
+      <p id="match-result__text">Emparejaste todos los conceptos.</p>
+      <div class="result-actions">
+        <a class="secondary-button" href="{% url 'cloze_exercise' job.pk %}">Ejercicio de completar</a>
+        <a class="primary-button" href="{% url 'lesson_detail' job.pk %}">Volver a la clase</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .match-shell { max-width: 900px; margin: 0 auto; display: grid; gap: 18px; }
+  .match-board {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .match-col { display: grid; gap: 10px; }
+  .match-col__title { margin: 0 0 6px; font-size: .85rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+  .match-tile {
+    display: flex; align-items: center; gap: 10px;
+    border: 1px solid var(--line); border-radius: 12px;
+    background: var(--surface);
+    padding: 12px 14px;
+    text-align: left; cursor: pointer;
+    color: var(--ink);
+    transition: all .18s ease;
+    min-height: 56px;
+  }
+  .match-tile:hover { border-color: var(--acid); transform: translateY(-1px); }
+  .match-tile.is-selected { border-color: var(--acid); background: rgba(212,255,0,.08); box-shadow: 0 0 0 3px rgba(212,255,0,.12); }
+  .match-tile.is-matched { border-color: rgba(212,255,0,.45); opacity: .55; cursor: default; pointer-events: none; }
+  .match-tile.is-wrong { animation: shake .35s ease; border-color: rgba(255,95,87,.6); }
+  .match-tile__num {
+    width: 24px; height: 24px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    display: grid; place-items: center;
+    font-family: var(--font-mono); font-size: .72rem; font-weight: 900; flex-shrink: 0;
+  }
+  .match-tile__text { font-size: .88rem; line-height: 1.35; }
+
+  .match-hud {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; flex-wrap: wrap;
+  }
+  .match-score { display: flex; align-items: baseline; gap: 8px; }
+  .match-score strong { font-family: var(--font-display); font-size: 1.6rem; color: var(--acid); }
+  .match-score span { color: var(--muted); font-size: .85rem; font-weight: 800; }
+
+  .match-result { margin-top: 8px; }
+  .match-result__box {
+    border: 1px solid var(--line); border-radius: 16px;
+    background: var(--surface); padding: 28px;
+    text-align: center; display: grid; gap: 10px; place-items: center;
+  }
+  .match-result__box svg { color: var(--acid); }
+  .match-result__box h3 { margin: 0; color: var(--ink); }
+  .match-result__box p { margin: 0; color: var(--muted); }
+
+  @keyframes shake {
+    0%,100%{ transform: translateX(0); }
+    25%{ transform: translateX(-6px); }
+    75%{ transform: translateX(6px); }
+  }
+
+  @media (max-width: 720px) {
+    .match-board { grid-template-columns: 1fr; }
+  }
+</style>
+
+<script>
+(function(){
+  var board = document.getElementById('match-board');
+  var pairs = JSON.parse(board.getAttribute('data-pairs') || '[]');
+  var selectedConcept = null;
+  var scoreEl = document.getElementById('match-score');
+  var resultEl = document.getElementById('match-result');
+  var resultText = document.getElementById('match-result__text');
+  var matched = 0;
+  var total = pairs.length;
+
+  function updateScore(){
+    scoreEl.textContent = matched;
+    if (matched >= total){
+      resultEl.hidden = false;
+      resultText.textContent = 'Emparejaste ' + matched + ' de ' + total + ' conceptos.';
+      board.style.pointerEvents = 'none';
+      board.style.opacity = '.6';
+    }
+  }
+
+  function clearSelection(){
+    document.querySelectorAll('.match-tile.is-selected').forEach(function(el){ el.classList.remove('is-selected'); });
+    selectedConcept = null;
+  }
+
+  function handleMatch(conceptTile, defTile){
+    var conceptId = parseInt(conceptTile.getAttribute('data-id'));
+    var defText = defTile.getAttribute('data-def');
+    var pair = pairs.find(function(p){ return p.id === conceptId; });
+    if (pair && pair.definition === defText){
+      conceptTile.classList.add('is-matched'); conceptTile.classList.remove('is-selected');
+      conceptTile.setAttribute('draggable', 'false');
+      defTile.classList.add('is-matched');
+      defTile.setAttribute('draggable', 'false');
+      matched++; updateScore(); selectedConcept = null;
+    } else {
+      conceptTile.classList.add('is-wrong');
+      defTile.classList.add('is-wrong');
+      setTimeout(function(){
+        conceptTile.classList.remove('is-wrong','is-selected');
+        defTile.classList.remove('is-wrong');
+        selectedConcept = null;
+      }, 500);
+    }
+  }
+
+  document.getElementById('match-reset').addEventListener('click', function(){
+    matched = 0; updateScore(); resultEl.hidden = true;
+    board.style.pointerEvents = ''; board.style.opacity = '';
+    document.querySelectorAll('.match-tile').forEach(function(el){
+      el.classList.remove('is-matched','is-selected','is-wrong');
+      el.style.pointerEvents = '';
+      el.setAttribute('draggable', 'true');
+    });
+  });
+
+  // Click mode
+  board.addEventListener('click', function(e){
+    var tile = e.target.closest('.match-tile'); if (!tile || tile.classList.contains('is-matched')) return;
+    var type = tile.getAttribute('data-type');
+
+    if (type === 'concept'){
+      clearSelection();
+      selectedConcept = tile;
+      tile.classList.add('is-selected');
+    } else if (type === 'def' && selectedConcept){
+      handleMatch(selectedConcept, tile);
+    }
+  });
+
+  // Drag & Drop mode
+  var draggedConcept = null;
+
+  board.addEventListener('dragstart', function(e){
+    var tile = e.target.closest('.match-tile');
+    if (!tile || tile.classList.contains('is-matched')) { e.preventDefault(); return; }
+    if (tile.getAttribute('data-type') === 'concept'){
+      draggedConcept = tile;
+      tile.classList.add('is-selected');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', tile.getAttribute('data-id'));
+    } else {
+      e.preventDefault();
+    }
+  });
+
+  board.addEventListener('dragover', function(e){
+    e.preventDefault();
+    var tile = e.target.closest('.match-tile--def');
+    if (tile && !tile.classList.contains('is-matched')){
+      tile.classList.add('drag-over');
+      e.dataTransfer.dropEffect = 'move';
+    }
+  });
+
+  board.addEventListener('dragleave', function(e){
+    var tile = e.target.closest('.match-tile--def');
+    if (tile) tile.classList.remove('drag-over');
+  });
+
+  board.addEventListener('drop', function(e){
+    e.preventDefault();
+    var defTile = e.target.closest('.match-tile--def');
+    document.querySelectorAll('.match-tile--def.drag-over').forEach(function(el){ el.classList.remove('drag-over'); });
+    if (!defTile || defTile.classList.contains('is-matched')) return;
+    if (draggedConcept){
+      handleMatch(draggedConcept, defTile);
+      draggedConcept.classList.remove('is-selected');
+      draggedConcept = null;
+    }
+  });
+
+  board.addEventListener('dragend', function(e){
+    document.querySelectorAll('.match-tile--def.drag-over').forEach(function(el){ el.classList.remove('drag-over'); });
+    if (draggedConcept){
+      draggedConcept.classList.remove('is-selected');
+      draggedConcept = null;
+    }
+  });
+})();
+</script>
+
+{% endblock %}

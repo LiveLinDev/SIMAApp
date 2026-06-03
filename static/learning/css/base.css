@@ -12,27 +12,22 @@ body {
   margin: 0;
   min-height: 100vh;
   color: var(--ink);
-  background:
-    radial-gradient(circle at 82% 4%, rgba(217, 52, 36, 0.14), transparent 26%),
-    linear-gradient(180deg, #ffffff, #fbfbf6 58%, #f7f8ef),
-    var(--page);
+  background: var(--page);
   font-family: var(--font-body);
-  letter-spacing: 0;
+  letter-spacing: -0.01em;
   overflow-x: hidden;
 }
 
+/* Subtle paper texture instead of grid */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  opacity: 1;
-  background:
-    linear-gradient(90deg, rgba(20, 24, 18, 0.07) 1px, transparent 1px),
-    linear-gradient(rgba(20, 24, 18, 0.06) 1px, transparent 1px);
-  background-size: 56px 56px;
-  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0.42) 54%, transparent 92%);
+  opacity: 0.4;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  background-size: 120px 120px;
 }
 
 a {
@@ -62,27 +57,22 @@ svg {
   position: sticky;
   top: 0;
   z-index: 50;
-  min-height: 58px;
+  min-height: 54px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: clamp(18px, 4vw, 54px);
   width: calc(100% + clamp(14px, 2vw, 28px) * 2);
-  margin: 0 calc(clamp(14px, 2vw, 28px) * -1) 36px;
+  margin: 0 calc(clamp(14px, 2vw, 28px) * -1) 32px;
   padding: 0 clamp(28px, 4vw, 56px);
-  border: 0;
-  border-bottom: 1px solid rgba(20, 24, 18, 0.12);
+  border-bottom: 1.5px solid var(--line-strong);
   border-radius: 0;
-  background: #ffffff;
-  box-shadow: none;
-  backdrop-filter: blur(18px);
+  background: var(--paper);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.06);
   overflow: visible;
 }
 
-.topbar::before {
-  display: none;
-}
-
+.topbar::before,
 .topbar::after {
   display: none;
 }
@@ -102,57 +92,39 @@ svg {
   z-index: 1;
   flex: 0 0 auto;
   gap: 4px;
-  color: #000000;
+  color: var(--ink);
   font-family: var(--font-mono);
   font-size: 1rem;
   font-weight: 700;
-  letter-spacing: 0;
+  letter-spacing: -0.02em;
 }
 
 .brand-slash {
   margin-right: 12px;
-  color: #000000;
+  color: var(--muted);
   font-weight: 400;
 }
 
 .brand-dot {
-  color: #000000;
+  color: var(--acid);
 }
 
 .brand-mark {
   position: relative;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   display: grid;
   place-items: center;
-  border: 1px solid rgba(20, 24, 18, 0.16);
-  border-radius: 8px;
-  color: #000000;
-  background:
-    linear-gradient(135deg, rgba(217, 52, 36, 0.94), rgba(255, 138, 160, 0.88));
-  box-shadow: 0 0 0 6px rgba(217, 52, 36, 0.10), 0 12px 26px rgba(20, 24, 18, 0.10);
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  background: var(--paper);
+  box-shadow: 3px 3px 0 var(--ink);
 }
 
 .brand-mark::before,
 .brand-mark::after {
-  content: "";
-  position: absolute;
-  border-radius: inherit;
-  pointer-events: none;
-}
-
-.brand-mark::before {
-  inset: 7px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-}
-
-.brand-mark::after {
-  width: 6px;
-  height: 6px;
-  right: -3px;
-  top: 9px;
-  background: var(--acid);
-  box-shadow: 0 0 16px rgba(217, 52, 36, 0.9);
+  display: none;
 }
 
 .brand-mark span {
@@ -168,7 +140,7 @@ svg {
 
 .brand-copy strong {
   color: var(--ink);
-  letter-spacing: 0;
+  letter-spacing: -0.02em;
 }
 
 .brand-copy small {
@@ -187,27 +159,29 @@ svg {
   border: 0;
   border-radius: 0;
   background: transparent;
-  color: #000000;
+  color: var(--ink);
   padding: 0;
   font-size: 0.76rem;
   font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .topnav a {
-  min-height: 58px;
+  min-height: 54px;
   display: inline-flex;
   align-items: center;
   padding: 0 clamp(10px, 1.5vw, 22px);
   border-radius: 0;
-  transition: color 0.2s, background 0.2s, box-shadow 0.2s;
+  transition: color 0.15s, background 0.15s;
+  color: var(--muted);
 }
 
 .topnav a:hover,
 .topnav .nav-link.is-active {
-  color: #000000;
+  color: var(--ink);
   background: transparent;
-  box-shadow: inset 0 -1px 0 var(--acid);
+  box-shadow: inset 0 -2px 0 var(--acid);
 }
 
 main {
@@ -216,6 +190,6 @@ main {
 }
 
 ::selection {
-  color: #fff;
+  color: var(--paper);
   background: var(--acid);
 }

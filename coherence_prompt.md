@@ -26,9 +26,32 @@ REGLAS DE REPARACION:
 - No aceptes enunciados como "El movimiento moderno aparecio..." si el contexto real habla de maullidos, vocalizacion o conducta felina.
 - No aceptes distractores que sean sinonimos casi identicos de la respuesta correcta cuando eso vuelve ambigua la pregunta.
 
+REGLA CRITICA — TIPO DE ENUNCIADO:
+Todo enunciado debe ser EXACTAMENTE uno de estos dos tipos:
+1. COMPLETACION con hueco `____`: La frase contiene `____` y las 4 alternativas encajan gramaticalmente alli.
+2. PREGUNTA DIRECTA con `?`: La frase termina en `?` y las 4 alternativas responden directamente.
+
+Si un item tiene un enunciado declarativo suelto (sin `____` y sin `?`), REESCRIBELO completamente.
+Ejemplo de reparacion:
+- MAL: "El asesinato de Manuel Pardo fue un punto de inflexion en la crisis" + "paz,estabilidad,guerra,revolucion"
+- BIEN: "Que tipo de conflicto se desato tras el asesinato de Manuel Pardo durante la crisis politica?" + "guerra civil*,paz territorial,estabilidad monarquica,revolucion agraria"
+
+REGLA CRITICA — CATEGORIA SEMANTICA HOMOGENEA:
+Las 4 alternativas deben ser intercambiables en una misma categoria.
+- MAL: "La ____ es un proceso..." + "fotosintesis*,biologia,alimentacion"
+  (biologia es disciplina, no proceso; alimentacion no relacionada con energia solar)
+- BIEN: "La ____ es el proceso mediante el cual las plantas transforman luz solar en energia quimica" + "fotosintesis*,respiracion celular,fermentacion,transpiracion"
+
+REGLA CRITICA — SUSTITUCION GRAMATICAL:
+Cada alternativa debe poder reemplazar a la correcta sin romper concordancia.
+- MAL: "La fotosintesis ocurre en los ____" + "mitocondria" (debe ser plural)
+- MAL: "La ____ es un proceso..." + "biologia" (biologia no es un proceso)
+
 CHECK FINAL:
 - Cada item se entiende sin leer el resto del MINI.
 - La respuesta correcta se deduce del CONTEXTO_ORIGEN.
 - Ningun distractor es una palabra al azar o una deformacion fonetica.
 - Ningun item conserva frases como "ritmo de los veintidos", "pagadores gigantes", "mayoria son mas agudos" u otros residuos sin sentido.
 - La salida parsea como MINI.
+- Ningun enunciado es declarativo suelto sin `____` ni `?`.
+- Todas las alternativas de cada item pertenecen a la misma categoria semantica.

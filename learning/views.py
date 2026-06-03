@@ -21,7 +21,7 @@ from .credits import (
 from .forms import ApiLessonForm, CourseForm, FreeLessonForm, ManualResultForm, PlanForm, RegisterForm, VerificationResultForm
 from .job_queue import enqueue_lesson_job
 from .models import ClassSession, Course, Difficulty, Flashcard, LessonJob, QuizAttempt, QuizResponse, UserPreference, get_plan_details
-from .parse_mini import apply_corrections_with_trace, assessment_to_dict, normalize_mini_text, parse_mini, render_mini_html, validate_mini_parse
+from .parse_mini import apply_corrections_with_trace, assessment_to_dict, filter_incoherent_items, normalize_mini_text, parse_mini, render_mini_html, validate_mini_parse
 from .services import (
     build_generation_prompt,
     build_verification_prompt,
@@ -181,11 +181,15 @@ def course_detail(request, pk):
         "quizzes": sum(job.quiz_attempts.filter(user=request.user).count() for job in jobs[:100]),
     }
     progress_pct = round((stats["ready"] / stats["classes"]) * 100) if stats["classes"] > 0 else 0
+    profile = _get_or_create_profile(request.user)
+    can_use_api = _has_api_capacity(request.user, profile)
     return render(request, "learning/course_detail.html", {
         "course": course,
         "jobs": jobs[:24],
         "stats": stats,
         "progress_pct": progress_pct,
+        "profile": profile,
+        "can_use_api": can_use_api,
     })
 
 
@@ -989,11 +993,16 @@ def _append_view_log(current: str, stage: str, detail: str = "") -> str:
     return "\n".join(part for part in [current.strip(), line] if part)
 
 
-def _compile_mini_for_render(mini_text: str, stage: str) -> tuple[str, int]:
+def _compile_mini_for_render(mini_text: str, stage: str) -> tuple[str, int, str]:
     mini_block = extract_mini_lines(mini_text) or mini_text
-    normalized = normalize_mini_text(mini_block, stage=stage)
+    filtered, dropped, incoherent_mini = filter_incoherent_items(mini_block)
+    if dropped:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info("[%s] Items incoherentes detectados: %s", stage, dropped)
+    normalized = normalize_mini_text(filtered, stage=stage)
     assessment = validate_mini_parse(normalized, stage=stage)
-    return normalized, len(assessment.items)
+    return normalized, len(assessment.items), incoherent_mini
 
 
 def _collect_public_tags() -> list[str]:
@@ -1103,6 +1112,63 @@ def review_flashcard(request, pk):
     return redirect("flashcards", pk=job.pk)
 
 
+# ══════════════════════════════════════════════════════════════════
+# EJERCICIOS DE RELACIÓN Y COMPLETAR
+# ══════════════════════════════════════════════════════════════════
+
+import random
+
+@login_required
+def matching_exercise(request, pk):
+    import json
+    job = _get_accessible_job(request.user, pk)
+    session = _safe_class_session(job)
+    if not session and job.course_id:
+        session = _sync_class_session_for_job(job)
+    cards = list(Flashcard.objects.filter(class_session=session).order_by("?")[:8])
+    if not cards and (job.corrected_output or job.toon_output):
+        cards = _ensure_flashcards_from_mini(job, session)
+        cards = list(Flashcard.objects.filter(class_session=session).order_by("?")[:8])
+    pairs = []
+    for c in cards:
+        pairs.append({"id": c.pk, "concept": c.question, "definition": c.answer})
+    definitions = [p["definition"] for p in pairs]
+    random.shuffle(definitions)
+    return render(request, "learning/matching_exercise.html", {
+        "job": job,
+        "pairs": pairs,
+        "definitions": definitions,
+        "pairs_json": json.dumps(pairs, ensure_ascii=False),
+        "definitions_json": json.dumps(definitions, ensure_ascii=False),
+        "is_owner": job.user_id == request.user.id,
+    })
+
+
+@login_required
+def cloze_exercise(request, pk):
+    job = _get_accessible_job(request.user, pk)
+    session = _safe_class_session(job)
+    if not session and job.course_id:
+        session = _sync_class_session_for_job(job)
+    cards = list(Flashcard.objects.filter(class_session=session).order_by("?")[:8])
+    if not cards and (job.corrected_output or job.toon_output):
+        cards = _ensure_flashcards_from_mini(job, session)
+        cards = list(Flashcard.objects.filter(class_session=session).order_by("?")[:8])
+    items = []
+    for c in cards:
+        prompt = c.question
+        if "____" in prompt or "___" in prompt or "__" in prompt:
+            items.append({"id": c.pk, "prompt": prompt, "answer": c.answer})
+        else:
+            # Transformar definición en cloze simple si no tiene blank
+            items.append({"id": c.pk, "prompt": f"{c.question} ____", "answer": c.answer})
+    return render(request, "learning/cloze_exercise.html", {
+        "job": job,
+        "items": items,
+        "is_owner": job.user_id == request.user.id,
+    })
+
+
 def _ensure_flashcards_from_mini(job: LessonJob, session: ClassSession | None) -> list[Flashcard]:
     """Genera flashcards básicas desde los ítems MINI si no existen."""
     mini_text = job.corrected_output or job.toon_output
@@ -1180,3 +1246,263 @@ def class_map(request, pk):
         "card_count": len(cards),
         "is_owner": job.user_id == request.user.id,
     })
+
+
+@login_required
+def pipeline_visualization(request, pk):
+    """Visualizacion del pipeline de generacion como diagrama de flujo."""
+    job = get_object_or_404(LessonJob, pk=pk, user=request.user)
+
+    # Parsear processing_log en etapas
+    stages = _parse_pipeline_stages(job)
+
+    # Extraer metricas clave
+    metrics = _extract_pipeline_metrics(job)
+
+    # Preparar datos de modal por etapa
+    stage_details = _build_stage_details(job, stages)
+
+    return render(request, "learning/pipeline_viz.html", {
+        "job": job,
+        "stages": stages,
+        "metrics": metrics,
+        "stage_details": stage_details,
+    })
+
+
+def _build_stage_details(job, stages):
+    """Mapea cada etapa del pipeline a sus datos detallados (traces JSON)."""
+    details = {}
+
+    # Datos de reparacion de transcripcion
+    transcript_traces = job.transcript_repair_trace or []
+    for i, trace in enumerate(transcript_traces):
+        key = f"transcript_repair_{i}"
+        details[key] = {
+            "title": "Corrección de transcripción",
+            "body": _format_transcript_trace(trace),
+        }
+
+    # Datos de coherencia MINI
+    coherence_traces = job.mini_coherence_trace or []
+    for i, trace in enumerate(coherence_traces):
+        key = f"coherence_{i}"
+        details[key] = {
+            "title": "Revisión de coherencia MINI",
+            "body": _format_coherence_trace(trace),
+        }
+
+    # Datos de verificacion
+    verif = job.verification_trace or {}
+    if verif:
+        details["verification"] = {
+            "title": "Verificación con fuentes",
+            "body": _format_verification_trace(verif),
+        }
+
+    # Datos de correcciones
+    corr_traces = job.correction_trace or []
+    if corr_traces:
+        applied = [c for c in corr_traces if c.get("applied")]
+        ignored = [c for c in corr_traces if not c.get("applied")]
+        details["corrections"] = {
+            "title": f"Correcciones aplicadas ({len(applied)})",
+            "body": _format_corrections_trace(applied, ignored),
+        }
+
+    # Mapear stages a keys
+    stage_keys = {}
+    for stage in stages:
+        name_lower = stage["name"].lower()
+        if "transcripcion" in name_lower and ("corrigiendo" in name_lower or "revisada" in name_lower):
+            stage_keys[id(stage)] = "transcript_repair_0"
+        elif "coherencia" in name_lower:
+            stage_keys[id(stage)] = "coherence_0"
+        elif "verificacion" in name_lower and "recibida" in name_lower:
+            stage_keys[id(stage)] = "verification"
+        elif "aplicando correcciones" in name_lower:
+            stage_keys[id(stage)] = "corrections"
+
+    return {"details": details, "stage_keys": stage_keys}
+
+
+def _format_transcript_trace(trace):
+    lines = []
+    changes = trace.get("changes", [])
+    if changes:
+        lines.append("<strong>Cambios detectados:</strong>")
+        for ch in changes[:8]:
+            lines.append(f"<code>{ch.get('before','')[:60]}...</code> → <code>{ch.get('after','')[:60]}...</code>")
+    else:
+        lines.append("No se detectaron cambios significativos.")
+    return "<br>".join(lines)
+
+
+def _format_coherence_trace(trace):
+    lines = []
+    changes = trace.get("changes", [])
+    if changes:
+        lines.append(f"<strong>Cambios:</strong> {len(changes)} items modificados")
+        for ch in changes[:5]:
+            lines.append(f"<code>{ch.get('before','')[:80]}...</code> → <code>{ch.get('after','')[:80]}...</code>")
+    else:
+        lines.append("No se requirieron cambios de coherencia.")
+    return "<br>".join(lines)
+
+
+def _format_verification_trace(verif):
+    lines = []
+    web = verif.get("web", {})
+    queries = web.get("queries", [])
+    if queries:
+        lines.append(f"<strong>Queries web:</strong> {len(queries)}")
+        for q in queries:
+            results = q.get("results", [])
+            lines.append(f"• <em>{q.get('query','')[:50]}...</em> → {len(results)} resultados")
+    eduqg = verif.get("eduqg", {})
+    matches = eduqg.get("matches", [])
+    if matches:
+        lines.append(f"<strong>Matches EduQG:</strong> {len(matches)}")
+    return "<br>".join(lines)
+
+
+def _format_corrections_trace(applied, ignored):
+    lines = []
+    if applied:
+        lines.append(f"<strong>Aplicadas ({len(applied)}):</strong>")
+        for c in applied[:10]:
+            lines.append(f"• [{c.get('matched_item_id','?')}] {c.get('error_type','')} — {c.get('note','')}")
+    if ignored:
+        lines.append(f"<strong>Ignoradas ({len(ignored)}):</strong>")
+        for c in ignored[:5]:
+            lines.append(f"• [{c.get('report_item_id','?')}] {c.get('note','')}")
+    return "<br>".join(lines)
+
+
+def _parse_pipeline_stages(job):
+    """Parsea processing_log en lista de etapas estructuradas."""
+    import re
+    log_text = (job.processing_log or "").strip()
+    if not log_text:
+        return []
+
+    # Patron: [HH:MM:SS] Etapa - Detalle
+    # O: Etapa - Detalle (sin timestamp)
+    pattern = re.compile(r"^(?:\[(\d{2}:\d{2}:\d{2})\]\s+)?(.+?)(?:\s+-\s+(.*))?$", re.MULTILINE)
+
+    stages = []
+    stage_map = {
+        "en cola": {"icon": "queue", "type": "queue", "color": "#6c757d"},
+        "preparando contenido": {"icon": "doc", "type": "prep", "color": "#495057"},
+        "transcribiendo audio": {"icon": "mic", "type": "whisper", "color": "#0d6efd"},
+        "audio temporal eliminado": {"icon": "trash", "type": "cleanup", "color": "#6c757d"},
+        "corrigiendo transcripcion": {"icon": "brain", "type": "ai", "color": "#6610f2"},
+        "transcripcion local revisada": {"icon": "check", "type": "success", "color": "#198754"},
+        "transcripcion revisada": {"icon": "check", "type": "success", "color": "#198754"},
+        "generando items": {"icon": "brain", "type": "ai", "color": "#6610f2"},
+        "mini parseado": {"icon": "code", "type": "parse", "color": "#0dcaf0"},
+        "recuperando items incoherentes": {"icon": "wrench", "type": "recovery", "color": "#fd7e14"},
+        "recuperacion mini": {"icon": "check-wrench", "type": "recovery", "color": "#fd7e14"},
+        "opciones no uniformes detectadas": {"icon": "alert", "type": "warning", "color": "#ffc107"},
+        "opciones reparadas": {"icon": "wrench", "type": "recovery", "color": "#fd7e14"},
+        "reparacion de opciones fallida": {"icon": "alert", "type": "error", "color": "#dc3545"},
+        "revisando coherencia": {"icon": "brain", "type": "ai", "color": "#6610f2"},
+        "coherencia mini revisada": {"icon": "check", "type": "success", "color": "#198754"},
+        "relleno mini": {"icon": "plus", "type": "fill", "color": "#20c997"},
+        "generando items de relleno": {"icon": "plus", "type": "fill", "color": "#20c997"},
+        "verificando con fuentes": {"icon": "globe", "type": "verify", "color": "#0d6efd"},
+        "verificacion recibida": {"icon": "check-globe", "type": "verify", "color": "#0d6efd"},
+        "aplicando correcciones": {"icon": "pencil", "type": "correct", "color": "#6f42c1"},
+        "mini final parseado": {"icon": "flag", "type": "done", "color": "#198754"},
+        "listo": {"icon": "flag", "type": "done", "color": "#198754"},
+        "error": {"icon": "alert", "type": "error", "color": "#dc3545"},
+        "pipeline reiniciado": {"icon": "refresh", "type": "warning", "color": "#ffc107"},
+    }
+
+    for line in log_text.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        match = pattern.match(line)
+        if match:
+            timestamp = match.group(1) or ""
+            stage_name = (match.group(2) or "").strip()
+            detail = (match.group(3) or "").strip()
+        else:
+            timestamp = ""
+            stage_name = line
+            detail = ""
+
+        # Buscar en stage_map (case-insensitive partial match)
+        meta = {"icon": "circle", "type": "generic", "color": "#6c757d"}
+        stage_lower = stage_name.lower()
+        for key, value in stage_map.items():
+            if key in stage_lower:
+                meta = value
+                break
+
+        stages.append({
+            "timestamp": timestamp,
+            "name": stage_name,
+            "detail": detail,
+            "icon": meta["icon"],
+            "type": meta["type"],
+            "color": meta["color"],
+        })
+
+    return stages
+
+
+def _extract_pipeline_metrics(job):
+    """Extrae metricas clave del pipeline para el panel lateral."""
+    metrics = {
+        "word_count": len((job.source_text or job.transcript or "").split()),
+        "target_items": max(50, len((job.source_text or job.transcript or "").split()) // 50),
+        "final_items": 0,
+        "recovered_items": 0,
+        "web_sources": 0,
+        "eduqg_matches": 0,
+        "corrections_applied": 0,
+        "backend": job.ai_backend or "auto",
+        "verification_mode": job.get_verification_mode_display(),
+        "duration_seconds": 0,
+    }
+
+    # Contar items finales
+    mini_text = job.corrected_output or job.toon_output
+    if mini_text:
+        try:
+            assessment = parse_mini(mini_text)
+            metrics["final_items"] = len(assessment.items)
+        except Exception:
+            pass
+
+    # Contar fuentes web
+    verif_trace = job.verification_trace or {}
+    web = verif_trace.get("web", {})
+    metrics["web_sources"] = len(web.get("configured_sources", [])) + sum(
+        len(q.get("results", [])) for q in web.get("queries", [])
+    )
+    metrics["eduqg_matches"] = len((verif_trace.get("eduqg") or {}).get("matches", []))
+
+    # Contar correcciones aplicadas
+    corr_trace = job.correction_trace or []
+    metrics["corrections_applied"] = sum(1 for c in corr_trace if c.get("applied"))
+
+    # Contar items recuperados de incoherentes
+    # Estimacion: contar cuantos items tenia toon_output vs corrected_output
+    if job.toon_output and job.corrected_output:
+        try:
+            toon_assessment = parse_mini(job.toon_output)
+            corrected_assessment = parse_mini(job.corrected_output)
+            # Si corrected tiene mas items, asumimos recuperacion
+            if len(corrected_assessment.items) > len(toon_assessment.items):
+                metrics["recovered_items"] = len(corrected_assessment.items) - len(toon_assessment.items)
+        except Exception:
+            pass
+
+    # Duracion estimada desde created_at hasta updated_at
+    if job.created_at and job.updated_at:
+        metrics["duration_seconds"] = int((job.updated_at - job.created_at).total_seconds())
+
+    return metrics

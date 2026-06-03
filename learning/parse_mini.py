@@ -55,7 +55,13 @@ def parse_mini(text: str) -> MiniAssessment:
     return assessment
 
 
-def _parse_item_line(line: str) -> MiniItem | None:
+def _has_coherent_statement(statement: str) -> bool:
+    """Verifica que el enunciado sea una pregunta (?) o completacion (____)."""
+    s = statement.strip()
+    return "____" in s or s.endswith("?")
+
+
+def _parse_item_line(line: str, strict_coherence: bool = False) -> MiniItem | None:
     parts = line.split("|")
     if len(parts) < 8:
         return None
@@ -64,6 +70,8 @@ def _parse_item_line(line: str) -> MiniItem | None:
         bloom = parts[1]
         topic = parts[2]
         statement = parts[3]
+        if strict_coherence and not _has_coherent_statement(statement):
+            return None
         if len(parts) == 8:
             opts_raw = _split_csv(parts[4])
             irt_parts = _split_csv(parts[5])
@@ -113,7 +121,54 @@ def expected_item_count(header: str) -> int | None:
         return None
 
 
-def validate_mini_parse(mini_text: str, stage: str = "MINI") -> MiniAssessment:
+def filter_incoherent_items(mini_text: str) -> tuple[str, list[str], str]:
+    """
+    Filtra items cuyo enunciado no tenga ? ni ____.
+    Retorna: (mini_coherentes, lista_log_descartados, mini_incoherentes)
+    El mini_incoherentes puede repararse y mergearse de vuelta.
+    """
+    assessment = parse_mini(mini_text)
+    if not assessment.header:
+        return mini_text, [], ""
+
+    kept = []
+    dropped_items = []
+    dropped_log = []
+    for item in assessment.items:
+        if _has_coherent_statement(item.statement):
+            kept.append(item)
+        else:
+            dropped_items.append(item)
+            dropped_log.append(f"{item.id}: {item.statement[:80]}")
+
+    if not dropped_log:
+        return mini_text, [], ""
+
+    # MINI de coherentes
+    coherent_assessment = MiniAssessment(header=assessment.header, items=kept)
+    coherent_serialized = _serialize(coherent_assessment)
+    header_lines = coherent_serialized.splitlines()
+    if header_lines:
+        header = header_lines[0]
+        meta = parse_header(header)
+        meta["n"] = str(len(kept))
+        new_header = "a|" + "|".join(f"{k}={v}" for k, v in meta.items() if k != "_type")
+        header_lines[0] = new_header
+        coherent_serialized = "\n".join(header_lines)
+
+    # MINI de incoherentes (mismo header para poder repararlos)
+    incoherent_assessment = MiniAssessment(header=assessment.header, items=dropped_items)
+    incoherent_serialized = _serialize(incoherent_assessment)
+
+    return coherent_serialized, dropped_log, incoherent_serialized
+
+
+def validate_mini_parse(mini_text: str, stage: str = "MINI", strict_coherence: bool = False) -> MiniAssessment:
+    if strict_coherence:
+        mini_text, dropped, _incoherent_mini = filter_incoherent_items(mini_text)
+        if dropped:
+            # Loguear pero no fallar si quedan items validos
+            pass
     assessment = parse_mini(mini_text)
     expected = expected_item_count(assessment.header)
     actual = len(assessment.items)
@@ -287,21 +342,28 @@ def apply_corrections(mini_text: str, report_text: str) -> str:
 def apply_corrections_with_trace(mini_text: str, report_text: str) -> tuple[str, list[dict]]:
     """
     Aplica correcciones y devuelve una traza auditable.
-    Soporta reportes que referencian items como "1" o "i1".
+    Soporta reportes que referencian items como "1", "i1", o incluso "L1" (fallback al primer item con ese nivel Bloom).
     """
     assessment = parse_mini(mini_text)
     errors = _parse_report(report_text)
     item_index = {}
+    bloom_index: dict[str, list] = {}
     for item in assessment.items:
         item_index[item.id] = item
         if item.id.startswith("i") and item.id[1:].isdigit():
             item_index[item.id[1:]] = item
+        if item.bloom and item.bloom.startswith("L"):
+            bloom_index.setdefault(item.bloom, []).append(item)
 
     trace = []
     for err in errors:
-        item = item_index.get(err["item_id"])
+        item_id = err["item_id"]
+        item = item_index.get(item_id)
+        # Fallback: si el ID es un nivel Bloom (L1-L6), usar el primer item con ese nivel
+        if not item and item_id in bloom_index:
+            item = bloom_index[item_id][0]
         entry = {
-            "report_item_id": err["item_id"],
+            "report_item_id": item_id,
             "matched": bool(item),
             "matched_item_id": item.id if item else "",
             "error_type": err.get("error_type", ""),
@@ -489,6 +551,75 @@ def render_mini_html(mini_text: str) -> str:
 
     html.append("</div>")
     return "\n".join(html)
+
+
+def check_option_uniformity(item: MiniItem) -> list[str]:
+    """
+    Detecta problemas de calidad en las opciones de un item:
+    - Opciones fusionadas por comas (3 en 1)
+    - Ratio de longitud > 3x (sesgo de longitud)
+    - Menos de 4 opciones
+    """
+    problems = []
+    opts = [o["text"] for o in item.options]
+
+    if len(opts) != 4:
+        problems.append(f"tiene_{len(opts)}_opciones")
+        return problems
+
+    # Detectar fusion por comas: una opcion tiene comas, las demas no
+    comma_counts = [opt.count(",") for opt in opts]
+    if max(comma_counts) > 0 and min(comma_counts) == 0:
+        problems.append("opciones_fusionadas_por_comas")
+
+    # Ratio de longitud max/min > 3 (sesgo de longitud)
+    lengths = [len(opt.strip()) for opt in opts]
+    if min(lengths) > 0:
+        ratio = max(lengths) / min(lengths)
+        if ratio > 3:
+            problems.append(f"ratio_longitud_{ratio:.1f}x")
+
+    return problems
+
+
+def filter_nonuniform_items(mini_text: str) -> tuple[str, list[str], str]:
+    """
+    Filtra items con opciones malformadas (fusionadas, desiguales, etc.).
+    Retorna: (mini_uniforme, lista_log, mini_no_uniforme)
+    """
+    assessment = parse_mini(mini_text)
+    if not assessment.header:
+        return mini_text, [], ""
+
+    kept = []
+    bad_items = []
+    dropped_log = []
+    for item in assessment.items:
+        problems = check_option_uniformity(item)
+        if problems:
+            bad_items.append(item)
+            dropped_log.append(f"{item.id}: {item.statement[:50]}... ({', '.join(problems)})")
+        else:
+            kept.append(item)
+
+    if not dropped_log:
+        return mini_text, [], ""
+
+    uniform_assessment = MiniAssessment(header=assessment.header, items=kept)
+    uniform_serialized = _serialize(uniform_assessment)
+    header_lines = uniform_serialized.splitlines()
+    if header_lines:
+        header = header_lines[0]
+        meta = parse_header(header)
+        meta["n"] = str(len(kept))
+        new_header = "a|" + "|".join(f"{k}={v}" for k, v in meta.items() if k != "_type")
+        header_lines[0] = new_header
+        uniform_serialized = "\n".join(header_lines)
+
+    bad_assessment = MiniAssessment(header=assessment.header, items=bad_items)
+    bad_serialized = _serialize(bad_assessment)
+
+    return uniform_serialized, dropped_log, bad_serialized
 
 
 def merge_mini_chunks(chunks: list[str]) -> str:

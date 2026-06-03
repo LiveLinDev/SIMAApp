@@ -1,0 +1,54 @@
+============================================================
+PIPELINE COMPLETO: transcripciontemplate.md
+============================================================
+Transcripcion: 4439 palabras, 25225 chars
+
+[1/5] GENERANDO ITEMS...
+Backend usado: local
+Items crudos extraidos: 53
+
+[2/5] FILTRANDO INCOHERENTES...
+Items descartados por enunciado incoherente: 22
+  - i23: El asesinato de Manuel Pardo fue un punto de inflexion en la crisis de 1878
+  - i24: La guerra con Chile termino por derrumbar lo poco que se había construido en el 
+  - i25: Durante la guerra con Chile, el ejército chileno destruyó puentes y caminos
+  - i26: El presidente intento bajar tensiones con Chile invitando generales chilenos al 
+  - i27: Después de la guerra con Chile, el Perú quedó en condiciones similares a 1821
+  - i28: La sublevación china en Lima fue causada por la opresión de los colonizadores
+  - i29: El proyecto de Nicolás de Pérola se enfocó en la exportación de productos agríco
+  - i30: El presidente Leguía buscó modernizar el Estado incorporando a la clase media
+  - i31: La crisis de 1929 afecto el proyecto de industrialización en el Perú
+  - i32: La industrialización en el Perú duró casi 40 años
+  - i33: La comunidad industrial buscaba equilibrar el capital y el trabajo
+  - i34: La nacionalización de empresas en el Perú genero deuda pública
+  - i35: La crisis de la deuda en 1980 afecto la inversión en empresas públicas
+  - i36: La falta de inversión privada en empresas públicas genero crisis
+  - i37: La inversión en empresas públicas dependió del crédito internacional
+  - i38: La crisis de la deuda en 1980 afecto el desarrollo del país
+  - i39: La deuda generada por los militares en 10 años fue muy alta
+  - i40: La falta de inversión en el Perú se debió a la crisis de deuda
+  - i41: La inversión privada se vio afectada por la crisis de deuda
+  - i42: La crisis de deuda genero una trampa en el desarrollo del país
+  - i43: La deuda generada por los militares afecto el futuro del país
+  - i44: La falta de inversión privada en el Perú genero crisis
+
+[3/5] REPARANDO COHERENCIA CON IA LOCAL...
+Reparacion aplicada: True
+Items reparados: 31
+Post-reparacion: 0 items incoherentes
+
+[4/5] VERIFICANDO CON FUENTES WEB...
+Verificacion completada. Backend: local
+Fuentes web consultadas: 3
+  Query: historia del peru personaje general martín desembarcó bahía pisco avanzó hacia quedó estacionado facts
+  Query: Personaje El general San Martín desembarcó en la Bahía de Pisco y avanzó hacia Lima, pero se quedó estacionado en las pampas de Pachacama por ____ Evento La proclamación de la inde
+  Query: historia del peru historia verificacion
+
+[5/5] APLICANDO CORRECCIONES...
+VALIDACION FINAL: 31 items parseados correctamente
+  [i1] El general San Martín desembarcó en la Bahía de Pisco y avanzó hacia L...
+Validacion final fallo: 'MiniItem' object is not subscriptable
+
+============================================================
+PIPELINE COMPLETADO
+============================================================

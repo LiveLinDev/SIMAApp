@@ -1,0 +1,125 @@
+
+######################################################################
+# COMPARACION 1: FOTOSINTESIS
+######################################################################
+
+======================================================================
+TEST: Fotosintesis | Prompt: ANTIGUO
+======================================================================
+
+--- MINI GENERADO ---
+a|m=3PL|d=20231015|n=5|l=es|t=Fotosíntesis|bd=ORGÁNULO,PIGMENTO,REACTIVOS,PRODUCTOS,LONGITUDES|cat=-1.0,-3.0,3.0,0.2,10,0
+i1|L1|Fotosíntesis|La fotosíntesis ocurre en los ____|cloroplastos*,ribosomas,mitocondrias,núcleo|1,1,1,1|1|ORGÁNULO,1,1
+i2|L2|Fotosíntesis|La ____ es el pigmento principal que absorbe la luz|clorofila*,carotenoides,xantofila,ficoeritrina|1,1,1,1|1|PIGMENTO,1,1
+i3|L3|Fotosíntesis|¿Qué compuestos se convierten en glucosa y oxígeno durante la fotosíntesis?|dióxido de carbono y agua*,glucosa y oxígeno,luz solar y calor,clorofila y agua|1,1,1,1|2|REACTIVOS,1,1
+i4|L4|Fotosíntesis|¿Cuáles son los productos principales de la fotosíntesis?|glucosa y oxígeno*,dióxido de carbono y agua,luz solar y calor,clorofila y agua|1,1,1,1|2|PRODUCTOS,1,1
+i5|L5|Fotosíntesis|¿En qué longitudes de onda absorbe principalmente la clorofila?|rojo y azul*,verde y amarillo,rojo y verde,azul y amarillo|1,1,1,1|3|LONGITUDES,1,1
+
+--- VALIDACION ---
+
+[i1] [OK] Coherente
+
+[i2] [OK] Coherente
+
+[i3] [OK] Coherente
+
+[i4] [OK] Coherente
+
+[i5] [OK] Coherente
+
+Resumen: 5 items, 0 errores
+
+======================================================================
+TEST: Fotosintesis | Prompt: NUEVO
+======================================================================
+
+--- MINI GENERADO ---
+a|m=3PL|d=20231015|n=5|l=es|t=Fotosintesis|bd=0.0,0.5,1.0,1.5,2.0,2.5|cat=-1.0,-3.0,1.0,0.2,10,0.8
+i1|L1|La ____ es el proceso mediante el cual las plantas convierten la energia luminica en quimica.|fotosintesis*,respiracion celular,fermentacion,transpiracion|a,b,c,d|1|biologia,1,1
+i2|L2|El dioxido de carbono y el agua se transforman en ____ durante la fotosintesis.|glucosa y oxigeno*,glucosa y agua,oxigeno y carbono,agua y oxigeno|a,b,c,d|1|biologia,1,1
+i3|L3|La clorofila es el pigmento que absorbe luz en las longitudes de onda ____.|roja y azul*,roja y verde,azul y amarilla,verde y amarilla|a,b,c,d|1|biologia,1,1
+i4|L4|El proceso de fotosintesis ocurre principalmente en los ____.|cloroplastos*,mitocondrias,ribosomas,nucleo|a,b,c,d|1|biologia,1,1
+i5|L5|La principal funcion de los cloroplastos es ____.|realizar la fotosintesis*,almacenar agua,sintetizar proteinas,dividir celulas|a,b,c,d|1|biologia,1,1
+
+--- VALIDACION ---
+
+Resumen: 0 items, 0 errores
+
+######################################################################
+# COMPARACION 2: MANUEL PARDO
+######################################################################
+
+======================================================================
+TEST: Manuel Pardo | Prompt: ANTIGUO
+======================================================================
+
+--- MINI GENERADO ---
+a|m=3PL|d=20231015|n=5|l=es|t=Manuel Pardo|bd=-2.0,-1.5,-1.0,0.0,1.0,2.0|cat=-1.0,-2.0,-1.5,-0.5,0.2,0.5
+i1|L1|Historia|¿Quién fue Manuel Pardo?|político peruano*,militar,religioso,médico|1,2,3,4|1|-1.5|Historia,1,1
+i2|L2|Historia|Fue el primer presidente civil de la República en el Perú|Manuel Pardo*,José de la Mar.Andrés Cáceres,Mariano Ignacio Prado|1,2,3,4|1|-1.0|Historia,1,1
+i3|L3|Historia|Su gobierno promovió la educación pública, la inmigración europea y la construcción de ____|infraestructura*,salud,comercio,turismo|1,2,3,4|1|0.0|Historia,1,1
+i4|L4|Historia|Fue asesinado el 16 de noviembre de 1878 en Lima por ____|un artillero del barco La Unión*,un soldado del ejército,un político rival,un ciudadano común|1,2,3,4|1|1.0|Historia,1,1
+i5|L5|Historia|Este asesinato generó una crisis política significativa y fue considerado un punto de inflexión que desencadenó ____|mayor inestabilidad en el país*,mejora económica,paz duradera,expansión territorial|1,2,3,4|1|2.0|Historia,1,1
+
+--- VALIDACION ---
+
+[i1] [OK] Coherente
+
+[i2] [Fue el primer presidente civil de la República en ...]
+  X RS-1: Enunciado no es Tipo A ni Tipo B: [Fue el primer presidente civil de la República en el Perú]
+  X RS-1: Enunciado sin hueco ni pregunta, opciones flotantes: ['Manuel Pardo', 'José de la Mar.Andrés Cáceres', 'Mariano Ignacio Prado']
+  X No tiene 4 alternativas: ['Manuel Pardo', 'José de la Mar.Andrés Cáceres', 'Mariano Ignacio Prado']
+
+[i3] [OK] Coherente
+
+[i4] [OK] Coherente
+
+[i5] [OK] Coherente
+
+Resumen: 5 items, 3 errores
+
+======================================================================
+TEST: Manuel Pardo | Prompt: NUEVO
+======================================================================
+
+--- MINI GENERADO ---
+a|m=1PL|d=20231015|n=5|l=es|t=Manuel Pardo|bd= |cat=
+i1|L1|Manuel Pardo fue el primer presidente ____ de la Republica.|civil*,militar,extranjero,religioso|a|b|1|historia,1,1
+i2|L2|¿Cuál fue la consecuencia principal del asesinato de Manuel Pardo?|crisis política*,estabilidad económica, aumento de la población,mejora de la educación|a|b|2|historia,1,2
+i3|L3|¿Qué tipo de gobierno promovió Manuel Pardo durante su presidencia?|civil*,militar,religioso,autocrático|a|b|3|historia,1,3
+i4|L4|La muerte de Manuel Pardo generó ____ en el país.|inestabilidad*,prosperidad,paz,desarrollo|a|b|4|historia,1,4
+i5|L5|¿Qué medida tomó el gobierno de Manuel Pardo para mejorar la sociedad?|promovió la educación pública*,redujo impuestos,construyó hospitales,aumentó el ejército|a|b|5|historia,1,5
+
+--- VALIDACION ---
+
+[i1] [civil*,militar,extranjero,religioso...]
+  X RS-1: Enunciado no es Tipo A ni Tipo B: [civil*,militar,extranjero,religioso]
+  X RS-1: Enunciado sin hueco ni pregunta, opciones flotantes: ['a']
+  X Debe haber 1 correcta, hay 0
+  X No tiene 4 alternativas: ['a']
+
+[i2] [crisis política*,estabilidad económica, aumento de...]
+  X RS-1: Enunciado no es Tipo A ni Tipo B: [crisis política*,estabilidad económica, aumento de la población,mejora de la educación]
+  X RS-1: Enunciado sin hueco ni pregunta, opciones flotantes: ['a']
+  X Debe haber 1 correcta, hay 0
+  X No tiene 4 alternativas: ['a']
+
+[i3] [civil*,militar,religioso,autocrático...]
+  X RS-1: Enunciado no es Tipo A ni Tipo B: [civil*,militar,religioso,autocrático]
+  X RS-1: Enunciado sin hueco ni pregunta, opciones flotantes: ['a']
+  X Debe haber 1 correcta, hay 0
+  X No tiene 4 alternativas: ['a']
+
+[i4] [inestabilidad*,prosperidad,paz,desarrollo...]
+  X RS-1: Enunciado no es Tipo A ni Tipo B: [inestabilidad*,prosperidad,paz,desarrollo]
+  X RS-1: Enunciado sin hueco ni pregunta, opciones flotantes: ['a']
+  X Debe haber 1 correcta, hay 0
+  X No tiene 4 alternativas: ['a']
+
+[i5] [promovió la educación pública*,redujo impuestos,co...]
+  X RS-1: Enunciado no es Tipo A ni Tipo B: [promovió la educación pública*,redujo impuestos,construyó hospitales,aumentó el ejército]
+  X RS-1: Enunciado sin hueco ni pregunta, opciones flotantes: ['a']
+  X Debe haber 1 correcta, hay 0
+  X No tiene 4 alternativas: ['a']
+
+Resumen: 5 items, 20 errores

@@ -1,0 +1,635 @@
+{% extends "base.html" %}
+{% block title %}Pipeline de Generación — {{ job.title }}{% endblock %}
+
+{% block content %}
+<style>
+.pipeline-page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.pipeline-header {
+  margin-bottom: 28px;
+}
+.pipeline-header h1 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.6rem;
+  margin: 0 0 8px 0;
+  color: var(--fg);
+}
+.pipeline-header p {
+  margin: 0;
+  color: var(--fg-muted);
+  font-size: 0.95rem;
+}
+
+.pipeline-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 24px;
+}
+
+@media (max-width: 1024px) {
+  .pipeline-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* === FLOWCHART === */
+.flowchart {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+}
+
+.flow-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.flow-step {
+  position: relative;
+  flex: 1 1 140px;
+  min-width: 140px;
+  max-width: 220px;
+}
+
+.flow-step-inner {
+  background: var(--surface-raised);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 14px;
+  text-align: center;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.flow-step-inner:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  cursor: pointer;
+}
+
+/* === TOOLTIP === */
+.flow-step {
+  position: relative;
+}
+.flow-tooltip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.75rem;
+  color: var(--fg);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s;
+  z-index: 10;
+  box-shadow: 0 4px 16px rgba(0,0,0,.15);
+}
+.flow-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--border);
+}
+.flow-step:hover .flow-tooltip {
+  opacity: 1;
+}
+
+/* === MODAL === */
+.pipeline-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s;
+}
+.pipeline-modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.pipeline-modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 640px;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(20px) scale(.97);
+  transition: transform .25s cubic-bezier(.34,1.56,.64,1);
+}
+.pipeline-modal-overlay.active .pipeline-modal {
+  transform: translateY(0) scale(1);
+}
+.pipeline-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+}
+.pipeline-modal-header h3 {
+  margin: 0;
+  font-family: 'Syne', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--fg);
+}
+.pipeline-modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--fg-muted);
+  padding: 4px;
+  border-radius: 8px;
+  display: flex;
+}
+.pipeline-modal-close:hover { color: var(--fg); background: var(--surface-raised); }
+.pipeline-modal-body {
+  padding: 22px;
+  overflow-y: auto;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--fg);
+}
+.pipeline-modal-body code {
+  background: var(--surface-raised);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.78rem;
+  word-break: break-all;
+}
+.pipeline-modal-body em {
+  color: var(--fg-muted);
+}
+.pipeline-modal-body strong {
+  color: var(--fg);
+}
+
+.flow-step.type-whisper .flow-step-inner { border-color: #0d6efd; background: rgba(13,110,253,.06); }
+.flow-step.type-ai     .flow-step-inner { border-color: #6610f2; background: rgba(102,16,242,.06); }
+.flow-step.type-success .flow-step-inner { border-color: #198754; background: rgba(25,135,84,.06); }
+.flow-step.type-recovery .flow-step-inner { border-color: #fd7e14; background: rgba(253,126,20,.06); }
+.flow-step.type-verify .flow-step-inner { border-color: #0d6efd; background: rgba(13,110,253,.06); }
+.flow-step.type-done   .flow-step-inner { border-color: #198754; background: rgba(25,135,84,.08); }
+.flow-step.type-warning .flow-step-inner { border-color: #ffc107; background: rgba(255,193,7,.08); }
+.flow-step.type-error  .flow-step-inner { border-color: #dc3545; background: rgba(220,53,69,.08); }
+.flow-step.type-fill   .flow-step-inner { border-color: #20c997; background: rgba(32,201,151,.06); }
+.flow-step.type-parse  .flow-step-inner { border-color: #0dcaf0; background: rgba(13,202,240,.06); }
+.flow-step.type-correct .flow-step-inner { border-color: #6f42c1; background: rgba(111,66,193,.06); }
+
+.step-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.step-icon svg { width: 22px; height: 22px; }
+
+.type-whisper .step-icon { background: #0d6efd; }
+.type-ai     .step-icon { background: #6610f2; }
+.type-success .step-icon { background: #198754; }
+.type-recovery .step-icon { background: #fd7e14; }
+.type-verify .step-icon { background: #0d6efd; }
+.type-done   .step-icon { background: #198754; }
+.type-warning .step-icon { background: #ffc107; }
+.type-error  .step-icon { background: #dc3545; }
+.type-fill   .step-icon { background: #20c997; }
+.type-parse  .step-icon { background: #0dcaf0; }
+.type-correct .step-icon { background: #6f42c1; }
+
+.step-time {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--fg-muted);
+  font-weight: 700;
+}
+
+.step-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--fg);
+  line-height: 1.25;
+}
+
+.step-detail {
+  font-size: 0.72rem;
+  color: var(--fg-muted);
+  line-height: 1.35;
+}
+
+/* Arrow between steps */
+.flow-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  flex-shrink: 0;
+  color: var(--fg-muted);
+  opacity: 0.5;
+}
+.flow-arrow svg { width: 16px; height: 16px; }
+
+/* Branch / annotation */
+.flow-annotation {
+  width: 100%;
+  margin: 4px 0 16px 0;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.flow-annotation.recovery {
+  background: rgba(253,126,20,.10);
+  border: 1px dashed #fd7e14;
+  color: #fd7e14;
+}
+.flow-annotation.fallback {
+  background: rgba(255,193,7,.10);
+  border: 1px dashed #ffc107;
+  color: #b38f00;
+}
+
+/* === METRICS PANEL === */
+.metrics-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  height: fit-content;
+  position: sticky;
+  top: 24px;
+}
+.metrics-panel h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 20px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--fg-muted);
+}
+
+.metric-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.metric-item:last-child { border-bottom: none; }
+
+.metric-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.metric-icon svg { width: 22px; height: 22px; }
+
+.metric-icon.blue { background: rgba(13,110,253,.12); color: #0d6efd; }
+.metric-icon.green { background: rgba(25,135,84,.12); color: #198754; }
+.metric-icon.orange { background: rgba(253,126,20,.12); color: #fd7e14; }
+.metric-icon.purple { background: rgba(102,16,242,.12); color: #6610f2; }
+.metric-icon.teal { background: rgba(32,201,151,.12); color: #20c997; }
+.metric-icon.red { background: rgba(220,53,69,.12); color: #dc3545; }
+
+.metric-value {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--fg);
+  line-height: 1;
+}
+.metric-label {
+  font-size: 0.78rem;
+  color: var(--fg-muted);
+  margin-top: 2px;
+}
+
+/* Legend */
+.legend-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.legend-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: var(--fg-muted);
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+}
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+  font-size: 0.85rem;
+  color: var(--fg-muted);
+  text-decoration: none;
+}
+.back-link:hover { color: var(--fg); }
+</style>
+
+<div class="pipeline-page">
+  <a href="{% url 'lesson_detail' job.pk %}" class="back-link">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+    Volver a la clase
+  </a>
+
+  <div class="pipeline-header">
+    <h1>Pipeline de Generación</h1>
+    <p>{{ job.title }} · Backend: {{ metrics.backend }} · Verificación: {{ metrics.verification_mode }}</p>
+  </div>
+
+  <div class="pipeline-layout">
+    <!-- Flowchart -->
+    <div class="flowchart">
+      {% regroup stages by type as stage_groups %}
+
+      {% for stage in stages %}
+        {% if stage.type == 'recovery' and stage.name|lower == 'recuperando items incoherentes' %}
+          <!-- Recovery branch annotation -->
+          <div class="flow-annotation recovery">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <strong>Recuperación masiva:</strong> se reparan items incoherentes antes de la verificación final.
+          </div>
+        {% endif %}
+
+        {% if forloop.first or forloop.counter0|divisibleby:4 %}
+          {% if not forloop.first %}</div>{% endif %}
+          <div class="flow-row">
+        {% endif %}
+
+        <div class="flow-step type-{{ stage.type }}"
+             data-stage="{{ stage.name|lower|slugify }}"
+             onclick="openPipelineModal('{{ stage.name|lower|slugify }}')">
+          <div class="flow-tooltip">Haz clic para ver detalles</div>
+          <div class="flow-step-inner">
+            <div class="step-icon">
+              {% if stage.icon == 'queue' %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              {% elif stage.icon == 'doc' %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              {% elif stage.icon == 'mic' %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+              {% elif stage.icon == 'brain' %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2z"/></svg>
+              {% elif stage.icon == 'trash' %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              {% elif stage.icon == 'check' %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              {% elif stage.icon == 'code' %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+              {% elif stage.icon == 'wrench' %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+              {% elif stage.icon == 'alert' %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              {% elif stage.icon == 'plus' %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              {% elif stage.icon == 'globe' %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              {% elif stage.icon == 'pencil' %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+              {% elif stage.icon == 'flag' %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+              {% elif stage.icon == 'refresh' %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              {% else %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+              {% endif %}
+            </div>
+            <div class="step-time">{{ stage.timestamp }}</div>
+            <div class="step-title">{{ stage.name }}</div>
+            {% if stage.detail %}
+              <div class="step-detail">{{ stage.detail }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        {% if not forloop.last and not forloop.counter|divisibleby:4 %}
+          <div class="flow-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+          </div>
+        {% endif %}
+
+        {% if forloop.last %}</div>{% endif %}
+      {% empty %}
+        <p style="color: var(--fg-muted); text-align: center; padding: 40px;">No hay datos de pipeline disponibles todavía.</p>
+      {% endfor %}
+
+      <!-- Legend -->
+      <div class="legend-row">
+        <div class="legend-chip"><span class="legend-dot" style="background:#0d6efd"></span>Whisper local</div>
+        <div class="legend-chip"><span class="legend-dot" style="background:#6610f2"></span>Qwen local</div>
+        <div class="legend-chip"><span class="legend-dot" style="background:#fd7e14"></span>Recuperación</div>
+        <div class="legend-chip"><span class="legend-dot" style="background:#0d6efd"></span>Verificación web</div>
+        <div class="legend-chip"><span class="legend-dot" style="background:#198754"></span>Listo</div>
+      </div>
+    </div>
+
+    <!-- Metrics Panel -->
+    <aside class="metrics-panel">
+      <h2>Métricas clave</h2>
+
+      <div class="metric-item">
+        <div class="metric-icon blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <div>
+          <div class="metric-value">{{ metrics.word_count }}</div>
+          <div class="metric-label">palabras de entrada</div>
+        </div>
+      </div>
+
+      <div class="metric-item">
+        <div class="metric-icon purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2z"/></svg>
+        </div>
+        <div>
+          <div class="metric-value">{{ metrics.target_items }}</div>
+          <div class="metric-label">ítems objetivo IRT</div>
+        </div>
+      </div>
+
+      <div class="metric-item">
+        <div class="metric-icon green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div>
+          <div class="metric-value">{{ metrics.final_items }}</div>
+          <div class="metric-label">ítems renderizables</div>
+        </div>
+      </div>
+
+      {% if metrics.recovered_items > 0 %}
+      <div class="metric-item">
+        <div class="metric-icon orange">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        </div>
+        <div>
+          <div class="metric-value">{{ metrics.recovered_items }}</div>
+          <div class="metric-label">ítems recuperados</div>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="metric-item">
+        <div class="metric-icon blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <div>
+          <div class="metric-value">{{ metrics.web_sources }}</div>
+          <div class="metric-label">fuentes web consultadas</div>
+        </div>
+      </div>
+
+      <div class="metric-item">
+        <div class="metric-icon teal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </div>
+        <div>
+          <div class="metric-value">{{ metrics.eduqg_matches }}</div>
+          <div class="metric-label">matches EduQG</div>
+        </div>
+      </div>
+
+      {% if metrics.corrections_applied > 0 %}
+      <div class="metric-item">
+        <div class="metric-icon purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+        </div>
+        <div>
+          <div class="metric-value">{{ metrics.corrections_applied }}</div>
+          <div class="metric-label">correcciones aplicadas</div>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="metric-item">
+        <div class="metric-icon red">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div>
+          <div class="metric-value">{{ metrics.duration_seconds|default:"0" }}s</div>
+          <div class="metric-label">duración total</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="pipeline-modal-overlay" id="pipeline-modal-overlay" onclick="closePipelineModal(event)">
+  <div class="pipeline-modal" onclick="event.stopPropagation()">
+    <div class="pipeline-modal-header">
+      <h3 id="pipeline-modal-title">Detalle del proceso</h3>
+      <button class="pipeline-modal-close" onclick="closePipelineModal()" aria-label="Cerrar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="pipeline-modal-body" id="pipeline-modal-body">
+      <p style="color:var(--fg-muted)">Selecciona una etapa del pipeline para ver sus detalles.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const details = {{ stage_details|default:"{}"|safe }};
+  const overlay = document.getElementById('pipeline-modal-overlay');
+  const titleEl = document.getElementById('pipeline-modal-title');
+  const bodyEl = document.getElementById('pipeline-modal-body');
+
+  window.openPipelineModal = function(stageSlug) {
+    let title = 'Detalle del proceso';
+    let body = '<p style="color:var(--fg-muted)">No hay información detallada disponible para esta etapa.</p>';
+
+    // Buscar en los detalles pre-cargados
+    if (details && details.details) {
+      for (const [key, val] of Object.entries(details.details)) {
+        if (stageSlug.includes(key.replace(/_/g, '-')) || key.includes(stageSlug.replace(/-/g, '_'))) {
+          title = val.title || title;
+          body = val.body || body;
+          break;
+        }
+      }
+    }
+
+    // Fallback: mostrar info del log si no hay detalles estructurados
+    if (body.includes('No hay información')) {
+      const stepEl = document.querySelector('[data-stage="' + stageSlug + '"]');
+      if (stepEl) {
+        const detail = stepEl.querySelector('.step-detail');
+        if (detail) {
+          body = '<p>' + detail.textContent + '</p>';
+        }
+      }
+    }
+
+    titleEl.textContent = title;
+    bodyEl.innerHTML = body;
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  };
+
+  window.closePipelineModal = function(evt) {
+    if (evt && evt.target !== overlay && evt.target.closest('.pipeline-modal-close') === null) return;
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+  };
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closePipelineModal();
+  });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}Completar - {{ job.title }}{% endblock %}
+{% block content %}
+
+<section class="ld-header">
+  <div class="ld-title-group">
+    <a href="{% url 'lesson_detail' job.pk %}" class="back-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Volver a la clase
+    </a>
+    <h1>Completa el concepto</h1>
+    <p class="ld-meta">{{ job.title }} · Escribe la palabra o frase que falta</p>
+  </div>
+</section>
+
+<div class="cloze-shell">
+  <form id="cloze-form" class="cloze-list">
+    {% for item in items %}
+    <div class="cloze-item" data-answer="{{ item.answer|lower }}" data-id="{{ item.id }}">
+      <span class="cloze-num">{{ forloop.counter }}</span>
+      <div class="cloze-body">
+        <p class="cloze-prompt">{{ item.prompt }}</p>
+        <input type="text" class="cloze-input" placeholder="Escribe aqui..." autocomplete="off" aria-label="Respuesta {{ forloop.counter }}">
+        <span class="cloze-feedback" aria-live="polite"></span>
+      </div>
+    </div>
+    {% endfor %}
+  </form>
+
+  <div class="cloze-hud">
+    <button class="primary-button" type="button" id="cloze-check">Verificar respuestas</button>
+    <div class="cloze-score" id="cloze-score" hidden>
+      <strong>0</strong><span>/ {{ items|length }}</span>
+    </div>
+  </div>
+
+  <div class="cloze-result" id="cloze-result" hidden>
+    <div class="match-result__box">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <h3>Ejercicio completado</h3>
+      <p id="cloze-result__text"></p>
+      <div class="result-actions">
+        <a class="secondary-button" href="{% url 'matching_exercise' job.pk %}">Emparejar conceptos</a>
+        <a class="primary-button" href="{% url 'lesson_detail' job.pk %}">Volver a la clase</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .cloze-shell { max-width: 720px; margin: 0 auto; display: grid; gap: 18px; }
+  .cloze-list { display: grid; gap: 12px; }
+  .cloze-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    border: 1px solid var(--line); border-radius: 14px;
+    background: var(--surface); padding: 14px 16px;
+    transition: border-color .2s ease;
+  }
+  .cloze-item.is-ok { border-color: rgba(212,255,0,.45); }
+  .cloze-item.is-bad { border-color: rgba(255,95,87,.45); }
+  .cloze-num {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: var(--line); color: var(--muted);
+    display: grid; place-items: center;
+    font-family: var(--font-mono); font-size: .78rem; font-weight: 900; flex-shrink: 0; margin-top: 2px;
+  }
+  .cloze-body { flex: 1; min-width: 0; }
+  .cloze-prompt { margin: 0 0 10px; color: var(--ink); font-size: .95rem; line-height: 1.45; }
+  .cloze-input {
+    width: 100%;
+    border: 1px solid var(--line); border-radius: 10px;
+    background: rgba(255,255,255,.03); color: var(--ink);
+    padding: 10px 12px; font-size: .9rem;
+    outline: none;
+  }
+  .cloze-input:focus { border-color: var(--acid); box-shadow: 0 0 0 3px rgba(212,255,0,.1); }
+  .cloze-input.is-ok { border-color: rgba(212,255,0,.55); background: rgba(212,255,0,.06); }
+  .cloze-input.is-bad { border-color: rgba(255,95,87,.55); background: rgba(255,95,87,.06); }
+  .cloze-feedback { display: block; margin-top: 6px; font-size: .82rem; font-weight: 800; }
+  .cloze-feedback.ok { color: var(--acid); }
+  .cloze-feedback.bad { color: var(--red); }
+
+  .cloze-hud {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    position: sticky; bottom: 12px;
+    background: rgba(10,10,8,.85);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--line); border-radius: 12px;
+    padding: 10px 14px;
+  }
+  .cloze-score { display: flex; align-items: baseline; gap: 6px; }
+  .cloze-score strong { font-family: var(--font-display); font-size: 1.4rem; color: var(--acid); }
+  .cloze-score span { color: var(--muted); font-size: .85rem; font-weight: 800; }
+
+  .cloze-result { margin-top: 8px; }
+
+  @media (max-width: 640px) {
+    .cloze-hud { flex-direction: column; align-items: stretch; }
+  }
+</style>
+
+<script>
+(function(){
+  var form = document.getElementById('cloze-form');
+  var checkBtn = document.getElementById('cloze-check');
+  var scoreBox = document.getElementById('cloze-score');
+  var resultBox = document.getElementById('cloze-result');
+  var resultText = document.getElementById('cloze-result__text');
+
+  checkBtn.addEventListener('click', function(){
+    var items = form.querySelectorAll('.cloze-item');
+    var ok = 0, total = items.length;
+    items.forEach(function(item){
+      var input = item.querySelector('.cloze-input');
+      var feedback = item.querySelector('.cloze-feedback');
+      var answer = (item.getAttribute('data-answer') || '').toLowerCase().trim();
+      var val = (input.value || '').toLowerCase().trim();
+      item.classList.remove('is-ok','is-bad');
+      input.classList.remove('is-ok','is-bad');
+      feedback.classList.remove('ok','bad');
+      if (val && answer.split(/[,;]/).some(function(a){ return a.trim() === val; })){
+        ok++;
+        item.classList.add('is-ok');
+        input.classList.add('is-ok');
+        feedback.textContent = 'Correcto';
+        feedback.classList.add('ok');
+      } else {
+        item.classList.add('is-bad');
+        input.classList.add('is-bad');
+        feedback.textContent = 'Respuesta: ' + item.getAttribute('data-answer');
+        feedback.classList.add('bad');
+      }
+    });
+    scoreBox.hidden = false;
+    scoreBox.querySelector('strong').textContent = ok;
+    resultBox.hidden = false;
+    resultText.textContent = 'Acertaste ' + ok + ' de ' + total + ' conceptos.';
+    checkBtn.hidden = true;
+  });
+})();
+</script>
+
+{% endblock %}

@@ -39,6 +39,7 @@
   </div>
 
   <div class="flashcard-controls" id="flashcard-controls" style="opacity:0;pointer-events:none;">
+    <input type="hidden" id="rating-card-id">
     <div class="flashcard-rating" id="flashcard-rating">
       <button type="button" data-difficulty="again" class="rating-btn rating-btn--again" onclick="rateCard('again')">
         <strong>De nuevo</strong>
@@ -223,8 +224,8 @@
     position: absolute;
     inset: 0;
     backface-visibility: hidden;
-    border: 2px solid var(--line);
-    border-radius: 18px;
+    border: 1px solid var(--line);
+    border-radius: 20px;
     background: var(--surface);
     padding: 28px;
     display: flex;
@@ -233,24 +234,34 @@
     justify-content: center;
     text-align: center;
     gap: 14px;
+    box-shadow: 0 24px 60px var(--shadow), 0 0 0 1px rgba(255,255,255,.04) inset;
   }
   .flashcard-back {
     transform: rotateY(180deg);
-    background: linear-gradient(145deg, rgba(240,252,232,.08), rgba(240,252,232,.02));
+    background: linear-gradient(145deg, rgba(240,252,232,.06), rgba(240,252,232,.02));
     border-color: var(--green);
   }
   .flashcard-badge {
     display: inline-flex;
     align-items: center;
+    gap: 6px;
     border: 1px solid var(--line);
     border-radius: 999px;
     background: var(--soft);
-    padding: 4px 12px;
+    padding: 5px 14px;
     font-size: .72rem;
     font-weight: 900;
     text-transform: uppercase;
     color: var(--muted);
+    letter-spacing: .06em;
   }
+  .flashcard-badge::before {
+    content: "";
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--muted);
+    display: inline-block;
+  }
+  .flashcard-badge--answer::before { background: var(--green); }
   .flashcard-badge--answer {
     border-color: var(--green);
     color: var(--green-dark);

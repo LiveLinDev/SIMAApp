@@ -1,0 +1,282 @@
+- generic [ref=e2]:
+  - link "← volver a .mini" [ref=e3] [cursor=pointer]:
+    - /url: /mini
+  - banner [ref=e4]:
+    - paragraph [ref=e5]: Metodología y fuentes
+    - heading "Benchmark de eficiencia de tokens" [level=1] [ref=e6]
+    - paragraph [ref=e7]: Cómo se midió, qué datos se usaron y qué revelan los resultados reales de cada formato.
+  - generic [ref=e8]:
+    - heading "Metodología de conteo" [level=2] [ref=e9]
+    - paragraph [ref=e10]:
+      - text: El benchmark mide la cantidad de tokens que consume cada formato al representar exactamente los mismos datos psicométricos. El conteo se hace con el tokenizador
+      - code [ref=e11]: cl100k_base
+      - text: de OpenAI (usado por GPT-4 y GPT-4o), que es el estándar de facto para evaluar eficiencia en contextos de LLM.
+    - heading "Algoritmo paso a paso" [level=3] [ref=e12]
+    - list [ref=e13]:
+      - listitem [ref=e14]: Se toma un cuestionario de referencia con 12 ítems de opción múltiple, parámetros IRT (a, b, c) y metadatos CAT completos.
+      - listitem [ref=e15]: "El mismo cuestionario se serializa en cada formato: JSON, MINI, TOON, YAML y XML, sin omitir ningún campo."
+      - listitem [ref=e16]:
+        - text: Cada representación se pasa por
+        - code [ref=e17]: tiktoken
+        - text: con el encoding
+        - code [ref=e18]: cl100k_base
+        - text: para obtener el conteo exacto de tokens.
+      - listitem [ref=e19]:
+        - text: "Se calcula el ratio de reducción de cada formato respecto a JSON (la línea base), usando la fórmula:"
+        - code [ref=e20]: ratio = (json_tokens - format_tokens) / json_tokens × 100
+        - text: .
+      - listitem [ref=e21]:
+        - text: Los resultados se grafican en el componente embebido de abajo, que ejecuta el mismo cálculo en el navegador usando la librería
+        - code [ref=e22]: Chart.js 4.4.1
+        - text: .
+    - heading "Herramientas usadas" [level=3] [ref=e23]
+    - list [ref=e24]:
+      - listitem [ref=e25]:
+        - code [ref=e26]: tiktoken
+        - text: — tokenizador oficial de OpenAI (
+        - link "github.com/openai/tiktoken" [ref=e27] [cursor=pointer]:
+          - /url: https://github.com/openai/tiktoken
+        - text: )
+      - listitem [ref=e28]:
+        - code [ref=e29]: cl100k_base
+        - text: — encoding de GPT-4 / GPT-4o / text-embedding-3
+      - listitem [ref=e30]:
+        - code [ref=e31]: Chart.js 4.4.1
+        - text: — visualización en el navegador
+  - separator [ref=e32]
+  - generic [ref=e33]:
+    - heading "Texto probado — cuestionario de referencia" [level=2] [ref=e34]
+    - paragraph [ref=e35]: El mismo cuestionario APA 7ma edición con 12 ítems, parámetros IRT 3PL y configuración CAT completa. Este es el dato exacto que se serializa en cada formato para el conteo.
+    - heading "Descripción del dataset" [level=3] [ref=e36]
+    - list [ref=e37]:
+      - listitem [ref=e38]: "Tema: Norma APA 7ma edición"
+      - listitem [ref=e39]: 12 ítems de opción múltiple (4 opciones cada uno)
+      - listitem [ref=e40]: "Niveles Bloom: L1 a L5"
+      - listitem [ref=e41]: "Parámetros IRT 3PL por ítem: discriminación (a), dificultad (b), pseudo-azar (c)"
+      - listitem [ref=e42]: "Metadatos CAT: área de contenido, exposure cap, demanda cognitiva"
+      - listitem [ref=e43]: "Configuración global CAT: theta_init, theta_min, theta_max, se_stop, max_items, exposure_control"
+    - heading "Representación en MINI (formato más eficiente)" [level=3] [ref=e44]
+    - generic [ref=e45]: "a|m=IRT3PL|d=20260504|n=12|l=es|t=Norma APA 7ma edición|bd=2,3,2,2,2,1|cat=0,-3,3,0.3,12,SH i1|L1|Portada|En la portada de un trabajo estudiantil según APA 7ma ed., ¿cuál de los siguientes elementos NO debe aparecer?|Nombre del autor,Nombre del curso,Nombre de la institución,Fecha*|0.9,-1.4,0.25|1|Estructura,0.2,low i2|L1|Resumen|Según APA 7ma edición, el resumen debe tener como máximo ____ palabras.|250*,150,100,300|0.9,-1.1,0.25|1|Resumen,0.2,low i3|L2|Palabras_clave|¿Cómo se escriben correctamente las palabras clave en formato APA 7ma edición?|En mayúsculas y entre comillas,Solo la primera en mayúscula,En minúsculas separadas por comas*,En negrita y centradas|1.1,-0.4,0.25|2|Resumen,0.2,medium i4|L2|Niveles_título|¿Cuál es la diferencia entre el título de nivel 1 y el de nivel 2 en APA 7ma edición?|Ambos van centrados pero distinto tamaño,El nivel 1 va centrado en negrita y el nivel 2 alineado a la izquierda en negrita*,El nivel 1 va en cursiva y el nivel 2 en negrita,Solo el nivel 2 va en negrita|1.2,-0.3,0.25|2|Estructura,0.2,medium i5|L2|Referencias|¿Cómo se ordena la lista de referencias en APA 7ma edición?|Por fecha de publicación de más reciente a más antigua,Por orden de aparición en el texto,Alfabéticamente por el apellido del primer autor*,Por tipo de fuente (libros, artículos, sitios web)|1.1,-0.2,0.25|2|Referencias,0.2,medium i6|L3|Sangría_francesa|En la lista de referencias APA 7ma ed., la sangría francesa implica que ____.|la primera línea de cada referencia está sangrada y las siguientes van al margen,la primera línea va al margen y las siguientes están sangradas*,todas las líneas están igualmente sangradas,solo se aplica sangría cuando la referencia ocupa más de dos líneas|1.4,0.1,0.25|3|Referencias,0.2,medium i7|L3|Paráfrasis|Un estudiante resume con sus propias palabras la idea de García (2021) en mitad de una oración. ¿Cuál es el formato de cita correcto?|García (2021) al inicio o (García, 2021) al final*,(García: 2021) entre paréntesis,García, 2021 sin paréntesis,\"García [2021], p. 1 al final\"|1.4,0.2,0.25|3|Citas,0.2,medium i8|L3|Cita_directa_corta|Una cita directa de 38 palabras tomadas del autor García (2021) en la página 25 debe escribirse ____.|en un bloque separado con sangría de 1.27 cm,entre comillas en el párrafo con García (2021, p. 25) al final*,entre comillas y con el número de página solo en la bibliografía,en cursiva dentro del párrafo sin número de página|1.5,0.3,0.25|3|Citas,0.2,medium i9|L4|Cita_bloque|Una cita directa de 55 palabras debe presentarse como bloque. ¿En qué se diferencia del formato de cita corta en cuanto al paréntesis de cierre?|El paréntesis va inmediatamente después de las comillas de cierre,El paréntesis va antes del punto final igual que en citas cortas,El paréntesis con autor, año y página va después del punto final*,No se incluye número de página en las citas de bloque|1.7,0.6,0.25|4|Citas,0.2,high i10|L4|Norma_institucional|La docente afirma que el uso de APA 7ma edición es de carácter obligatorio en la institución. ¿Qué implica esto para los trabajos que usen una versión anterior?|Pueden usar APA 6ta con una nota aclaratoria,Se aceptan siempre que citen correctamente,No se aceptan porque la norma vigente institucional es APA 7ma*,Depende del criterio de cada docente|1.6,0.7,0.25|4|Normativa,0.2,high i11|L5|Evaluación_citas|Un estudiante escribe: García (2021) afirmó \"el aprendizaje activo mejora la retención de conocimientos en un 40 por ciento\" y no incluye número de página. Según APA 7ma ed., ¿qué error cometió?|Omitió el número de página obligatorio en citas directas*,Usó la palabra afirmó en lugar de señaló,Debió poner el año entre corchetes en lugar de paréntesis,La cita debía ir en bloque por superar 40 palabras|1.9,1.1,0.25|5|Citas,0.15,high i12|L5|Evaluación_formato|Especificar que cada elemento listado debe evaluarse como correcto/incorrecto según norma APA 7ma|Uno,Dos,Tres*,Cuatro|2.1,1.3,0.25|5|Normativa,0.15,high"
+    - heading "Convenciones del formato MINI" [level=3] [ref=e46]
+    - list [ref=e47]:
+      - listitem [ref=e48]:
+        - text: "Primera línea: cabecera con"
+        - code [ref=e49]: a|
+        - text: seguida de pares
+        - code [ref=e50]: clave=valor
+        - text: separados por
+        - code [ref=e51]: "|"
+      - listitem [ref=e52]:
+        - text: "Cada ítem en una línea:"
+        - code [ref=e53]: id|bloom|tema|enunciado|opciones|irt|dificultad|meta_cat
+      - listitem [ref=e54]:
+        - text: La opción correcta se marca con
+        - code [ref=e55]: "*"
+        - text: al final del texto, sin campo separado
+      - listitem [ref=e56]:
+        - text: Parámetros IRT como tripleta
+        - code [ref=e57]: a,b,c
+        - text: en un solo campo
+      - listitem [ref=e58]:
+        - text: Meta CAT como tripleta
+        - code [ref=e59]: area,exposure_cap,demanda
+  - separator [ref=e60]
+  - generic [ref=e61]:
+    - heading "Ventajas y desventajas reales por formato" [level=2] [ref=e62]
+    - paragraph [ref=e63]: Basadas en los resultados del benchmark con este dataset específico. No son afirmaciones genéricas — son consecuencias directas de cómo cada formato representa los mismos datos.
+    - generic [ref=e64]:
+      - generic [ref=e65]:
+        - generic [ref=e66]: MINI
+        - paragraph [ref=e67]: ✓ Ventajas
+        - list [ref=e68]:
+          - listitem [ref=e69]: Menor conteo de tokens del grupo
+          - listitem [ref=e70]: Sin delimitadores redundantes (llaves, corchetes, etiquetas)
+          - listitem [ref=e71]:
+            - text: La respuesta correcta va inline con
+            - code [ref=e72]: "*"
+            - text: ", no en campo separado"
+          - listitem [ref=e73]: Ideal para contextos de LLM con límite de tokens
+        - paragraph [ref=e74]: ✗ Desventajas
+        - list [ref=e75]:
+          - listitem [ref=e76]: Requiere parser propio — no hay librerías estándar
+          - listitem [ref=e77]:
+            - text: Frágil ante caracteres
+            - code [ref=e78]: "|"
+            - text: o
+            - code [ref=e79]: ","
+            - text: en el contenido
+          - listitem [ref=e80]: Sin validación de esquema nativa
+          - listitem [ref=e81]: Difícil de leer sin herramientas
+      - generic [ref=e82]:
+        - generic [ref=e83]: JSON
+        - paragraph [ref=e84]: ✓ Ventajas
+        - list [ref=e85]:
+          - listitem [ref=e86]: Soporte nativo en todos los lenguajes
+          - listitem [ref=e87]: Fácil de validar con JSON Schema
+          - listitem [ref=e88]: Legible y predecible
+          - listitem [ref=e89]: Estándar de facto para APIs
+        - paragraph [ref=e90]: ✗ Desventajas
+        - list [ref=e91]:
+          - listitem [ref=e92]: Mayor conteo de tokens del grupo
+          - listitem [ref=e93]: Mucha repetición de claves en arrays de objetos
+          - listitem [ref=e94]: Comillas y llaves añaden overhead significativo
+      - generic [ref=e95]:
+        - generic [ref=e96]: YAML
+        - paragraph [ref=e97]: ✓ Ventajas
+        - list [ref=e98]:
+          - listitem [ref=e99]: Más legible que JSON para humanos
+          - listitem [ref=e100]: Sin comillas en la mayoría de valores
+          - listitem [ref=e101]: Soporte amplio en herramientas DevOps
+        - paragraph [ref=e102]: ✗ Desventajas
+        - list [ref=e103]:
+          - listitem [ref=e104]: La indentación añade tokens extra
+          - listitem [ref=e105]: Más tokens que JSON en datasets con muchos campos anidados
+          - listitem [ref=e106]: Sensible a errores de indentación
+          - listitem [ref=e107]:
+            - text: Comportamiento sorpresivo con tipos (ej.
+            - code [ref=e108]: "true"
+            - text: ", fechas)"
+      - generic [ref=e109]:
+        - generic [ref=e110]: XML
+        - paragraph [ref=e111]: ✓ Ventajas
+        - list [ref=e112]:
+          - listitem [ref=e113]: Atributos permiten comprimir datos en una sola etiqueta
+          - listitem [ref=e114]: Validación con XSD/DTD
+          - listitem [ref=e115]: Estándar maduro con amplio tooling
+        - paragraph [ref=e116]: ✗ Desventajas
+        - list [ref=e117]:
+          - listitem [ref=e118]: Etiquetas de apertura y cierre duplican el nombre del campo
+          - listitem [ref=e119]: Segundo formato más costoso en tokens
+          - listitem [ref=e120]: Verboso para datos tabulares
+      - generic [ref=e121]:
+        - generic [ref=e122]: TOON
+        - paragraph [ref=e123]: ✓ Ventajas
+        - list [ref=e124]:
+          - listitem [ref=e125]: Más compacto que JSON y XML
+          - listitem [ref=e126]: Estructura visual clara con indentación mínima
+        - paragraph [ref=e127]: ✗ Desventajas
+        - list [ref=e128]:
+          - listitem [ref=e129]: Formato no estándar — sin ecosistema
+          - listitem [ref=e130]: Menos eficiente que MINI para datos planos
+          - listitem [ref=e131]: Adopción prácticamente nula
+  - separator [ref=e132]
+  - generic [ref=e133]:
+    - heading "Resultados del benchmark" [level=2] [ref=e134]
+    - paragraph [ref=e135]:
+      - text: Conteo real de tokens con
+      - code [ref=e136]: cl100k_base
+      - text: para el cuestionario de referencia descrito arriba.
+    - generic [ref=e138]:
+      - heading "Benchmark de eficiencia de tokens entre formatos JSON, MINI, TOON, YAML y XML para el mismo cuestionario APA 7ma edición" [level=2] [ref=e139]
+      - generic [ref=e140]:
+        - generic [ref=e141]:
+          - generic [ref=e142]:
+            - generic [ref=e144]: JSON
+            - generic [ref=e145]: "3962"
+            - generic [ref=e146]: tokens estimados
+            - generic [ref=e149]: 7590 chars · overhead 20.5%
+          - generic [ref=e150]:
+            - generic [ref=e151]:
+              - generic [ref=e152]: MINI
+              - generic [ref=e153]: más eficiente
+            - generic [ref=e154]: "1970"
+            - generic [ref=e155]: tokens estimados
+            - generic [ref=e158]: 3959 chars · overhead 5.3%
+          - generic [ref=e159]:
+            - generic [ref=e161]: TOON
+            - generic [ref=e162]: "3127"
+            - generic [ref=e163]: tokens estimados
+            - generic [ref=e166]: 8129 chars · overhead 4.9%
+          - generic [ref=e167]:
+            - generic [ref=e169]: YAML
+            - generic [ref=e170]: "3448"
+            - generic [ref=e171]: tokens estimados
+            - generic [ref=e174]: 8426 chars · overhead 4.1%
+          - generic [ref=e175]:
+            - generic [ref=e177]: XML
+            - generic [ref=e178]: "4084"
+            - generic [ref=e179]: tokens estimados
+            - generic [ref=e182]: 9057 chars · overhead 12.0%
+        - generic [ref=e183]:
+          - button "Tokens" [ref=e184] [cursor=pointer]
+          - button "Caracteres" [ref=e185] [cursor=pointer]
+          - button "% Overhead" [ref=e186] [cursor=pointer]
+          - button "Líneas" [ref=e187] [cursor=pointer]
+        - img "Gráfico de barras comparando tokens por formato" [ref=e189]
+        - generic [ref=e190]:
+          - generic [ref=e191]: Desglose comparativo
+          - table [ref=e193]:
+            - rowgroup [ref=e194]:
+              - row "Formato Tokens Chars Overhead vs MINI Líneas" [ref=e195]:
+                - columnheader "Formato" [ref=e196]
+                - columnheader "Tokens" [ref=e197]
+                - columnheader "Chars" [ref=e198]
+                - columnheader "Overhead" [ref=e199]
+                - columnheader "vs MINI" [ref=e200]
+                - columnheader "Líneas" [ref=e201]
+            - rowgroup [ref=e202]:
+              - row "JSON 3962 7590 20.5% +101.1% 27" [ref=e203]:
+                - cell "JSON" [ref=e204]:
+                  - generic [ref=e207]: JSON
+                - cell "3962" [ref=e208]
+                - cell "7590" [ref=e209]
+                - cell "20.5%" [ref=e210]
+                - cell "+101.1%" [ref=e211]
+                - cell "27" [ref=e212]
+              - row "MINI 1970 3959 5.3% baseline 13" [ref=e213]:
+                - cell "MINI" [ref=e214]:
+                  - generic [ref=e217]: MINI
+                - cell "1970" [ref=e218]
+                - cell "3959" [ref=e219]
+                - cell "5.3%" [ref=e220]
+                - cell "baseline" [ref=e221]
+                - cell "13" [ref=e222]
+              - row "TOON 3127 8129 4.9% +58.7% 258" [ref=e223]:
+                - cell "TOON" [ref=e224]:
+                  - generic [ref=e227]: TOON
+                - cell "3127" [ref=e228]
+                - cell "8129" [ref=e229]
+                - cell "4.9%" [ref=e230]
+                - cell "+58.7%" [ref=e231]
+                - cell "258" [ref=e232]
+              - row "YAML 3448 8426 4.1% +75.0% 208" [ref=e233]:
+                - cell "YAML" [ref=e234]:
+                  - generic [ref=e237]: YAML
+                - cell "3448" [ref=e238]
+                - cell "8426" [ref=e239]
+                - cell "4.1%" [ref=e240]
+                - cell "+75.0%" [ref=e241]
+                - cell "208" [ref=e242]
+              - row "XML 4084 9057 12.0% +107.3% 153" [ref=e243]:
+                - cell "XML" [ref=e244]:
+                  - generic [ref=e247]: XML
+                - cell "4084" [ref=e248]
+                - cell "9057" [ref=e249]
+                - cell "12.0%" [ref=e250]
+                - cell "+107.3%" [ref=e251]
+                - cell "153" [ref=e252]
+        - generic [ref=e253]:
+          - generic [ref=e254]: Veredicto del benchmark
+          - generic [ref=e255]:
+            - strong [ref=e256]: MINI
+            - text: "es el formato más eficiente:"
+            - strong [ref=e257]: 1970 tokens
+            - text: frente a
+            - strong [ref=e258]: "3962"
+            - text: de JSON,
+            - strong [ref=e259]: "3127"
+            - text: de TOON,
+            - strong [ref=e260]: "3448"
+            - text: de YAML y
+            - strong [ref=e261]: "4084"
+            - text: de XML. Ahorra un
+            - strong [ref=e262]: 52%
+            - text: respecto al formato más costoso (XML). Su overhead estructural es de solo
+            - strong [ref=e263]: 5.3%
+            - text: — los delimitadores
+            - code [ref=e264]: "|"
+            - text: ","
+            - code [ref=e265]: ","
+            - text: "y"
+            - code [ref=e266]: "*"
+            - text: son mínimos comparados con las etiquetas repetidas de XML o las claves verbosas de JSON.

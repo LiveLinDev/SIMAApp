@@ -15,15 +15,15 @@
 
 <div class="class-map">
   {% if topics %}
-  <div class="map-section">
+  <div class="cm-section">
     <h3>Temas de la clase</h3>
-    <div class="map-nodes">
+    <div class="cm-grid">
       {% for topic in topics %}
-      <article class="map-node">
-        <span class="map-node-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      <article class="cm-card">
+        <span class="cm-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
         </span>
-        <span class="map-node-label">{{ topic }}</span>
+        <span class="cm-label">{{ topic }}</span>
       </article>
       {% endfor %}
     </div>
@@ -31,15 +31,15 @@
   {% endif %}
 
   {% if concepts %}
-  <div class="map-section">
+  <div class="cm-section">
     <h3>Conceptos clave</h3>
-    <div class="map-nodes">
+    <div class="cm-grid">
       {% for concept in concepts %}
-      <article class="map-node map-node--concept">
-        <span class="map-node-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      <article class="cm-card cm-card--concept">
+        <span class="cm-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
         </span>
-        <span class="map-node-label">{{ concept }}</span>
+        <span class="cm-label">{{ concept }}</span>
       </article>
       {% endfor %}
     </div>
@@ -49,12 +49,12 @@
   {% if not topics and not concepts %}
   <div class="empty-state-mini">
     <p>No hay temas ni conceptos identificados para esta clase.</p>
-    <p class="muted">Asegúrate de que los ítems MINI tengan topics o de que existan flashcards.</p>
+    <p class="muted">Asegurate de que los items MINI tengan topics o de que existan flashcards.</p>
   </div>
   {% endif %}
 
   {% if bloom_chart_data %}
-  <div class="map-bloom">
+  <div class="cm-bloom">
     <h3>Distribucion Bloom</h3>
     <div class="bloom-bars">
       {% for row in bloom_chart_data %}
@@ -72,79 +72,65 @@
 </div>
 
 <style>
-  .class-map {
-    max-width: 800px;
-    margin: 0 auto;
+  .class-map { max-width: 800px; margin: 0 auto; display: grid; gap: 24px; }
+  .cm-section h3 { margin: 0 0 12px; font-size: 1.05rem; color: var(--ink); }
+  .cm-grid {
     display: grid;
-    gap: 28px;
-  }
-  .map-nodes {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    justify-content: center;
-  }
-  .map-node {
-    display: inline-flex;
-    align-items: center;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 10px;
+  }
+  .cm-card {
+    display: flex; align-items: center; gap: 10px;
     border: 1px solid var(--line);
-    border-radius: 999px;
+    border-radius: 12px;
     background: var(--surface);
-    padding: 10px 18px;
+    padding: 12px 14px;
     transition: all .2s;
   }
-  .map-node:hover {
+  .cm-card:hover {
     border-color: var(--acid);
-    background: rgba(212, 255, 0, 0.08);
-    transform: translateY(-2px);
+    background: rgba(212, 56, 13, 0.05);
+    transform: translateY(-1px);
   }
-  .map-node--concept {
+  .cm-card--concept {
     border-color: var(--blue);
     background: rgba(66,133,244,.06);
   }
-  .map-node--concept:hover {
+  .cm-card--concept:hover {
     border-color: var(--blue);
     background: rgba(66,133,244,.12);
   }
-  .map-section h3 {
-    margin: 0 0 12px;
-    font-size: 1.05rem;
-  }
-  .map-node-icon {
+  .cm-icon {
     color: var(--acid);
     display: inline-flex;
+    flex-shrink: 0;
   }
-  .map-node-label {
+  .cm-card--concept .cm-icon { color: var(--blue); }
+  .cm-label {
     font-weight: 700;
-    font-size: .9rem;
+    font-size: .88rem;
     color: var(--ink);
+    line-height: 1.3;
   }
-  .map-bloom {
+  .cm-bloom {
     border: 1px solid var(--line);
     border-radius: 14px;
     background: var(--surface);
     padding: 22px;
   }
-  .map-bloom h3 {
+  .cm-bloom h3 {
     margin: 0 0 16px;
     font-size: 1.05rem;
+    color: var(--ink);
   }
-  .bloom-bars {
-    display: grid;
-    gap: 10px;
-  }
+  .bloom-bars { display: grid; gap: 10px; }
   .bloom-bar-row {
     display: grid;
     grid-template-columns: 100px 1fr 36px;
     align-items: center;
     gap: 12px;
   }
-  .bloom-label {
-    font-size: .82rem;
-    font-weight: 700;
-    color: var(--muted);
-  }
+  .bloom-label { font-size: .82rem; font-weight: 700; color: var(--muted); }
   .bloom-track {
     height: 10px;
     border-radius: 999px;
@@ -157,11 +143,10 @@
     background: linear-gradient(90deg, var(--acid), var(--acid-hot));
     transition: width .6s ease;
   }
-  .bloom-count {
-    font-size: .82rem;
-    font-weight: 900;
-    color: var(--ink);
-    text-align: right;
+  .bloom-count { font-size: .82rem; font-weight: 900; color: var(--ink); text-align: right; }
+
+  @media (max-width: 640px) {
+    .cm-grid { grid-template-columns: 1fr; }
   }
 </style>
 

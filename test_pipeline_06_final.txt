@@ -1,0 +1,50 @@
+a|m=IRT3PL|d=20260602|n=49|l=es|t=historia|bd=3,19,18,5,4,0|cat=0,-3,3,0.3,20,SH
+i1|L1|Economia|El Perú se deudó para hacer ferrocarriles, carreteras y pagar deudas, lo que generó ____|crisis económica*,inflación,guerra,estabilidad|0.8,-1.0,0.25|1|Historia,0.2,low
+i2|L3|Historia|La guerra con Chile terminó con el ____ del Perú|derrumbe*,construcción,crecimiento,estabilidad|1.0,0.0,0.25|2|Historia,0.2,medium
+i3|L4|Politica|El ejército chileno destruyó ____ en el Perú|puentes y caminos*,ciudades,industrias,escuelas|1.1,0.2,0.25|2|Historia,0.2,medium
+i4|L2|Economia|El proyecto de Pérola se basó en la ____|exportación*,importación,industrialización,agricultura|1.0,0.0,0.25|2|Historia,0.2,low
+i5|L3|Politica|El presidente Leguía buscó modernizar el Estado al ____|incluir a la clase media*,excluir a los militares,apoyar a los terratenientes,limitar la educación|1.2,0.5,0.25|3|Historia,0.2,medium
+i6|L4|Economia|El sexto proyecto nacional fue la ____|industrialización*,exportación,agricultura,comercio|1.3,0.7,0.25|3|Historia,0.2,medium
+i7|L2|Historia|La crisis de 1929 terminó con el ____|proyecto de exportación*,crecimiento económico,estabilidad política,industrialización|1.0,0.0,0.25|2|Historia,0.2,low
+i8|L5|Politica|La comunidad industrial buscaba ____|combinar capital y trabajo*,reducir el estado,excluir a los obreros,limitar la inversión|1.4,1.0,0.25|4|Historia,0.2,high
+i9|L3|Economia|La nacionalización de empresas generó ____|deuda pública*,inversión privada,estabilidad,crecimiento|1.1,0.5,0.25|3|Historia,0.2,medium
+i10|L2|Historia|La crisis de la deuda en los años 80 fue causada por ____|la falta de crédito*,la inflación,la guerra,la pobreza|0.9,-0.5,0.25|1|Historia,0.2,low
+i11|L4|Politica|El problema de las empresas públicas fue ____|la falta de inversión privada*,la falta de recursos,la corrupción,la mala gestión|1.2,0.7,0.25|3|Historia,0.2,medium
+i12|L2|Economia|El modelo de inversión de los militares se basó en ____|el endeudamiento*,la exportación,la industrialización,la agricultura|0.9,-0.5,0.25|1|Historia,0.2,low
+i13|L3|Historia|El proyecto de los militares incluyó ____|nacionalización de empresas*,reformas agrarias,libertad de mercado,desregulación|1.0,0.0,0.25|2|Historia,0.2,medium
+i14|L5|Politica|La autocrítica en la historia del Perú incluye ____|reconocer errores de políticas*,ignorar el pasado,exagerar logros,olvidar lecciones|1.3,1.0,0.25|4|Historia,0.2,high
+i15|L3|Historia|El gobierno de Pérola se enfocó en ____|la exportación de productos*,la industrialización,la agricultura,la minería|1.0,0.0,0.25|2|Historia,0.2,medium
+i16|L4|Politica|El proyecto de modernización de Leguía buscaba ____|integrar a la clase media en el Estado*,excluir a los militares,limitar la educación,prohibir la inversión|1.1,0.5,0.25|3|Historia,0.2,medium
+i17|L2|Economia|La industrialización en América Latina comenzó en ____|1930*,1919,1929,1945|0.9,-0.5,0.25|1|Historia,0.2,low
+i18|L5|Politica|El esfuerzo de los militares para lograr la reinversión fue ____|desesperado*,eficiente,exitoso,innovador|1.3,1.0,0.25|4|Historia,0.2,high
+i19|L1|Concepto|El que no recuerda su pasado, corre el peligro de volver a vivirlo, es una frase de ____|Santallana*,Fujimori,Militares,Doja|0.9,-1.2,0.25|1|Historia,0.2,low
+i20|L2|Periodo|El octavo y final proyecto del siglo XX fue el ____|proyecto neoliberal*,proyecto militar,proyecto civil,proyecto estatal|0.9,-1.2,0.25|1|Historia,0.2,low
+i21|L3|Acción|Fujimori desmontó el Estado y lo vendió a ____|empresarios extranjeros*,trabajadores,ciudadanos,estudiantes|0.9,-1.2,0.25|1|Historia,0.2,low
+i22|L3|Consecuencia|Al vender empresas estatales sin condiciones, se generó ____|monopolio abusivo*,inversión masiva,empleo,crecimiento|0.9,-1.2,0.25|1|Historia,0.2,low
+i23|L2|Concepto|El neoliberalismo se caracteriza por ____|desmontar el Estado*,promover la industrialización,establecer orden,recuperar el orden|0.9,-1.2,0.25|1|Historia,0.2,low
+i24|L3|Evento|La venta de la empresa de teléfonos generó ganancias de ____|2.000 millones*,1.200 millones,500 millones,100 millones|0.9,-1.2,0.25|1|Historia,0.2,low
+i25|L2|Concepto|La modernización del Estado implica ____|concentración de poder*,desconcentración,exportación,industrialización|0.9,-1.2,0.25|1|Historia,0.2,low
+i26|L4|Análisis|El autor considera que el neoliberalismo es un retroceso porque ____|no negoció condiciones justas*,no permitió inversión,creó empleo,mejoró el Estado|0.9,-1.2,0.25|1|Historia,0.2,low
+i27|L5|Evaluación|¿Cuál es el principal problema con el modelo neoliberal según el texto?|no considera las consecuencias económicas*,no promueve el orden,ignora el pasado,desestima la inversión|0.9,-1.2,0.25|1|Historia,0.2,low
+i28|L1|Pregunta|¿Quién dijo que "el que no recuerda su pasado corre el peligro de volver a vivirlo"?|Santallana*,Elías Vargas,Francisco de Paula,Manuel Pardo|0.9,-1.2,0.25|1|Historia,0.2,low
+i29|L2|Pregunta|¿Cuál fue el primer proyecto nacional del Perú?|la independencia*,la Constitución,la guerra,la paz|1.5,0.3,0.25|2|Historia,0.2,medium
+i30|L3|Pregunta|¿Qué dijo San Martín mientras se quedó estacionado en las pampas de Pachacama?|reconocimiento*,aceptación,complejidad,confianza|1.3,-0.8,0.25|3|Historia,0.2,medium
+i31|L2|Pregunta|¿En qué bahía desembarcó el general San Martín?|Bahía de Pisco*,Francisco de Paula,Bolívar,Manuel Pardo|0.8,-1.0,0.25|1|Historia,0.2,low
+i32|L3|Pregunta|¿Qué ocurrió cuando el rey Pesuela tomó el Callao?|receso*,ataque,defensa,conquista|1.2,-0.6,0.25|2|Historia,0.2,medium
+i33|L2|Pregunta|¿Qué le sucedió al primer presidente del Perú, Riva Huerto, al negociar con los españoles?|exilio*,fusilamiento,conspiración,convenio|1.1,-0.5,0.25|2|Historia,0.2,medium
+i34|L3|Pregunta|¿Dónde se escondió el segundo presidente del Perú, Torre Tarle?|refugio*,exilio,conspiración,abandono|1.0,-0.4,0.25|2|Historia,0.2,medium
+i35|L2|Pregunta|¿Quién declaró la guerra a muerte a quienes no estaban con la independencia?|Bolívar*,San Martín,Manuel Pardo,Francisco de Paula|0.9,-1.2,0.25|1|Historia,0.2,low
+i36|L3|Pregunta|¿De qué nacionalidad eran el 95% de las tropas del virrey en la batalla de Acucho?|peruanas*,españolas,extranjeras,indígenas|1.4,-0.7,0.25|2|Historia,0.2,medium
+i37|L2|Pregunta|¿Cómo fue el primer proyecto de independencia del Perú?|parcial*,completo,definitivo,completo|1.0,-0.5,0.25|2|Historia,0.2,medium
+i38|L3|Pregunta|¿Qué consecuencia tuvo la guerra de la independencia en la economía del Perú?|estancamiento*,desarrollo,crecimiento,prosperidad|1.2,-0.6,0.25|2|Historia,0.2,medium
+i39|L2|Pregunta|¿Hasta qué año el negro seguía siendo esclavo?|esclavitud*,libertad,protección,exilio|1.1,-0.5,0.25|2|Historia,0.2,medium
+i40|L3|Pregunta|¿En qué año se proclamó la libertad de los negros?|libertad*,compra,exilio,esclavitud|1.3,-0.7,0.25|2|Historia,0.2,medium
+i41|L2|Pregunta|¿Quién permitió la importación de esclavos?|Bartolomé las casas*,Francisco de Paula,Manuel Pardo,San Martín|0.9,-1.2,0.25|1|Historia,0.2,low
+i42|L3|Pregunta|¿Qué problema generó la colonización con la población indígena?|física*,esclavitud,protección,exilio|1.2,-0.6,0.25|2|Historia,0.2,medium
+i43|L2|Pregunta|¿Cuál fue el tercer proyecto nacional del Perú?|militar*,comercial,agrícola,civil|1.0,-0.5,0.25|2|Historia,0.2,medium
+i44|L3|Pregunta|¿Dónde quería trasladar el presidente Manuel Pardo la capital?|Javujá*,Lima,Trujillo,Cusco|1.1,-0.5,0.25|2|Historia,0.2,medium
+i45|L2|Pregunta|¿Qué sucedió con el guano de las islas?|exceso*,abundancia,escasez,exceso|1.0,-0.5,0.25|2|Historia,0.2,medium
+i46|L3|Pregunta|¿Qué situación enfrentó el gobierno civil?|crisis*,crecimiento,prosperidad,estancamiento|1.2,-0.6,0.25|2|Historia,0.2,medium
+i47|L2|Pregunta|¿Quién fue el primer presidente en gobernar de forma civil?|Domano el Pardo*,San Martín,Bolívar,Manuel Pardo|0.9,-1.2,0.25|1|Historia,0.2,low
+i48|L3|Pregunta|¿Qué situación enfrentó el presidente Pardo?|crisis*,exceso,prosperidad,estancamiento|1.1,-0.5,0.25|2|Historia,0.2,medium
+i49|L2|Pregunta|¿Qué situación enfrentó el tercer proyecto nacional del Perú?|crisis*,prosperidad,estancamiento,exceso|1.0,-0.5,0.25|2|Historia,0.2,medium

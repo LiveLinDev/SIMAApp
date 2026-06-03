@@ -3,9 +3,9 @@
   margin: 0 0 10px;
   color: var(--green-dark);
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 800;
-  letter-spacing: 0;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
@@ -43,11 +43,11 @@
 
 .primary-button,
 .lesson-cta {
-  border: 1px solid var(--acid);
+  border: 1.5px solid var(--ink);
   background: var(--acid);
   color: #fff;
   padding: 14px 18px;
-  box-shadow: 0 10px 24px var(--glow);
+  box-shadow: 4px 4px 0 var(--ink);
 }
 
 .secondary-button,
@@ -64,7 +64,11 @@
 }
 
 .primary-button:hover,
-.lesson-cta:hover,
+.lesson-cta:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 var(--ink);
+}
+
 .secondary-button:hover,
 .nav-pill:hover,
 .link-button:hover,
@@ -72,11 +76,9 @@
 .view-btn:hover,
 .advanced-btn:hover,
 .icon-btn:hover {
-  transform: translateY(-1px);
-  border-color: var(--acid-hot);
-  background: var(--acid-hot);
-  color: #fff;
-  box-shadow: 0 12px 26px var(--glow);
+  transform: translate(-1px, -1px);
+  border-color: var(--line-strong);
+  box-shadow: 3px 3px 0 var(--ink);
 }
 
 .link-button {
@@ -184,7 +186,7 @@
 }
 
 .message.success {
-  border-color: rgba(212, 255, 0, 0.48);
+  border-color: rgba(45, 106, 79, 0.48);
 }
 
 .message.warning {
@@ -243,7 +245,7 @@ pre,
   overflow: auto;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  border: 1px solid rgba(212, 255, 0, 0.12);
+  border: 1px solid var(--line);
   border-radius: var(--radius-md);
   background: var(--black);
   color: var(--gray-200);
@@ -316,8 +318,8 @@ pre,
 .output-block--success,
 .share-option--active,
 .study-badge--verified {
-  border-color: rgba(212, 255, 0, 0.48) !important;
-  background: rgba(217, 52, 36, 0.16) !important;
+  border-color: rgba(45, 106, 79, 0.48) !important;
+  background: rgba(45, 106, 79, 0.12) !important;
   color: var(--black) !important;
 }
 
@@ -425,7 +427,7 @@ pre,
 }
 
 .mini-irt {
-  border-top: 1px solid rgba(212, 255, 0, 0.12);
+  border-top: 1px solid var(--line);
   padding-top: 9px;
   color: var(--muted);
   font-family: var(--font-mono);

@@ -36,4 +36,7 @@ urlpatterns = [
     path("clase/<int:pk>/flashcards/", views.flashcards, name="flashcards"),
     path("clase/<int:pk>/flashcards/repasar/", views.review_flashcard, name="review_flashcard"),
     path("clase/<int:pk>/mapa/", views.class_map, name="class_map"),
+    path("clase/<int:pk>/ejercicios/emparejar/", views.matching_exercise, name="matching_exercise"),
+    path("clase/<int:pk>/ejercicios/completar/", views.cloze_exercise, name="cloze_exercise"),
+    path("clase/<int:pk>/pipeline/", views.pipeline_visualization, name="pipeline_visualization"),
 ]

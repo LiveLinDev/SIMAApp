@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MiniForkable Tool — Cualquier JSON → Prompt .mini</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav class="nav">
+    <div class="shell nav-inner">
+      <div class="brand">
+        <div class="logo mono">.m</div>
+        <div>
+          <div class="brand-title">MiniForkable Tool</div>
+          <div class="brand-sub">Cualquier JSON → Fork de .mini</div>
+        </div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="secondary" onclick="loadDemoJson()">Cargar demo</button>
+        <button class="primary" onclick="generateFork()">Generar fork</button>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <header class="hero shell">
+      <h1>Convierte <span class="good">cualquier JSON</span> en un prompt de fork .mini</h1>
+      <p>Pega un JSON real de tu dominio. La herramienta detecta la estructura, infiere el esquema, y genera un prompt listo para usar con cualquier LLM — incluyendo cómo manejar objetos anidados, arrays y booleanos.</p>
+      <div class="hero-actions">
+        <button class="primary" onclick="generateFork()">Generar prompt ahora</button>
+        <button class="ghost" onclick="clearAll()">Limpiar todo</button>
+      </div>
+    </header>
+
+    <section id="input">
+      <div class="shell">
+        <div class="section-head">
+          <div>
+            <h2>1. Input JSON</h2>
+            <p>Pega tu JSON aquí. Puede tener wrappers como <code>{"success": true, "data": [...]}</code> — la herramienta encontrará automáticamente el array de registros.</p>
+          </div>
+          <span id="detectedBadge" class="badge badge-blue">Sin JSON todavía</span>
+        </div>
+        <div class="card card-pad">
+          <div class="toolbar">
+            <strong class="mono">JSON de entrada</strong>
+            <div class="chips">
+              <button class="chip" onclick="loadDemoJson()">Demo: sesión quiz</button>
+              <button class="chip" onclick="loadDemoUsers()">Demo: usuarios</button>
+              <button class="chip" onclick="loadDemoProducts()">Demo: productos</button>
+            </div>
+          </div>
+          <textarea id="jsonInput" class="textarea mono" spellcheck="false" placeholder='Pega tu JSON aquí...' oninput="analyzeJson()"></textarea>
+          <div class="status-line">
+            <span id="jsonStats">0 caracteres · 0 tokens estimados</span>
+            <button class="ghost danger" onclick="clearAll()">Limpiar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="analysis">
+      <div class="shell">
+        <div class="section-head">
+          <div>
+            <h2>2. Análisis detectado</h2>
+            <p>Revisa y ajusta el dominio, prefijo y campos antes de generar el prompt.</p>
+          </div>
+        </div>
+        <div class="grid-3">
+          <div class="card card-pad">
+            <h3 style="font-size:15px; margin-bottom:8px;">Dominio</h3>
+            <p class="muted" style="font-size:13px; margin-bottom:10px;">Nombre del contexto detectado.</p>
+            <input id="forkDomain" class="input" value="" placeholder="ej: responses, orders, patients" oninput="updatePrefix()">
+          </div>
+          <div class="card card-pad">
+            <h3 style="font-size:15px; margin-bottom:8px;">Prefijo</h3>
+            <p class="muted" style="font-size:13px; margin-bottom:10px;">Discriminador de cabecera .mini</p>
+            <input id="forkPrefix" class="input mono" value="" maxlength="12" placeholder="ej: r, ord, pat">
+          </div>
+          <div class="card card-pad">
+            <h3 style="font-size:15px; margin-bottom:8px;">Campos posicionales</h3>
+            <p class="muted" style="font-size:13px; margin-bottom:10px;">Orden en cada línea de registro.</p>
+            <input id="forkFields" class="input mono" value="" placeholder="id,name,status">
+          </div>
+        </div>
+
+        <div class="card card-pad" style="margin-top:16px;">
+          <div class="toolbar">
+            <strong>Esquema inferido</strong>
+            <span class="badge badge-blue" id="schemaSummary">0 campos</span>
+          </div>
+          <div style="overflow:auto;">
+            <table class="schema-table" id="schemaTable">
+              <thead>
+                <tr><th>Campo</th><th>Estrategia MINI</th><th>Tipo origen</th><th>Ejemplo</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="output">
+      <div class="shell">
+        <div class="section-head">
+          <div>
+            <h2>3. Fork generado</h2>
+            <p>Prompt completo, gramática y ejemplo listos para copiar en tu LLM.</p>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="secondary" onclick="copyPrompt()">Copiar prompt</button>
+            <button class="ghost" onclick="downloadPrompt()">Descargar .md</button>
+          </div>
+        </div>
+
+        <div class="card card-pad">
+          <div class="tabs" role="tablist">
+            <button class="tab active" data-tab="prompt" onclick="switchTab('prompt')">Prompt IA</button>
+            <button class="tab" data-tab="grammar" onclick="switchTab('grammar')">Gramática</button>
+            <button class="tab" data-tab="example" onclick="switchTab('example')">Ejemplo real</button>
+            <button class="tab" data-tab="tester" onclick="switchTab('tester')">Validar</button>
+          </div>
+
+          <div id="panelPrompt" class="panel active">
+            <pre id="forkPrompt" class="result-box mono muted">Genera un fork para ver el prompt aquí.</pre>
+          </div>
+          <div id="panelGrammar" class="panel">
+            <pre id="forkGrammar" class="result-box mono muted"></pre>
+          </div>
+          <div id="panelExample" class="panel">
+            <pre id="forkExample" class="result-box mono muted"></pre>
+          </div>
+          <div id="panelTester" class="panel">
+            <div class="grid-2">
+              <div>
+                <p class="muted" style="margin-bottom:8px; font-size:13px;">Pega un JSON de prueba para validar que el fork funciona:</p>
+                <textarea id="testInput" class="textarea mono" style="min-height:220px;" spellcheck="false"></textarea>
+                <div class="status-line">
+                  <button class="secondary" onclick="testFork()">Convertir con fork</button>
+                  <button class="ghost" onclick="validateTestOutput()">Validar</button>
+                </div>
+              </div>
+              <div>
+                <p class="muted" style="margin-bottom:8px; font-size:13px;">Output .mini:</p>
+                <div id="testOutput" class="output mono muted" style="min-height:220px;">El resultado aparecerá aquí.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="docs">
+      <div class="shell">
+        <div class="section-head">
+          <div>
+            <h2>Cómo funciona</h2>
+            <p>La herramienta analiza tu JSON en 4 pasos para producir un fork robusto.</p>
+          </div>
+        </div>
+        <div class="card card-pad">
+          <div class="steps">
+            <div class="step"><strong>Busca el array de registros</strong><p>Recorre el JSON recursivamente y selecciona el array de objetos más denso (más filas × más campos), ignorando wrappers como <code>success</code> o <code>message</code>.</p></div>
+            <div class="step"><strong>Infieres tipos y anidaciones</strong><p>Para cada campo detecta si es string, number, boolean, array u objeto. Si es array de objetos, infiere si tiene patrón <code>key+text</code>, <code>text+correct</code>, u otro.</p></div>
+            <div class="step"><strong>Elige estrategia de serialización</strong><p>Primitivos van directo. Arrays de objetos se aplanan a <code>K:valor;K:valor</code> o JSON escapado. Objetos anidados se aplanan si tienen ≤3 campos.</p></div>
+            <div class="step"><strong>Genera prompt + ejemplo real</strong><p>El prompt incluye gramática exacta, mapeo campo a campo, reglas de escaping, y un ejemplo convertido desde tus datos reales — no valores inventados.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="shell">MiniForkable Tool v3 · Cualquier JSON → Fork .mini con prompt real y validable.</div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+pageType: final
+background:
+  type: solid
+  color: "$primary"
+elements:
+  - elementId: accent-line
+    elementType: shape
+    bounds: [540, 180, 200, 4]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: title
+    elementType: text
+    bounds: [140, 200, 1000, 80]
+    content:
+      fontSize: 36
+      color: "$white"
+      fontFamily: "QuattrocentoSans"
+      align: [center, middle]
+      wrap: true
+      text: |
+        <p><strong>Conclusiones</strong></p>
+  - elementId: body
+    elementType: text
+    bounds: [140, 300, 1000, 280]
+    content:
+      fontSize: 18
+      color: "$white"
+      fontFamily: "QuattrocentoSans"
+      lineHeight: 1.5
+      align: [center, top]
+      text: |
+        <p>SIMA integra transcripción, generación educativa, verificación externa y evaluación adaptativa en un flujo local trazable.</p>
+        <p style="margin-top:10px">La IA local protege el control del entorno y permite demostrar trazas completas del pipeline.</p>
+        <p style="margin-top:10px">La verificación web con consultas generadas por IA mejora la auditabilidad de respuestas correctas.</p>
+        <p style="margin-top:10px">El mapeo de theta a niveles pedagógicos hace comprensible el resultado final.</p>
+        <p style="margin-top:10px">La vista pipeline convierte el proceso interno en evidencia de desarrollo para sustentación.</p>
+  - elementId: thanks
+    elementType: text
+    bounds: [440, 600, 400, 50]
+    content:
+      fontSize: 24
+      color: "$accent"
+      fontFamily: "QuattrocentoSans"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p><strong>Gracias</strong></p>

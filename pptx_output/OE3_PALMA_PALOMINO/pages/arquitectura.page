@@ -1,0 +1,148 @@
+pageType: content
+background:
+  type: solid
+  color: "$background"
+elements:
+  - elementId: nav-bar
+    elementType: shape
+    bounds: [0, 0, 1280, 50]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$primary"
+  - elementId: nav1
+    elementType: text
+    bounds: [0, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Intro</p>
+  - elementId: nav2
+    elementType: text
+    bounds: [213, 0, 214, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Stack</p>
+  - elementId: nav3
+    elementType: text
+    bounds: [427, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Backlog</p>
+  - elementId: nav4
+    elementType: text
+    bounds: [640, 0, 214, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Pipeline</p>
+  - elementId: nav5
+    elementType: text
+    bounds: [854, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Vistas</p>
+  - elementId: nav6
+    elementType: text
+    bounds: [1067, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p><strong>Arquitectura</strong></p>
+  - elementId: nav-accent
+    elementType: shape
+    bounds: [1067, 50, 213, 2]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: title
+    elementType: text
+    bounds: [60, 65, 1000, 40]
+    content:
+      style: "$heading"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Arquitectura del Sistema – C4 Contenedores y Componentes</strong></p>
+  - elementId: title-line
+    elementType: shape
+    bounds: [60, 110, 80, 3]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: left-col
+    elementType: text
+    bounds: [60, 130, 560, 260]
+    content:
+      style: "$body"
+      fontSize: 16
+      align: [left, top]
+      text: |
+        <p><strong>Contexto (C4 Nivel 1):</strong></p>
+        <ul>
+        <li>Estudiante → sube clase, resuelve quiz, visualiza progreso</li>
+        <li>SIMA → plataforma web de microaprendizaje</li>
+        <li>Whisper local → transcripción automática de audio</li>
+        <li>Qwen local (vía proxy) → generación y verificación con IA</li>
+        <li>Buscador web (ddgs) → validación factual de contenido</li>
+        <li>PostgreSQL / SQLite → persistencia de datos</li>
+        </ul>
+  - elementId: right-col
+    elementType: text
+    bounds: [660, 130, 560, 260]
+    content:
+      style: "$body"
+      fontSize: 16
+      align: [left, top]
+      text: |
+        <p><strong>Contenedores (C4 Nivel 2):</strong></p>
+        <ul>
+        <li>Interfaz web (Django templates + JS)</li>
+        <li>Backend Django (vistas, modelos, API REST)</li>
+        <li>Cola local de procesamiento</li>
+        <li>Servicios de IA (proxy Node → llama-server)</li>
+        <li>Persistencia (PostgreSQL + SQLite dev)</li>
+        </ul>
+  - elementId: bottom-col
+    elementType: text
+    bounds: [60, 410, 1160, 220]
+    content:
+      style: "$body"
+      fontSize: 16
+      align: [left, top]
+      text: |
+        <p><strong>Componentes internos clave (C4 Nivel 3):</strong></p>
+        <ul>
+        <li><strong>Generación:</strong> prompts MINI, parseo de respuestas, recuperación de incoherencias</li>
+        <li><strong>Verificación:</strong> extracción de claims, consultas web, reporte eN con URLs y snippets</li>
+        <li><strong>Parseo MINI:</strong> conversión de formato .mini a JSON estructurado para el banco de items</li>
+        <li><strong>CAT / IRT:</strong> filtro de 4 alternativas, selección por máxima información, estimación theta</li>
+        <li><strong>Progreso:</strong> registro de respuestas, cálculo de precisión, XP, rachas y niveles pedagógicos</li>
+        </ul>
+        <p style="margin-top:8px">Los diagramas C4 completos fueron presentados en el <strong>OE2</strong> como parte del diseño arquitectónico.</p>
+  - elementId: page-number
+    elementType: text
+    bounds: [1200, 690, 60, 20]
+    content:
+      style: "$caption"
+      align: [right, middle]
+      wrap: false
+      text: |
+        <p>15</p>

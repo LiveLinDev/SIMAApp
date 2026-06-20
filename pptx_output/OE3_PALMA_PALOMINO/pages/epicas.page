@@ -1,0 +1,159 @@
+pageType: content
+background:
+  type: solid
+  color: "$background"
+elements:
+  - elementId: nav-bar
+    elementType: shape
+    bounds: [0, 0, 1280, 50]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$primary"
+  - elementId: nav1
+    elementType: text
+    bounds: [0, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Intro</p>
+  - elementId: nav2
+    elementType: text
+    bounds: [213, 0, 214, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Stack</p>
+  - elementId: nav3
+    elementType: text
+    bounds: [427, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p><strong>Backlog</strong></p>
+  - elementId: nav4
+    elementType: text
+    bounds: [640, 0, 214, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Pipeline</p>
+  - elementId: nav5
+    elementType: text
+    bounds: [854, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Vistas</p>
+  - elementId: nav6
+    elementType: text
+    bounds: [1067, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Arquitectura</p>
+  - elementId: nav-accent
+    elementType: shape
+    bounds: [427, 50, 213, 2]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: title
+    elementType: text
+    bounds: [60, 65, 900, 40]
+    content:
+      style: "$heading"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Épicas del Product Backlog</strong></p>
+  - elementId: title-line
+    elementType: shape
+    bounds: [60, 110, 80, 3]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: epic-table
+    elementType: table
+    bounds: [60, 130, 1160, 500]
+    style: "$default"
+    columnWidths: [0.45, 0.35, 0.20]
+    rowHeights: [0.16, 0.168, 0.168, 0.168, 0.168, 0.168]
+    rows:
+      - - content:
+            text: |
+              <p><strong>Épica</strong></p>
+        - content:
+            text: |
+              <p><strong>Story Points</strong></p>
+        - content:
+            text: |
+              <p><strong>Prioridad</strong></p>
+      - - content:
+            text: |
+              <p>Ingesta y transcripción inteligente de clases</p>
+        - content:
+            text: |
+              <p>13</p>
+        - content:
+            text: |
+              <p><span style="color:$accent;"><strong>Alta</strong></span></p>
+      - - content:
+            text: |
+              <p>Estructuración semántica de conocimiento con IA</p>
+        - content:
+            text: |
+              <p>21</p>
+        - content:
+            text: |
+              <p><span style="color:$accent;"><strong>Alta</strong></span></p>
+      - - content:
+            text: |
+              <p>Validación pedagógica con verificación web</p>
+        - content:
+            text: |
+              <p>13</p>
+        - content:
+            text: |
+              <p><span style="color:$accent;"><strong>Alta</strong></span></p>
+      - - content:
+            text: |
+              <p>Persistencia y modelado de conocimiento educativo</p>
+        - content:
+            text: |
+              <p>8</p>
+        - content:
+            text: |
+              <p><span style="color:$accent;"><strong>Alta</strong></span></p>
+      - - content:
+            text: |
+              <p>Generación de aprendizaje adaptativo y seguimiento</p>
+        - content:
+            text: |
+              <p>21</p>
+        - content:
+            text: |
+              <p><span style="color:$accent;"><strong>Alta</strong></span></p>
+  - elementId: page-number
+    elementType: text
+    bounds: [1200, 690, 60, 20]
+    content:
+      style: "$caption"
+      align: [right, middle]
+      wrap: false
+      text: |
+        <p>5</p>

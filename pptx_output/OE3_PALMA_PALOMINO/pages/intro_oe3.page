@@ -1,0 +1,113 @@
+pageType: content
+background:
+  type: solid
+  color: "$background"
+elements:
+  - elementId: nav-bar
+    elementType: shape
+    bounds: [0, 0, 1280, 50]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$primary"
+  - elementId: nav1
+    elementType: text
+    bounds: [0, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p><strong>Intro</strong></p>
+  - elementId: nav2
+    elementType: text
+    bounds: [213, 0, 214, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Stack</p>
+  - elementId: nav3
+    elementType: text
+    bounds: [427, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Backlog</p>
+  - elementId: nav4
+    elementType: text
+    bounds: [640, 0, 214, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Pipeline</p>
+  - elementId: nav5
+    elementType: text
+    bounds: [854, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Vistas</p>
+  - elementId: nav6
+    elementType: text
+    bounds: [1067, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Arquitectura</p>
+  - elementId: nav-accent
+    elementType: shape
+    bounds: [0, 50, 213, 2]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: title
+    elementType: text
+    bounds: [60, 65, 900, 40]
+    content:
+      style: "$heading"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Objetivo Específico 3 – Desarrollo e Implementación</strong></p>
+  - elementId: title-line
+    elementType: shape
+    bounds: [60, 110, 80, 3]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: body-text
+    elementType: text
+    bounds: [60, 130, 1160, 400]
+    content:
+      style: "$body"
+      align: [left, top]
+      text: |
+        <p><strong>Desarrollar una plataforma inteligente de microaprendizaje</strong> que integre módulos de transcripción automática, postprocesamiento, generación de microcontenidos educativos y evaluaciones adaptativas personalizadas, orientadas al seguimiento del progreso del estudiante.</p>
+        <p style="margin-top:16px">El desarrollo se organizó como una <strong>aplicación web Django</strong> que transforma clases, textos o transcripciones en experiencias cortas de estudio. La implementación prioriza:</p>
+        <ul>
+        <li><strong>Ejecución local</strong> de modelos de IA (Qwen3-30B vía proxy)</li>
+        <li><strong>Trazabilidad técnica</strong> del pipeline completo</li>
+        <li><strong>Control de calidad educativo</strong> con verificación web</li>
+        </ul>
+        <p style="margin-top:16px">El OE3 documenta la construcción funcional: captura de contenido, reparación de transcripciones, generación MINI, verificación con fuentes, evaluación adaptativa y visualización del progreso.</p>
+  - elementId: page-number
+    elementType: text
+    bounds: [1200, 690, 60, 20]
+    content:
+      style: "$caption"
+      align: [right, middle]
+      wrap: false
+      text: |
+        <p>3</p>

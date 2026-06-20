@@ -1,0 +1,112 @@
+SIMA verification AI/web evidence - 2026-06-19
+
+Modo usado: web
+Proveedor: ddgs web search + academic targets
+Busqueda academica: {'enabled': True, 'targets': ['arxiv.org', 'scholar.google.com', 'semanticscholar.org']}
+
+AI verification queries:
+- Fotosintesis pigmento principal luz clorofila
+- Que pigmento esencial absorbe luz en fotosintesis clorofila
+- Clorofila funcion en proceso fotosintesis
+- Fotosintesis principales pigmentos vegetales clorofila
+- Definicion de clorofila en fotosintesis
+- Cuales son los pigmentos fotosinteticos principales clorofila
+
+Trace completo:
+{
+  "mode": "web",
+  "web": {
+    "enabled": true,
+    "search_provider": "ddgs web search + academic targets",
+    "academic_search": {
+      "enabled": true,
+      "targets": [
+        "arxiv.org",
+        "scholar.google.com",
+        "semanticscholar.org"
+      ]
+    },
+    "queries": [
+      {
+        "query": "Fotosintesis pigmento principal luz clorofila",
+        "source": "ai",
+        "claim": "Fotosintesis pigmento principal luz clorofila",
+        "academic_queries": [
+          "Fotosintesis pigmento principal luz clorofila site:arxiv.org",
+          "Fotosintesis pigmento principal luz clorofila site:scholar.google.com",
+          "Fotosintesis pigmento principal luz clorofila site:semanticscholar.org"
+        ],
+        "results": [
+          {
+            "url": "https://es.wikipedia.org/wiki/Pigmento_fotosintético",
+            "title": "Pigmento fotosintético - Wikipedia, la enciclopedia libre",
+            "ok": false,
+            "content_type": "",
+            "chars": 0,
+            "snippet": "",
+            "error": "'ascii' codec can't encode character '\\xe9' in position 27: ordinal not in range(128)"
+          },
+          {
+            "url": "https://arxiv.org/abs/2606.15262",
+            "title": "[2606.15262] 4-momentum conservation as the principal framework...",
+            "search_source": "Fotosintesis pigmento principal luz clorofila site:arxiv.org",
+            "ok": true,
+            "content_type": "text/html; charset=utf-8",
+            "chars": 4833,
+            "snippet": "[2606.15262] 4-momentum conservation as the principal framework for mesonic decay: The case of helium-5-lambda Skip to main content Learn about arXiv becoming an independent nonprofit. We gratefully acknowledge support from the Simons Foundation, member institutions , and all contributors. Donate > nucl-th > arXiv:2606.15262 Help | Advanced Search All fields Title Author Abstract Comments Journal reference ACM classification MSC classification Report number arXiv identifier DOI ORCID arXiv author ID Help pages Full text Search GO quick links Login Help Pages About Nuclear Theory arXiv:2606.15262 (nucl-th) [Submitted on 13 Jun 2026] Title: 4-momentum conservation as the principal framework for mesonic decay: The case of helium-5-lambda Authors: Emile Meoto , Mantile L. Lekala View a PDF of the paper titled 4-momentum conservation as the principal framework for mesonic decay: The case of helium-5-lambda, by Emile Meoto and Mantile L. Lekala View PDF Abstract: Negative-pion and neutral-pion mesonic decays of the hypernucleus $ _\\Lambda ^5$He are investigated within two-body and three-body relativistic kinematics in the rest-frame of the hypernucleus. 4-momentum conservation fully constrains the two-body decay, giving rise to a monochromatic pion momentum that is determined through the Newton-Raphson root-finding algorithm. In the case of three-body decay, where 4-momentum conservation is insufficient, the final-state momenta are parametrised by variables whose variations account for all kinematically allowed momenta. A Monte Carlo sampling method is then employed to generate 50 000 decay events per channel that simultaneously satisfy both energy and momentum conservation. The resulting pion momentum distributions exhibit clear peaks at 103.0 MeV/c for neutral pion decay and 97.3 MeV/c for negative pion decay. In addition, only 0.27\\% of neutral pion decay events and 0.03\\% of negative pion decay events produce nucleons with momenta exceeding the Fermi momentum of $ ^4$He, and are therefore allowed by the Pauli exclusion principle. Subjects: Nuclear Theory (nucl-th) Cite as: arXiv:2606.15262 [nucl-th] (or arXiv:2606.15262v1 [nucl-th] for this version) https://doi.or",
+            "error": ""
+          },
+          {
+            "url": "https://scholar.google.com/?hl=es",
+            "title": "Google Académico",
+            "search_source": "Fotosintesis pigmento principal luz clorofila site:scholar.google.com",
+            "ok": true,
+            "content_type": "text/html; charset=ISO-8859-1",
+            "chars": 1178,
+            "snippet": "Google Académico Cargando... El sistema no puede realizar la operación en estos momentos. Inténtalo de nuevo más tarde. Búsqueda avanzada Buscar artículos con todas las palabras con la frase exacta con al menos una de las palabras sin las palabras donde las palabras aparezcan en todo el artículo en el título del artículo Mostrar artículos escritos por p. ej., \"García Márquez\" o Cela Mostrar artículos publicados en p. ej., JAMA o Gaceta Sanitaria Mostrar artículos fechados entre — p. ej., 1996 Guardado en Mi biblioteca Hecho Eliminar artículo Mi perfil Mi biblioteca Alertas Estadísticas Labs Búsqueda avanzada Configuración Iniciar sesión Mi perfil Mi biblioteca Labs Iniciar sesión Cualquier idioma Buscar solo páginas en español A hombros de gigantes ES Idiomas Español Català Čeština Dansk Deutsch English Filipino Français Hrvatski Indonesia Italiano Latviešu Lietuvių Magyar Nederlands Norsk Polski Português (Brasil) Português (Portugal) Română Slovenčina Slovenščina Suomi Svenska Tiếng Việt Türkçe Ελληνικά Български Русский Српски Українська עברית ﺎﻠﻋﺮﺒﻳﺓ ﻑﺍﺮﺳی हिन्दी ไทย 한국어 中文 (简体) 中文 (繁體) 日本語 Privacidad Términos Ayuda Acerca de Académico Ayuda de la Búsqueda",
+            "error": ""
+          },
+          {
+            "url": "https://www.semanticscholar.org/paper/ESTUDO-DA-CONCENTRAÇÃO-DA-CLOROFILA-NAS-FOLHAS-DE-Abreu-Minato/5eccfff6a3c794f9e5399c9594418ac40e6af24d",
+            "title": "ESTUDO DA CONCENTRAÇÃO DA CLOROFILA NAS FOLHAS DE Cyrtocymura ...",
+            "search_source": "Fotosintesis pigmento principal luz clorofila site:semanticscholar.org",
+            "ok": false,
+            "content_type": "",
+            "chars": 0,
+            "snippet": "",
+            "error": "'ascii' codec can't encode characters in position 30-31: ordinal not in range(128)"
+          }
+        ]
+      }
+    ],
+    "configured_sources": [],
+    "query_generation": {
+      "source": "ai",
+      "count": 6,
+      "error": ""
+    },
+    "evidence_summary": {
+      "queries": 1,
+      "results": 4,
+      "usable_sources": 2
+    }
+  },
+  "eduqg": {
+    "enabled": false,
+    "matches": []
+  },
+  "context_chars": 3864
+}
+
+Context preview:
+BUSQUEDA_WEB: Fotosintesis pigmento principal luz clorofila
+FUENTE_BUSQUEDA: Fotosintesis pigmento principal luz clorofila site:arxiv.org
+URL: https://arxiv.org/abs/2606.15262
+TITULO: [2606.15262] 4-momentum conservation as the principal framework...
+CONTENIDO: [2606.15262] 4-momentum conservation as the principal framework for mesonic decay: The case of helium-5-lambda Skip to main content Learn about arXiv becoming an independent nonprofit. We gratefully acknowledge support from the Simons Foundation, member institutions , and all contributors. Donate > nucl-th > arXiv:2606.15262 Help | Advanced Search All fields Title Author Abstract Comments Journal reference ACM classification MSC classification Report number arXiv identifier DOI ORCID arXiv author ID Help pages Full text Search GO quick links Login Help Pages About Nuclear Theory arXiv:2606.15262 (nucl-th) [Submitted on 13 Jun 2026] Title: 4-momentum conservation as the principal framework for mesonic decay: The case of helium-5-lambda Authors: Emile Meoto , Mantile L. Lekala View a PDF of the paper titled 4-momentum conservation as the principal framework for mesonic decay: The case of helium-5-lambda, by Emile Meoto and Mantile L. Lekala View PDF Abstract: Negative-pion and neutral-pion mesonic decays of the hypernucleus $ _\Lambda ^5$He are investigated within two-body and three-body relativistic kinematics in the rest-frame of the hypernucleus. 4-momentum conservation fully constrains the two-body decay, giving rise to a monochromatic pion momentum that is determined through the Newton-Raphson root-finding algorithm. In the case of three-body decay, where 4-momentum conservation is insufficient, the final-state momenta are parametrised by variables whose variations account for all kinematically allowed momenta. A Monte Carlo sampling method is then employed to generate 50 000 decay events per channel that simultaneously satisfy both energy and momentum conservation. The resulting pion momentum distributions exhibit clear peaks at 103.0 MeV/c for neutral pion decay and 97.3 MeV/c for negative pion decay. In addition, only 0.27\% of neutral pion decay events and 0.03\% of negative pion decay events produce nucleons with momenta exceeding the Fermi momentum of $ ^4$He, and are therefore allowed by the Pauli exclusion principle. Subjects: Nuclear Theory (nucl-th) Cite as: arXiv:2606.15262 [nucl-th] (or arXiv:2606.15262v1 [nucl-th] for this version) https://doi.or
+
+BUSQUEDA_WEB: Fotosintesis pigmento principal luz clorofila
+FUENTE_BUSQUEDA: Fotosintesis pigmento principal luz clorofila site:scholar.google.com
+URL: https://scholar.google.com/?hl=es
+TITULO: Google Académico
+CONTENIDO: Google Académico Cargando... El sistema no puede realizar la operación en estos momentos. Inténtalo de nuevo más tarde. Búsqueda avanzada Buscar artículos con todas las palabras con la frase exacta con al menos una de las palabras sin las palabras donde las palabras aparezcan en todo el artículo en el título del artículo Mostrar artículos escritos por p. ej., "García Márquez" o Cela Mostrar artículos publicados en p. ej., JAMA o Gaceta Sanitaria Mostrar artículos fechados entre — p. ej., 1996 Guardado en Mi biblioteca Hecho Eliminar artículo Mi perfil Mi biblioteca Alertas Estadísticas Labs Búsqueda avanzada Configuración Iniciar sesión Mi perfil Mi biblioteca Labs Iniciar sesión Cualquier idioma Buscar solo páginas en español A hombros de gigantes ES Idiomas Español Català Čeština Dansk Deutsch English Filipino Français Hrvatski Indonesia Italiano Latviešu Lietuvių Magyar Nederlands Norsk Polski Português (Brasil) Português (Portugal) Română Slovenčina Slovenščina Suomi Svenska Tiếng Việt Türkçe Ελληνικά Български Русский Српски Українська עברית ﺎﻠﻋﺮﺒﻳﺓ ﻑﺍﺮﺳی हिन्दी ไทย 한국어 中文 (简体) 中文 (繁體) 日本語 Privacidad Términos Ayuda Acerca de Académico Ayuda de la Búsqueda

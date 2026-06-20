@@ -1,0 +1,153 @@
+pageType: content
+background:
+  type: solid
+  color: "$background"
+elements:
+  - elementId: nav-bar
+    elementType: shape
+    bounds: [0, 0, 1280, 50]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$primary"
+  - elementId: nav1
+    elementType: text
+    bounds: [0, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Intro</p>
+  - elementId: nav2
+    elementType: text
+    bounds: [213, 0, 214, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Stack</p>
+  - elementId: nav3
+    elementType: text
+    bounds: [427, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p><strong>Backlog</strong></p>
+  - elementId: nav4
+    elementType: text
+    bounds: [640, 0, 214, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Pipeline</p>
+  - elementId: nav5
+    elementType: text
+    bounds: [854, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Vistas</p>
+  - elementId: nav6
+    elementType: text
+    bounds: [1067, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Arquitectura</p>
+  - elementId: nav-accent
+    elementType: shape
+    bounds: [427, 50, 213, 2]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: title
+    elementType: text
+    bounds: [60, 65, 1000, 40]
+    content:
+      style: "$heading"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Historias de Usuario – Ingesta y Persistencia</strong></p>
+  - elementId: title-line
+    elementType: shape
+    bounds: [60, 110, 80, 3]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: hu-table
+    elementType: table
+    bounds: [60, 125, 1160, 520]
+    style: "$default"
+    columnWidths: [0.25, 0.45, 0.15, 0.15]
+    rowHeights: [0.1, 0.3, 0.3, 0.3]
+    rows:
+      - - content:
+            text: |
+              <p><strong>Historia</strong></p>
+        - content:
+            text: |
+              <p><strong>Criterios de Aceptación (BDD)</strong></p>
+        - content:
+            text: |
+              <p><strong>SP</strong></p>
+        - content:
+            text: |
+              <p><strong>Sprint</strong></p>
+      - - content:
+            text: |
+              <p>Como estudiante, quiero subir una clase y ver el pipeline de procesamiento en tiempo real para saber en qué fase se encuentra mi contenido.</p>
+        - content:
+            text: |
+              <p>Dado un archivo de clase en procesamiento, cuando accedo al panel de mi clase, entonces el sistema muestra cada etapa del pipeline con su estado (pendiente, en proceso, completado) y el porcentaje global.</p>
+        - content:
+            text: |
+              <p>3</p>
+        - content:
+            text: |
+              <p>1</p>
+      - - content:
+            text: |
+              <p>Como estudiante, quiero ver el costo en créditos antes de confirmar el procesamiento para tomar decisiones informadas sobre mi saldo.</p>
+        - content:
+            text: |
+              <p>Dado un archivo seleccionado para subir, cuando inicio la carga, entonces el sistema muestra el costo estimado en créditos previo a la confirmación y el costo final consumido al completarse.</p>
+        - content:
+            text: |
+              <p>2</p>
+        - content:
+            text: |
+              <p>1</p>
+      - - content:
+            text: |
+              <p>Como estudiante, quiero agrupar mis clases en cursos y visualizar mi avance por curso para tener un seguimiento estructurado de mi aprendizaje.</p>
+        - content:
+            text: |
+              <p>Dado que tengo varias clases registradas, cuando accedo a la sección de cursos, entonces puedo crear un curso, asignarle clases y visualizar el progreso acumulado (clases completadas, puntuación promedio).</p>
+        - content:
+            text: |
+              <p>3</p>
+        - content:
+            text: |
+              <p>3</p>
+  - elementId: page-number
+    elementType: text
+    bounds: [1200, 690, 60, 20]
+    content:
+      style: "$caption"
+      align: [right, middle]
+      wrap: false
+      text: |
+        <p>6</p>

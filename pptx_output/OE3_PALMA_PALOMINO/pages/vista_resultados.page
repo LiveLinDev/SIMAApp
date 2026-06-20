@@ -1,0 +1,167 @@
+pageType: content
+background:
+  type: solid
+  color: "$background"
+elements:
+  - elementId: nav-bar
+    elementType: shape
+    bounds: [0, 0, 1280, 50]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$primary"
+  - elementId: nav1
+    elementType: text
+    bounds: [0, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Intro</p>
+  - elementId: nav2
+    elementType: text
+    bounds: [213, 0, 214, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Stack</p>
+  - elementId: nav3
+    elementType: text
+    bounds: [427, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Backlog</p>
+  - elementId: nav4
+    elementType: text
+    bounds: [640, 0, 214, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Pipeline</p>
+  - elementId: nav5
+    elementType: text
+    bounds: [854, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p><strong>Vistas</strong></p>
+  - elementId: nav6
+    elementType: text
+    bounds: [1067, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Arquitectura</p>
+  - elementId: nav-accent
+    elementType: shape
+    bounds: [854, 50, 213, 2]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: title
+    elementType: text
+    bounds: [60, 65, 900, 40]
+    content:
+      style: "$heading"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Vista – Resultados y Seguimiento de Progreso</strong></p>
+  - elementId: title-line
+    elementType: shape
+    bounds: [60, 110, 80, 3]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: card1
+    elementType: shape
+    bounds: [60, 130, 540, 380]
+    shapeName: roundRect
+    adjustments: [3000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    border: {style: solid, width: 1, color: "$borderGray"}
+    shadow:
+      blur: 10
+      color: "#00000015"
+      offset: [0, 4]
+  - elementId: img1
+    elementType: image
+    bounds: [70, 140, 520, 300]
+    src: "E:\\PaginasQueHice\\SIMAApp\\output\\playwright\\quiz-results.png"
+    fit:
+      mode: cover
+    shapeName: roundRect
+    adjustments: [2000]
+  - elementId: cap1
+    elementType: text
+    bounds: [70, 450, 520, 40]
+    content:
+      style: "$caption"
+      align: [center, top]
+      wrap: true
+      text: |
+        <p>Resultados del quiz con precisión, XP y racha</p>
+  - elementId: card2
+    elementType: shape
+    bounds: [630, 130, 540, 380]
+    shapeName: roundRect
+    adjustments: [3000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    border: {style: solid, width: 1, color: "$borderGray"}
+    shadow:
+      blur: 10
+      color: "#00000015"
+      offset: [0, 4]
+  - elementId: img2
+    elementType: image
+    bounds: [640, 140, 520, 300]
+    src: "E:\\PaginasQueHice\\SIMAApp\\output\\playwright\\lesson-detail-with-history.png"
+    fit:
+      mode: cover
+    shapeName: roundRect
+    adjustments: [2000]
+  - elementId: cap2
+    elementType: text
+    bounds: [640, 450, 520, 40]
+    content:
+      style: "$caption"
+      align: [center, top]
+      wrap: true
+      text: |
+        <p>Detalle de clase con historial de intentos</p>
+  - elementId: note
+    elementType: text
+    bounds: [60, 530, 1160, 120]
+    content:
+      style: "$body"
+      fontSize: 16
+      align: [left, top]
+      text: |
+        <p>El <strong>seguimiento de progreso</strong> combina precisión, aciertos, XP, historial CAT y niveles Bloom respondidos. Se muestra el theta estimado, error estándar y nivel pedagógico. El sistema genera recomendaciones inteligentes: repasar temas con bajo acierto, completar flashcards para mantener racha, y resolver evaluaciones de dificultad ajustada.</p>
+  - elementId: page-number
+    elementType: text
+    bounds: [1200, 690, 60, 20]
+    content:
+      style: "$caption"
+      align: [right, middle]
+      wrap: false
+      text: |
+        <p>14</p>

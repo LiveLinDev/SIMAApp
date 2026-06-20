@@ -1,0 +1,294 @@
+pageType: content
+background:
+  type: solid
+  color: "$background"
+elements:
+  - elementId: nav-bar
+    elementType: shape
+    bounds: [0, 0, 1280, 50]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$primary"
+  - elementId: nav1
+    elementType: text
+    bounds: [0, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Intro</p>
+  - elementId: nav2
+    elementType: text
+    bounds: [213, 0, 214, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Stack</p>
+  - elementId: nav3
+    elementType: text
+    bounds: [427, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Backlog</p>
+  - elementId: nav4
+    elementType: text
+    bounds: [640, 0, 214, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p><strong>Pipeline</strong></p>
+  - elementId: nav5
+    elementType: text
+    bounds: [854, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Vistas</p>
+  - elementId: nav6
+    elementType: text
+    bounds: [1067, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Arquitectura</p>
+  - elementId: nav-accent
+    elementType: shape
+    bounds: [640, 50, 214, 2]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: title
+    elementType: text
+    bounds: [60, 65, 900, 40]
+    content:
+      style: "$heading"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Pipeline de Desarrollo Implementado</strong></p>
+  - elementId: title-line
+    elementType: shape
+    bounds: [60, 110, 80, 3]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: box1
+    elementType: shape
+    bounds: [60, 140, 200, 70]
+    shapeName: roundRect
+    adjustments: [8000]
+    fill:
+      type: solid
+      color: "$primary"
+  - elementId: txt1
+    elementType: text
+    bounds: [60, 140, 200, 70]
+    content:
+      fontSize: 14
+      color: "$white"
+      fontFamily: "QuattrocentoSans"
+      align: [center, middle]
+      wrap: true
+      text: |
+        <p><strong>Preparación</strong></p>
+        <p>Texto / audio</p>
+  - elementId: arrow1
+    elementType: shape
+    bounds: [260, 175, 60, 0]
+    shapeName: straightConnector1
+    arrow: [null, "arrow"]
+    border: {style: solid, width: 2, color: "$accent"}
+  - elementId: box2
+    elementType: shape
+    bounds: [320, 140, 200, 70]
+    shapeName: roundRect
+    adjustments: [8000]
+    fill:
+      type: solid
+      color: "$primary"
+  - elementId: txt2
+    elementType: text
+    bounds: [320, 140, 200, 70]
+    content:
+      fontSize: 14
+      color: "$white"
+      fontFamily: "QuattrocentoSans"
+      align: [center, middle]
+      wrap: true
+      text: |
+        <p><strong>Transcripción</strong></p>
+        <p>Whisper local</p>
+  - elementId: arrow2
+    elementType: shape
+    bounds: [520, 175, 60, 0]
+    shapeName: straightConnector1
+    arrow: [null, "arrow"]
+    border: {style: solid, width: 2, color: "$accent"}
+  - elementId: box3
+    elementType: shape
+    bounds: [580, 140, 200, 70]
+    shapeName: roundRect
+    adjustments: [8000]
+    fill:
+      type: solid
+      color: "$primary"
+  - elementId: txt3
+    elementType: text
+    bounds: [580, 140, 200, 70]
+    content:
+      fontSize: 14
+      color: "$white"
+      fontFamily: "QuattrocentoSans"
+      align: [center, middle]
+      wrap: true
+      text: |
+        <p><strong>Generación</strong></p>
+        <p>MINI inicial</p>
+  - elementId: arrow3
+    elementType: shape
+    bounds: [780, 175, 60, 0]
+    shapeName: straightConnector1
+    arrow: [null, "arrow"]
+    border: {style: solid, width: 2, color: "$accent"}
+  - elementId: box4
+    elementType: shape
+    bounds: [840, 140, 200, 70]
+    shapeName: roundRect
+    adjustments: [8000]
+    fill:
+      type: solid
+      color: "$primary"
+  - elementId: txt4
+    elementType: text
+    bounds: [840, 140, 200, 70]
+    content:
+      fontSize: 14
+      color: "$white"
+      fontFamily: "QuattrocentoSans"
+      align: [center, middle]
+      wrap: true
+      text: |
+        <p><strong>Coherencia</strong></p>
+        <p>MINI revisado</p>
+  - elementId: arrow4
+    elementType: shape
+    bounds: [940, 210, 0, 40]
+    shapeName: straightConnector1
+    arrow: [null, "arrow"]
+    border: {style: solid, width: 2, color: "$accent"}
+  - elementId: box5
+    elementType: shape
+    bounds: [840, 250, 200, 70]
+    shapeName: roundRect
+    adjustments: [8000]
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: txt5
+    elementType: text
+    bounds: [840, 250, 200, 70]
+    content:
+      fontSize: 14
+      color: "$white"
+      fontFamily: "QuattrocentoSans"
+      align: [center, middle]
+      wrap: true
+      text: |
+        <p><strong>Verificación</strong></p>
+        <p>Fuentes web</p>
+  - elementId: arrow5
+    elementType: shape
+    bounds: [840, 285, -60, 0]
+    shapeName: straightConnector1
+    flip: [true, false]
+    arrow: [null, "arrow"]
+    border: {style: solid, width: 2, color: "$accent"}
+  - elementId: box6
+    elementType: shape
+    bounds: [580, 250, 200, 70]
+    shapeName: roundRect
+    adjustments: [8000]
+    fill:
+      type: solid
+      color: "$primary"
+  - elementId: txt6
+    elementType: text
+    bounds: [580, 250, 200, 70]
+    content:
+      fontSize: 14
+      color: "$white"
+      fontFamily: "QuattrocentoSans"
+      align: [center, middle]
+      wrap: true
+      text: |
+        <p><strong>Corrección</strong></p>
+        <p>MINI final</p>
+  - elementId: arrow6
+    elementType: shape
+    bounds: [580, 285, -60, 0]
+    shapeName: straightConnector1
+    flip: [true, false]
+    arrow: [null, "arrow"]
+    border: {style: solid, width: 2, color: "$accent"}
+  - elementId: box7
+    elementType: shape
+    bounds: [320, 250, 200, 70]
+    shapeName: roundRect
+    adjustments: [8000]
+    fill:
+      type: solid
+      color: "$primary"
+  - elementId: txt7
+    elementType: text
+    bounds: [320, 250, 200, 70]
+    content:
+      fontSize: 14
+      color: "$white"
+      fontFamily: "QuattrocentoSans"
+      align: [center, middle]
+      wrap: true
+      text: |
+        <p><strong>Estudio</strong></p>
+        <p>Quiz, flashcards, mapa</p>
+  - elementId: desc
+    elementType: text
+    bounds: [60, 350, 1160, 280]
+    content:
+      style: "$body"
+      fontSize: 16
+      align: [left, top]
+      text: |
+        <p><strong>Control de calidad por etapa:</strong></p>
+        <ul>
+        <li><strong>Preparación:</strong> validación de existencia y conteo del contenido</li>
+        <li><strong>Transcripción:</strong> Whisper local con reparación opcional de WER</li>
+        <li><strong>Generación:</strong> parseo y recuperación de incoherencias del MINI</li>
+        <li><strong>Coherencia:</strong> trace de cambios y conteo de items preservados</li>
+        <li><strong>Verificación:</strong> queries IA dirigidas, URLs, snippets y evidencia factual</li>
+        <li><strong>Corrección:</strong> cambios trazables por item con reporte eN</li>
+        <li><strong>Estudio:</strong> banco de 4 alternativas y seguimiento IRT/CAT</li>
+        </ul>
+  - elementId: page-number
+    elementType: text
+    bounds: [1200, 690, 60, 20]
+    content:
+      style: "$caption"
+      align: [right, middle]
+      wrap: false
+      text: |
+        <p>8</p>

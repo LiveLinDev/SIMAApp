@@ -12,6 +12,8 @@ Los campos separados por coma aceptan comillas CSV, por ejemplo:
 
 import csv
 import io
+import re
+import unicodedata
 from dataclasses import dataclass, field
 from html import escape
 
@@ -579,7 +581,63 @@ def check_option_uniformity(item: MiniItem) -> list[str]:
         if ratio > 3:
             problems.append(f"ratio_longitud_{ratio:.1f}x")
 
+    semantic_problem = _question_option_semantic_problem(item.statement, opts)
+    if semantic_problem:
+        problems.append(semantic_problem)
+
     return problems
+
+
+def _question_option_semantic_problem(statement: str, options: list[str]) -> str:
+    question = _quality_text(statement)
+    normalized_options = [_quality_text(option) for option in options]
+
+    asks_location = any(
+        marker in question
+        for marker in (
+            "donde vive", "d?nde vive", "donde habita", "d?nde habita",
+            "donde se encuentra", "d?nde se encuentra", "donde se distribuye", "d?nde se distribuye",
+            "en que lugar vive", "en que region vive", "en que pais vive", "habitat de",
+        )
+    )
+    if asks_location:
+        descriptor_options = [
+            option for option in normalized_options
+            if re.search(r"\b(felino|animal|mamifero|especie)\s+m.s\b|\bm.s\s+(com.n|peligroso|grande|r.pido|peque.o)\b", option)
+        ]
+        location_options = [
+            option for option in normalized_options
+            if any(marker in option for marker in _LOCATION_OPTION_MARKERS)
+        ]
+        if len(descriptor_options) >= 2 or not location_options:
+            return "opciones_no_responden_pregunta_donde"
+
+    asks_date = any(marker in question for marker in ("cuando ", "en que ano", "en que fecha", "en que siglo"))
+    if asks_date and not any(
+        re.search(
+            r"\b\d{3,4}\b|\bsiglo\b|\benero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre\b",
+            option,
+        )
+        for option in normalized_options
+    ):
+        return "opciones_no_responden_pregunta_fecha"
+
+    return ""
+
+
+def _quality_text(value: str) -> str:
+    text = unicodedata.normalize("NFKD", value or "")
+    text = "".join(char for char in text if not unicodedata.combining(char))
+    return re.sub(r"\s+", " ", text.lower()).strip()
+
+
+_LOCATION_OPTION_MARKERS = {
+    "america", "africa", "asia", "europa", "oceania", "peru", "mexico", "brasil", "argentina",
+    "chile", "colombia", "ecuador", "bolivia", "venezuela", "paraguay", "uruguay", "panama",
+    "costa rica", "region", "pais", "continente", "selva", "bosque", "sabana", "matorral",
+    "desierto", "rio", "montana", "andina", "andes", "amazon", "amazonia", "tropical",
+    "subtropical", "norte", "sur", "este", "oeste", "central", "habitat", "zona", "zonas",
+}
 
 
 def filter_nonuniform_items(mini_text: str) -> tuple[str, list[str], str]:

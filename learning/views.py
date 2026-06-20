@@ -1,4 +1,5 @@
 import json
+import re
 
 from django.conf import settings
 from django.contrib import messages
@@ -10,7 +11,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 
-from .cat import BLOOM_LABELS, build_bank, choose_next_item, estimate_theta, option_index, parse_cat_params
+from .cat import BLOOM_LABELS, build_bank, choose_next_item, estimate_theta, option_index, parse_cat_params, theta_to_level
 from .credits import (
     REGENERATION_COST,
     consume_credits,
@@ -402,6 +403,10 @@ def start_quiz(request, pk):
         messages.warning(request, "Esta clase aún no tiene ítems válidos para iniciar un quiz.")
         return redirect("lesson_detail", pk=job.pk)
 
+    dropped = params.get("bank_trace", {}).get("dropped_quality_count", 0)
+    if dropped:
+        messages.info(request, f"Se omitieron {dropped} items con alternativas incompletas o incoherentes para mantener el quiz consistente.")
+
     requested = int(request.POST.get("target_count", params["max_items"]))
     target_count = max(1, min(requested, len(items), params["max_items"]))
     attempt = QuizAttempt.objects.create(
@@ -426,6 +431,19 @@ def quiz_attempt(request, pk, attempt_id):
     items_by_id = {item.id: item for item in items}
     current_item = items_by_id.get(attempt.current_item_id)
     responses = list(attempt.responses.all())
+    if not current_item and not attempt.is_complete and items:
+        answered_ids = {response.item_id for response in responses}
+        next_item = choose_next_item(items, answered_ids, attempt.theta, responses, attempt.target_count)
+        if next_item:
+            current_item = next_item
+            attempt.current_item_id = next_item.id
+            if next_item.id not in attempt.selected_item_ids:
+                attempt.selected_item_ids = [*attempt.selected_item_ids, next_item.id]
+            attempt.save(update_fields=["current_item_id", "selected_item_ids", "updated_at"])
+        else:
+            attempt.completed_at = timezone.now()
+            attempt.current_item_id = ""
+            attempt.save(update_fields=["completed_at", "current_item_id", "updated_at"])
     progress_pct = min(100, round((len(responses) / max(attempt.target_count, 1)) * 100))
     bloom_counts = {}
     for response in responses:
@@ -441,6 +459,7 @@ def quiz_attempt(request, pk, attempt_id):
         for level in ["L1", "L2", "L3", "L4", "L5", "L6"]
         if bloom_counts.get(level, 0) > 0
     ]
+    level_value, level_label = theta_to_level(attempt.theta)
     return render(request, "learning/quiz_attempt.html", {
         "job": job,
         "attempt": attempt,
@@ -452,6 +471,8 @@ def quiz_attempt(request, pk, attempt_id):
         "bloom_chart_data": bloom_chart_data,
         "bloom_labels": BLOOM_LABELS,
         "cat_params": params,
+        "level_value": level_value,
+        "level_label": level_label,
     })
 
 
@@ -469,6 +490,14 @@ def answer_quiz(request, pk, attempt_id):
     items_by_id = {item.id: item for item in items}
     item = items_by_id.get(attempt.current_item_id)
     if not item:
+        responses = list(attempt.responses.all())
+        next_item = choose_next_item(items, {response.item_id for response in responses}, attempt.theta, responses, attempt.target_count)
+        if next_item:
+            attempt.current_item_id = next_item.id
+            attempt.selected_item_ids = [*attempt.selected_item_ids, next_item.id]
+            attempt.save(update_fields=["current_item_id", "selected_item_ids", "updated_at"])
+            messages.info(request, "Se omitio una pregunta con alternativas incoherentes y se cargo la siguiente.")
+            return redirect("quiz_attempt", pk=job.pk, attempt_id=attempt.pk)
         messages.warning(request, "No se encontró el ítem actual.")
         return redirect("lesson_detail", pk=job.pk)
 
@@ -1209,30 +1238,32 @@ def class_map(request, pk):
     session = _safe_class_session(job)
     if not session and job.course_id:
         session = _sync_class_session_for_job(job)
-    topics = set()
-    concepts = set()
+    topics = []
+    concepts = []
     if job.tags:
-        topics.update(t.strip() for t in job.tags.split(",") if t.strip())
+        for tag in job.tags.split(","):
+            _add_map_term(topics, tag)
     if job.course and job.course.main_topics:
-        topics.update(job.course.main_topics)
-    # extraer topics del MINI
+        for topic in job.course.main_topics:
+            _add_map_term(topics, topic)
+
     bloom_counts = {}
     if job.corrected_output or job.toon_output:
         from .parse_mini import parse_mini as _parse
         assessment = _parse(job.corrected_output or job.toon_output)
         for item in assessment.items:
-            if item.topic:
-                topics.add(item.topic)
-            # usar enunciado como concepto si no hay topic
-            if item.statement:
-                concepts.add(item.statement[:120])
+            _add_map_term(topics, item.topic)
+            correct = next((opt.get("text", "") for opt in item.options if opt.get("correct")), "")
+            _add_map_term(concepts, correct, max_words=7, max_chars=90)
+            for term in _extract_statement_terms(item.statement):
+                _add_map_term(concepts, term, max_words=4, max_chars=70)
             bloom_counts[item.bloom] = bloom_counts.get(item.bloom, 0) + 1
     cards = list(Flashcard.objects.filter(class_session=session) if session else [])
     for card in cards:
-        if card.topic:
-            topics.add(card.topic)
-        if card.answer:
-            concepts.add(card.answer[:120])
+        _add_map_term(topics, card.topic)
+        _add_map_term(concepts, card.answer, max_words=7, max_chars=90)
+        for term in _extract_statement_terms(card.question):
+            _add_map_term(concepts, term, max_words=4, max_chars=70)
     max_bloom = max(bloom_counts.values()) if bloom_counts else 1
     bloom_chart_data = [
         {"label": BLOOM_LABELS.get(level, level), "count": count, "pct": round((count / max_bloom) * 100) if max_bloom else 0}
@@ -1240,12 +1271,113 @@ def class_map(request, pk):
     ]
     return render(request, "learning/class_map.html", {
         "job": job,
-        "topics": sorted(topics),
-        "concepts": sorted(concepts)[:24],
+        "topics": sorted(topics, key=str.lower),
+        "concepts": sorted(concepts, key=str.lower)[:24],
         "bloom_chart_data": bloom_chart_data,
-        "card_count": len(cards),
+        "card_count": len(concepts),
         "is_owner": job.user_id == request.user.id,
     })
+
+
+_GENERIC_MAP_TERMS = {
+    "recordar", "recuerda", "recordando", "remember", "recall",
+    "comprender", "comprension", "comprensión", "understand", "understanding",
+    "aplicar", "aplicacion", "aplicación", "apply", "applying",
+    "analizar", "analisis", "análisis", "analyze", "analysing", "analysis",
+    "evaluar", "evaluacion", "evaluación", "evaluate", "evaluation",
+    "crear", "creacion", "creación", "create", "creating",
+    "bloom", "nivel", "levels", "level", "pregunta", "respuesta", "opcion", "item",
+}
+
+_MAP_STOPWORDS = {
+    "a", "al", "ante", "bajo", "con", "contra", "de", "del", "desde", "durante", "e", "el", "ella",
+    "en", "entre", "es", "esa", "ese", "esta", "este", "esto", "estos", "la", "las", "lo", "los",
+    "para", "por", "que", "se", "segun", "sin", "sobre", "su", "sus", "un", "una", "unas", "uno", "unos",
+    "cual", "cuales", "cuando", "donde", "como", "porque", "siguiente", "siguientes", "principal",
+    "indica", "identifica", "selecciona", "corresponde", "relaciona", "define", "explica", "verdadero",
+    "falso", "correcta", "correcto", "incorrecta", "incorrecto", "mejor", "mayor", "menor",
+    "what", "which", "when", "where", "how", "why", "the", "and", "or", "of", "to", "in", "for",
+}
+
+
+def _is_generic_term(term: str) -> bool:
+    compact = re.sub(r"\s+", " ", str(term or "").strip(" -:;.,¿?¡!()[]{}\"'`")).strip()
+    if not compact:
+        return True
+    words = re.findall(r"[A-Za-zÀ-ÿ0-9]+", compact.lower())
+    if not words:
+        return True
+    meaningful = [word for word in words if word not in _MAP_STOPWORDS]
+    if not meaningful:
+        return True
+    normalized = " ".join(meaningful)
+    return normalized in _GENERIC_MAP_TERMS or all(word in _GENERIC_MAP_TERMS for word in meaningful)
+
+
+def _add_map_term(collection: list[str], term: str, max_words: int = 6, max_chars: int = 80):
+    compact = re.sub(r"\s+", " ", str(term or "").replace("_", " ").strip()).strip(" -:;.,¿?¡!()[]{}\"'`")
+    if not compact or _is_generic_term(compact):
+        return
+    words = compact.split()
+    if len(words) > max_words or len(compact) > max_chars:
+        compact = " ".join(words[:max_words]).strip(" -:;.,")
+    if _is_generic_term(compact):
+        return
+    key = compact.lower()
+    if key not in {value.lower() for value in collection}:
+        collection.append(compact)
+
+
+def _extract_statement_terms(statement: str) -> list[str]:
+    text = re.sub(r"[_|]", " ", str(statement or ""))
+    text = re.sub(r"[¿?¡!]", " ", text)
+    quoted = re.findall(r"['\"]([^'\"]{4,70})['\"]", text)
+    words = re.findall(r"[A-Za-zÀ-ÿ0-9]+", text)
+    content = [
+        word for word in words
+        if len(word) > 3 and word.lower() not in _MAP_STOPWORDS and word.lower() not in _GENERIC_MAP_TERMS
+    ]
+    candidates = [*quoted]
+    for size in (3, 2, 1):
+        for index in range(0, max(0, len(content) - size + 1)):
+            candidate = " ".join(content[index:index + size])
+            if not _is_generic_term(candidate):
+                candidates.append(candidate)
+            if len(candidates) >= 4:
+                break
+        if len(candidates) >= 4:
+            break
+    unique = []
+    for candidate in candidates:
+        compact = re.sub(r"\s+", " ", candidate.strip()).strip(" -:;.,")
+        if compact and compact.lower() not in {value.lower() for value in unique}:
+            unique.append(compact)
+    return unique[:3]
+
+
+_MAP_STOPWORDS.update({
+    "capta", "captar", "libera", "liberan", "liberado", "ocurre", "principalmente",
+    "respuesta", "pregunta", "alternativa", "opciones",
+})
+
+
+def _extract_statement_terms(statement: str) -> list[str]:
+    text = re.sub(r"[_|]", " ", str(statement or ""))
+    text = re.sub(r"[¿?¡!]", " ", text)
+    quoted = re.findall(r"['\"]([^'\"]{4,70})['\"]", text)
+    words = re.findall(r"[A-Za-zÀ-ÿ0-9]+", text)
+    candidates = [*quoted]
+    for word in words:
+        lowered = word.lower()
+        if len(word) <= 3 or lowered in _MAP_STOPWORDS or lowered in _GENERIC_MAP_TERMS:
+            continue
+        candidates.append(word)
+    unique = []
+    for candidate in candidates:
+        compact = re.sub(r"\s+", " ", candidate.strip()).strip(" -:;.,")
+        if compact and not _is_generic_term(compact) and compact.lower() not in {value.lower() for value in unique}:
+            unique.append(compact)
+    return unique[:4]
 
 
 @login_required
@@ -1377,6 +1509,205 @@ def _format_corrections_trace(applied, ignored):
         for c in ignored[:5]:
             lines.append(f"• [{c.get('report_item_id','?')}] {c.get('note','')}")
     return "<br>".join(lines)
+
+
+def _build_stage_details(job, stages):
+    """Construye dossiers estructurados para exponer prompts, MINI y evidencia."""
+    details = {}
+    source_content = job.source_text or job.transcript or ""
+
+    if source_content:
+        details["source"] = _stage_detail(
+            "Entrada de la clase",
+            "Texto base usado para transcripcion, generacion o reparacion.",
+            [_text_section("Contenido de entrada", source_content)],
+        )
+
+    if job.transcript:
+        details["transcript"] = _stage_detail(
+            "Transcripcion local",
+            "Texto obtenido o revisado antes de generar items.",
+            [_text_section("Transcripcion", job.transcript)],
+        )
+
+    if job.generation_prompt or job.toon_output:
+        details["generation"] = _stage_detail(
+            "Generacion de microcontenidos MINI",
+            "Prompt real enviado al backend y salida MINI inicial renderizable.",
+            [
+                _text_section("Prompt de generacion", job.generation_prompt, kind="prompt"),
+                _text_section("Salida MINI generada", job.toon_output, kind="mini"),
+            ],
+        )
+
+    for index, trace in enumerate(job.transcript_repair_trace or []):
+        details[f"transcript_repair_{index}"] = _stage_detail(
+            "Correccion de transcripcion",
+            "Qwen revisa errores probables de audio antes de crear items.",
+            [
+                _text_section("Prompt de reparacion", job.transcript_repair_prompt, kind="prompt"),
+                _diff_section("Antes / despues", trace.get("before", ""), trace.get("after", ""), trace.get("changes", [])),
+                _json_section("Trace tecnico", trace),
+            ],
+        )
+
+    for index, trace in enumerate(job.mini_coherence_trace or []):
+        details[f"coherence_{index}"] = _stage_detail(
+            "Revision de coherencia MINI",
+            "Control local de sentido antes de verificar contra fuentes externas.",
+            [
+                _text_section("Prompt de coherencia", job.mini_coherence_prompt, kind="prompt"),
+                _diff_section("MINI antes / despues", trace.get("before", ""), trace.get("after", ""), trace.get("changes", [])),
+                _json_section("Trace tecnico", trace),
+            ],
+        )
+
+    verif = job.verification_trace or {}
+    if verif or job.verification_prompt or job.verification_output:
+        details["verification"] = _stage_detail(
+            "Verificacion con fuentes",
+            "La IA valida afirmaciones MINI usando consultas generadas y documentos recuperados.",
+            [
+                _text_section("Prompt de verificacion", job.verification_prompt, kind="prompt"),
+                _web_section("Evidencia web y EduQG", verif),
+                _text_section("Reporte del verificador", job.verification_output, kind="code"),
+            ],
+        )
+
+    corr_traces = job.correction_trace or []
+    if corr_traces or job.corrected_output:
+        applied = [entry for entry in corr_traces if entry.get("applied")]
+        ignored = [entry for entry in corr_traces if not entry.get("applied")]
+        details["corrections"] = _stage_detail(
+            f"Correcciones aplicadas ({len(applied)})",
+            f"{len(applied)} cambios aplicados, {len(ignored)} observaciones sin cambio.",
+            [
+                _diff_section("MINI generado / MINI final", job.toon_output, job.corrected_output, corr_traces),
+                _json_section("Correcciones aplicadas", applied),
+                _json_section("Observaciones ignoradas", ignored),
+            ],
+        )
+
+    if job.corrected_output or job.toon_output:
+        details["final"] = _stage_detail(
+            "MINI final listo para estudiar",
+            "Banco que alimenta quiz adaptativo, flashcards, mapa y ejercicios.",
+            [_text_section("MINI final", job.corrected_output or job.toon_output, kind="mini")],
+        )
+
+    for stage in stages:
+        stage["detail_key"] = _detail_key_for_stage(stage, details)
+
+    return details
+
+
+def _stage_detail(title: str, summary: str, sections: list[dict]) -> dict:
+    return {
+        "title": title,
+        "summary": summary,
+        "sections": [
+            section for section in sections
+            if section.get("content") or section.get("kind") in {"web", "diff", "json"}
+        ],
+    }
+
+
+def _text_section(label: str, content: str, kind: str = "text") -> dict:
+    content = content or ""
+    return {
+        "label": label,
+        "kind": kind,
+        "content": content,
+        "stats": _content_stats(content, is_mini=kind == "mini"),
+    }
+
+
+def _json_section(label: str, value) -> dict:
+    return {
+        "label": label,
+        "kind": "json",
+        "content": json.dumps(value or [], ensure_ascii=False, indent=2),
+        "stats": [{"label": "entradas", "value": len(value or []) if isinstance(value, list) else len(value or {})}],
+    }
+
+
+def _diff_section(label: str, before: str, after: str, changes) -> dict:
+    return {
+        "label": label,
+        "kind": "diff",
+        "content": after or before or "",
+        "before": before or "",
+        "after": after or "",
+        "changes": changes or [],
+        "stats": [
+            {"label": "antes", "value": f"{len(before or '')} chars"},
+            {"label": "despues", "value": f"{len(after or '')} chars"},
+            {"label": "cambios", "value": len(changes or [])},
+        ],
+    }
+
+
+def _web_section(label: str, trace: dict) -> dict:
+    web = (trace or {}).get("web", {})
+    eduqg = (trace or {}).get("eduqg", {})
+    queries = web.get("queries", [])
+    configured = web.get("configured_sources", [])
+    matches = eduqg.get("matches", [])
+    return {
+        "label": label,
+        "kind": "web",
+        "content": "web",
+        "mode": (trace or {}).get("mode", ""),
+        "search_provider": web.get("search_provider", ""),
+        "academic_search": web.get("academic_search", {}),
+        "query_generation": web.get("query_generation", {}),
+        "queries": queries,
+        "configured_sources": configured,
+        "eduqg_matches": matches,
+        "stats": [
+            {"label": "queries", "value": len(queries)},
+            {"label": "fuentes", "value": len(configured) + sum(len(q.get("results", [])) for q in queries)},
+            {"label": "EduQG", "value": len(matches)},
+        ],
+    }
+
+
+def _content_stats(content: str, is_mini: bool = False) -> list[dict]:
+    stats = [
+        {"label": "chars", "value": len(content or "")},
+        {"label": "lineas", "value": len((content or "").splitlines())},
+    ]
+    if is_mini:
+        stats.append({"label": "items", "value": _count_view_mini_items(content)})
+    return stats
+
+
+def _count_view_mini_items(content: str) -> int:
+    try:
+        return len(parse_mini(content or "").items)
+    except Exception:
+        return 0
+
+
+def _detail_key_for_stage(stage: dict, details: dict) -> str:
+    name = (stage.get("name") or "").lower()
+    if "preparando contenido" in name:
+        return "source" if "source" in details else ""
+    if "transcribiendo audio" in name:
+        return "transcript" if "transcript" in details else ""
+    if "transcripcion" in name and "transcript_repair_0" in details:
+        return "transcript_repair_0"
+    if "generando items" in name or "mini parseado" in name or "relleno mini" in name:
+        return "generation" if "generation" in details else ""
+    if "coherencia" in name:
+        return "coherence_0" if "coherence_0" in details else ("generation" if "generation" in details else "")
+    if "verificando" in name or "verificacion" in name:
+        return "verification" if "verification" in details else ""
+    if "aplicando correcciones" in name:
+        return "corrections" if "corrections" in details else ""
+    if "final" in name or "listo" in name:
+        return "final" if "final" in details else ""
+    return ""
 
 
 def _parse_pipeline_stages(job):

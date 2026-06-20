@@ -1,0 +1,164 @@
+pageType: content
+background:
+  type: solid
+  color: "$background"
+elements:
+  - elementId: nav-bar
+    elementType: shape
+    bounds: [0, 0, 1280, 50]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$primary"
+  - elementId: nav1
+    elementType: text
+    bounds: [0, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Intro</p>
+  - elementId: nav2
+    elementType: text
+    bounds: [213, 0, 214, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Stack</p>
+  - elementId: nav3
+    elementType: text
+    bounds: [427, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Backlog</p>
+  - elementId: nav4
+    elementType: text
+    bounds: [640, 0, 214, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Pipeline</p>
+  - elementId: nav5
+    elementType: text
+    bounds: [854, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Vistas</p>
+  - elementId: nav6
+    elementType: text
+    bounds: [1067, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p><strong>Arquitectura</strong></p>
+  - elementId: nav-accent
+    elementType: shape
+    bounds: [1067, 50, 213, 2]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: title
+    elementType: text
+    bounds: [60, 65, 1100, 40]
+    content:
+      style: "$heading"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Futuro del Desarrollo y Validación en OE4</strong></p>
+  - elementId: title-line
+    elementType: shape
+    bounds: [60, 110, 80, 3]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: left-title
+    elementType: text
+    bounds: [60, 125, 540, 30]
+    content:
+      fontSize: 20
+      color: "$primary"
+      fontFamily: "QuattrocentoSans"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Lo que falta a futuro</strong></p>
+  - elementId: left-text
+    elementType: text
+    bounds: [60, 160, 540, 460]
+    content:
+      style: "$body"
+      fontSize: 16
+      align: [left, top]
+      text: |
+        <ul>
+        <li>Implementar creación de cursos con campos completos</li>
+        <li>Asociar cada clase subida a un curso específico</li>
+        <li>Guardar progreso por curso (no solo global)</li>
+        <li>Añadir parser .mini a JSON con JavaScript puro</li>
+        <li>Generar resúmenes automáticos además de quizzes</li>
+        <li>Implementar racha diaria y gamificación (XP, insignias)</li>
+        <li>Crear dashboard completo del estudiante</li>
+        <li>Añadir retroalimentación personalizada post-quiz</li>
+        <li>Implementar niveles Bloom visibles en cada pregunta</li>
+        <li>Preparar base para evaluación adaptativa por curso</li>
+        </ul>
+  - elementId: right-title
+    elementType: text
+    bounds: [640, 125, 580, 30]
+    content:
+      fontSize: 20
+      color: "$primary"
+      fontFamily: "QuattrocentoSans"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Validación OE4</strong></p>
+  - elementId: right-text
+    elementType: text
+    bounds: [640, 160, 580, 460]
+    content:
+      style: "$body"
+      fontSize: 16
+      align: [left, top]
+      text: |
+        <p><strong>Pruebas funcionales e integración:</strong></p>
+        <ul>
+        <li>≥ 15 casos de prueba ejecutados</li>
+        <li>≥ 85% de casos superados exitosamente</li>
+        </ul>
+        <p style="margin-top:10px"><strong>Métricas automáticas de desempeño:</strong></p>
+        <ul>
+        <li>Precisión de transcripción ≥ 85%</li>
+        <li>Tiempo de procesamiento por sesión ≤ X min</li>
+        <li>Calidad de generación de contenido (NLP) ≥ 80%</li>
+        </ul>
+        <p style="margin-top:10px"><strong>Evaluaciones experimentales:</strong></p>
+        <ul>
+        <li>Pre-test y post-test con grupo de estudiantes</li>
+        <li>Mejora en rendimiento o retención ≥ 15%</li>
+        </ul>
+  - elementId: page-number
+    elementType: text
+    bounds: [1200, 690, 60, 20]
+    content:
+      style: "$caption"
+      align: [right, middle]
+      wrap: false
+      text: |
+        <p>17</p>

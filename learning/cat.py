@@ -1,7 +1,7 @@
 import math
 from collections import Counter
 
-from .parse_mini import parse_header, parse_mini
+from .parse_mini import check_option_uniformity, parse_header, parse_mini
 
 
 BLOOM_LABELS = {
@@ -30,7 +30,44 @@ def parse_cat_params(assessment):
 def build_bank(mini_text):
     assessment = parse_mini(mini_text)
     params = parse_cat_params(assessment)
-    return assessment.items, params
+    all_items = assessment.items
+    items = []
+    dropped_quality = []
+    for item in all_items:
+        problems = check_option_uniformity(item)
+        if problems:
+            dropped_quality.append({"id": item.id, "problems": problems})
+        else:
+            items.append(item)
+    params["bank_trace"] = {
+        "raw_items": len(all_items),
+        "usable_items": len(items),
+        "dropped_option_count": sum(1 for item in all_items if len(item.options) != 4),
+        "dropped_quality_count": len(dropped_quality),
+        "dropped_quality": dropped_quality,
+        "rule": "exactly_4_options_and_semantic_option_quality",
+    }
+    return items, params
+
+
+def theta_to_level(theta):
+    labels = {
+        1: "Inicial",
+        2: "Basico",
+        3: "En desarrollo",
+        4: "Intermedio",
+        5: "Avanzado",
+        6: "Dominio",
+        7: "Experto",
+    }
+    try:
+        value = float(theta)
+    except (TypeError, ValueError):
+        value = 0.0
+    value = max(-3.0, min(3.0, value))
+    band = int(round(((value + 3.0) / 6.0) * 6.0)) + 1
+    band = max(1, min(7, band))
+    return band, labels[band]
 
 
 def choose_next_item(items, used_ids, theta, responses, target_count):

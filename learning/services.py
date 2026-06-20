@@ -15,6 +15,10 @@ from django.conf import settings
 BASE_DIR = Path(settings.BASE_DIR)
 _EDUQG_CACHE = {}
 
+
+class LocalAITimeoutError(RuntimeError):
+    """El servidor de IA local no respondio dentro del timeout configurado."""
+
 # import diferido para evitar circular imports
 def _get_merge_fn():
     from .parse_mini import merge_mini_chunks
@@ -531,17 +535,18 @@ def repair_option_uniformity(mini_content: str, source_context: str = "", backen
     resolved_backend = "local" if backend in {"auto", "", None, "local"} else resolve_backend(backend)
     prompt = (
         "Eres un editor de items de evaluacion. Los siguientes items tienen opciones "
-        "MAL FORMATEADAS. Debes reescribir UNICAMENTE las opciones de cada item, "
-        "conservando el enunciado y la respuesta correcta.\n\n"
+        "MAL FORMATEADAS o NO responden al enunciado. Debes corregir el item "
+        "manteniendo el hecho correcto.\n\n"
         "REGLAS DE REPARACION DE OPCIONES:\n"
         "1. Cada item DEBE tener exactamente 4 opciones separadas por comas\n"
         "2. Las 4 opciones deben ser de la MISMA categoria semantica y longitud similar\n"
         "3. Si una opcion tiene comas internas, usa comillas: \"texto con, comas\"\n"
         "4. La opcion correcta NO debe ser siempre la mas corta ni la mas larga\n"
         "5. Todas las opciones deben ser PLAUSIBLES pero inequivocamente incorrectas (excepto la correcta)\n"
-        "6. Conserva el enunciado exacto, solo cambia las opciones\n"
-        "7. Marca la opcion correcta con * al final de su texto\n"
-        "8. Responde UNICAMENTE con el bloque MINI, sin explicaciones\n\n"
+        "6. Conserva el enunciado exacto si las opciones ya responden a ese enunciado\n"
+        "7. Si el enunciado y la respuesta correcta NO corresponden (por ejemplo pregunta 'donde vive' pero la correcta es 'felino mas comun'), reescribe minimamente el enunciado para que pregunte por esa respuesta correcta\n"
+        "8. Marca la opcion correcta con * al final de su texto\n"
+        "9. Responde UNICAMENTE con el bloque MINI, sin explicaciones\n\n"
         "EJEMPLO DE OPCIONES MALAS (no hacer esto):\n"
         "ciudad de Lima,centro de Ica,valle de Cañete,costa del sur\n"
         "(aqui la primera 'opcion' en realidad son 3 distractores fusionados)\n\n"
@@ -728,16 +733,48 @@ def build_web_context(mini_content: str) -> tuple[str, dict]:
     max_sources = max(0, int(getattr(settings, "VERIFICATION_MAX_SOURCES", 6)))
     timeout = max(1, int(getattr(settings, "VERIFICATION_SOURCE_TIMEOUT", 8)))
     chars = max(400, int(getattr(settings, "VERIFICATION_SOURCE_CHARS", 2200)))
-    trace = {"enabled": True, "queries": [], "configured_sources": []}
+    academic_enabled = bool(getattr(settings, "VERIFICATION_ACADEMIC_SEARCH", True))
+    trace = {
+        "enabled": True,
+        "search_provider": "ddgs web search + academic targets",
+        "academic_search": {
+            "enabled": academic_enabled,
+            "targets": ["arxiv.org", "scholar.google.com", "semanticscholar.org"],
+        },
+        "queries": [],
+        "configured_sources": [],
+        "query_generation": {},
+        "evidence_summary": {"queries": 0, "results": 0, "usable_sources": 0},
+    }
     snippets = []
 
     if getattr(settings, "VERIFICATION_DYNAMIC_WEB_SEARCH", True):
-        queries = build_verification_queries(mini_content)[: max(1, int(getattr(settings, "VERIFICATION_SEARCH_QUERIES", 3)))]
+        query_entries = build_verification_query_entries(mini_content)
+        trace["query_generation"] = {
+            "source": query_entries[0].get("source", "") if query_entries else "",
+            "count": len(query_entries),
+            "error": query_entries[0].get("error", "") if query_entries else "",
+        }
+        query_entries = query_entries[: max(1, int(getattr(settings, "VERIFICATION_SEARCH_QUERIES", 3)))]
         result_limit = max(1, int(getattr(settings, "VERIFICATION_SEARCH_RESULTS", 3)))
         fetched_urls = set()
-        for query in queries:
+        for entry in query_entries:
+            query = entry["query"]
             results = search_web(query, max_results=result_limit, timeout=timeout)
-            query_trace = {"query": query, "results": []}
+            academic_queries = _academic_search_queries(query) if academic_enabled else []
+            for academic_query in academic_queries:
+                academic_results = search_web(academic_query, max_results=1, timeout=timeout)
+                for result in academic_results:
+                    result["search_source"] = academic_query
+                results.extend(academic_results)
+            results = _dedupe_search_results(results)
+            query_trace = {
+                "query": query,
+                "source": entry.get("source", "keyword"),
+                "claim": entry.get("claim", ""),
+                "academic_queries": academic_queries,
+                "results": [],
+            }
             for result in results:
                 url = result["url"]
                 if url in fetched_urls:
@@ -749,11 +786,13 @@ def build_web_context(mini_content: str) -> tuple[str, dict]:
                 if document.get("ok"):
                     snippets.append(
                         f"BUSQUEDA_WEB: {query}\n"
+                        f"FUENTE_BUSQUEDA: {result.get('search_source', 'web')}\n"
                         f"URL: {url}\n"
                         f"TITULO: {result.get('title', '')}\n"
                         f"CONTENIDO: {document.get('snippet', '')}"
                     )
             trace["queries"].append(query_trace)
+        trace["evidence_summary"] = _web_evidence_summary(trace["queries"])
 
     for url in urls[:max_sources]:
         document = fetch_source_document(url, timeout=timeout, max_chars=chars)
@@ -766,7 +805,110 @@ def build_web_context(mini_content: str) -> tuple[str, dict]:
     return "\n\n".join(snippets), trace
 
 
+def _academic_search_queries(query: str) -> list[str]:
+    return [
+        f"{query} site:arxiv.org",
+        f"{query} site:scholar.google.com",
+        f"{query} site:semanticscholar.org",
+    ]
+
+
+def _dedupe_search_results(results: list[dict]) -> list[dict]:
+    deduped = []
+    seen = set()
+    for result in results:
+        url = result.get("url", "")
+        if not url or url in seen:
+            continue
+        seen.add(url)
+        deduped.append(result)
+    return deduped
+
+
+def _web_evidence_summary(queries: list[dict]) -> dict:
+    total = sum(len(query.get("results", [])) for query in queries)
+    ok = sum(1 for query in queries for result in query.get("results", []) if result.get("ok"))
+    return {"queries": len(queries), "results": total, "usable_sources": ok}
+
+
 def build_verification_queries(mini_content: str) -> list[str]:
+    return [entry["query"] for entry in build_verification_query_entries(mini_content)]
+
+
+def build_verification_query_entries(mini_content: str) -> list[dict]:
+    prompt = _build_ai_query_prompt(mini_content)
+    if prompt:
+        try:
+            raw_output = call_ai(prompt + "\n/no_think", backend="local", role="verification")
+            queries = _parse_ai_queries(raw_output)
+            if queries:
+                return [
+                    {"query": query, "source": "ai", "claim": query, "error": ""}
+                    for query in queries
+                ]
+        except Exception as exc:
+            fallback = _fallback_verification_query_entries(mini_content)
+            return [{**entry, "error": str(exc)[:240]} for entry in fallback]
+
+    return _fallback_verification_query_entries(mini_content)
+
+
+def _build_ai_query_prompt(mini_content: str) -> str:
+    try:
+        from .parse_mini import parse_mini
+    except Exception:
+        return ""
+
+    assessment = parse_mini(mini_content)
+    rows = []
+    for item in assessment.items[:8]:
+        correct = next((opt.get("text", "") for opt in item.options if opt.get("correct")), "")
+        if not correct:
+            continue
+        rows.append(
+            f"- tema: {item.topic}\n"
+            f"  enunciado: {item.statement}\n"
+            f"  respuesta_correcta: {correct}"
+        )
+
+    if not rows:
+        return ""
+
+    return (
+        "Eres un verificador academico. Extrae afirmaciones facticas comprobables "
+        "desde estos items MINI y conviertelas en busquedas web precisas.\n\n"
+        "Reglas:\n"
+        "1. Devuelve solo texto plano: una busqueda por linea.\n"
+        "2. Cada busqueda debe incluir el tema y la respuesta correcta que se quiere validar.\n"
+        "3. Evita preguntas genericas; apunta a fuentes educativas, institucionales o enciclopedicas.\n"
+        "4. Maximo 6 busquedas, 8 a 16 palabras por busqueda.\n\n"
+        "ITEMS:\n"
+        f"{chr(10).join(rows)}"
+    )
+
+
+def _parse_ai_queries(raw_output: str) -> list[str]:
+    queries = []
+    for raw_line in (raw_output or "").splitlines():
+        line = raw_line.strip()
+        line = re.sub(r"^\s*(?:[-*•]|\d+[\).\:-])\s*", "", line)
+        line = line.strip().strip("\"'`")
+        if not line or line.lower() in {"no_think", "/no_think"}:
+            continue
+        if "|" in line:
+            line = line.split("|")[-1].strip()
+        line = re.sub(r"\s+", " ", line)
+        if len(line.split()) < 3:
+            continue
+        line = line[:180]
+        if line not in queries:
+            queries.append(line)
+        if len(queries) >= 6:
+            break
+    return queries
+
+
+def _fallback_verification_query_entries(mini_content: str) -> list[dict]:
     keywords = _extract_keywords(mini_content)
     joined = " ".join(keywords[:10])
     title = ""
@@ -791,7 +933,11 @@ def build_verification_queries(mini_content: str) -> list[str]:
         compact = re.sub(r"\s+", " ", candidate).strip()
         if compact and compact not in queries:
             queries.append(compact[:180])
-    return queries or [joined or "educational multiple choice verification"]
+    fallback_queries = queries or [joined or "educational multiple choice verification"]
+    return [
+        {"query": query, "source": "keyword", "claim": "", "error": ""}
+        for query in fallback_queries
+    ]
 
 
 def search_web(query: str, max_results: int = 3, timeout: int = 8) -> list[dict]:
@@ -1175,45 +1321,63 @@ def fetch_source_snippet(url: str, timeout: int = 8, max_chars: int = 2200) -> s
 
 
 def fetch_source_document(url: str, timeout: int = 8, max_chars: int = 2200) -> dict:
-    try:
-        req = Request(url, headers={"User-Agent": "SIMA verifier/1.0"})
-        with urlopen(req, timeout=timeout) as response:
-            content_type = response.headers.get("Content-Type", "")
-            raw = response.read(350_000)
-            charset = response.headers.get_content_charset() or "utf-8"
-        text = raw.decode(charset, errors="replace")
-        if "html" in content_type.lower() or "<html" in text[:500].lower():
-            parser = _HTMLTextExtractor()
-            parser.feed(text)
-            text = parser.text()
-        else:
-            text = re.sub(r"\s+", " ", text).strip()
-        if not text or "Request unsuccessful" in text or "Incapsula incident" in text:
+    last_error = ""
+    min_chars = max(120, min(350, max_chars // 8))
+    for attempt in range(2):
+        try:
+            retry_timeout = timeout + (attempt * 4)
+            req = Request(url, headers={"User-Agent": "SIMA verifier/1.0 (+https://sima.local)"})
+            with urlopen(req, timeout=retry_timeout) as response:
+                content_type = response.headers.get("Content-Type", "")
+                raw = response.read(500_000)
+                charset = response.headers.get_content_charset() or "utf-8"
+
+            text = raw.decode(charset, errors="replace")
+            if "html" in content_type.lower() or "<html" in text[:500].lower():
+                parser = _HTMLTextExtractor()
+                parser.feed(text)
+                text = parser.text()
+            else:
+                text = re.sub(r"\s+", " ", text).strip()
+
+            blocked_markers = ("Request unsuccessful", "Incapsula incident", "Access Denied", "Just a moment")
+            if not text or any(marker.lower() in text.lower() for marker in blocked_markers):
+                return {
+                    "url": url,
+                    "ok": False,
+                    "content_type": content_type,
+                    "chars": len(text),
+                    "snippet": "",
+                    "error": "La fuente no devolvio texto verificable.",
+                }
+            if len(text) < min_chars:
+                return {
+                    "url": url,
+                    "ok": False,
+                    "content_type": content_type,
+                    "chars": len(text),
+                    "snippet": text[:max_chars],
+                    "error": "La fuente devolvio muy poco texto util para verificar.",
+                }
             return {
                 "url": url,
-                "ok": False,
+                "ok": True,
                 "content_type": content_type,
                 "chars": len(text),
-                "snippet": "",
-                "error": "La fuente no devolvio texto verificable.",
+                "snippet": text[:max_chars],
+                "error": "",
             }
-        return {
-            "url": url,
-            "ok": True,
-            "content_type": content_type,
-            "chars": len(text),
-            "snippet": text[:max_chars],
-            "error": "",
-        }
-    except Exception as exc:
-        return {
-            "url": url,
-            "ok": False,
-            "content_type": "",
-            "chars": 0,
-            "snippet": "",
-            "error": str(exc),
-        }
+        except Exception as exc:
+            last_error = str(exc)
+
+    return {
+        "url": url,
+        "ok": False,
+        "content_type": "",
+        "chars": 0,
+        "snippet": "",
+        "error": last_error,
+    }
 
 
 def call_ai(prompt: str, backend: str = "auto", role: str = "generation") -> str:
@@ -1271,7 +1435,12 @@ def _call_local(prompt: str, role: str = "generation") -> str:
     except ImportError as exc:
         raise RuntimeError("Instala openai para usar el backend local: pip install openai") from exc
 
-    client = OpenAI(api_key=getattr(settings, "LOCAL_API_KEY", "local"), base_url=local_base)
+    client = OpenAI(
+        api_key=getattr(settings, "LOCAL_API_KEY", "local"),
+        base_url=local_base,
+        max_retries=0,
+        timeout=getattr(settings, "LOCAL_API_TIMEOUT", 120),
+    )
     try:
         response = client.chat.completions.create(
             model=model,
@@ -1279,11 +1448,23 @@ def _call_local(prompt: str, role: str = "generation") -> str:
             max_tokens=getattr(settings, "LOCAL_MAX_TOKENS", 6000),
             temperature=temperature,
             stream=False,
+            timeout=getattr(settings, "LOCAL_API_TIMEOUT", 120),
         )
     except Exception as exc:
+        from openai import APIConnectionError, APITimeoutError
+        if isinstance(exc, APITimeoutError):
+            raise LocalAITimeoutError(
+                f"El servidor de IA local en {local_base} no respondio dentro del timeout de "
+                f"{getattr(settings, 'LOCAL_API_TIMEOUT', 120)} segundos. "
+                "Reduce el tamano del texto, sube LOCAL_API_TIMEOUT en .env, o revisa que el modelo local tenga recursos suficientes."
+            ) from exc
+        if isinstance(exc, APIConnectionError):
+            raise RuntimeError(
+                f"No se pudo conectar al servidor de IA en {local_base}. "
+                "Verifica que llama-server este corriendo y que LOCAL_API_BASE apunte al endpoint /v1."
+            ) from exc
         raise RuntimeError(
-            f"No se pudo conectar al servidor de IA en {local_base}. "
-            "Verifica que llama-server esté corriendo y que LOCAL_API_BASE apunte al endpoint /v1."
+            f"Error inesperado llamando al servidor de IA en {local_base}: {exc}"
         ) from exc
 
     choice = response.choices[0]

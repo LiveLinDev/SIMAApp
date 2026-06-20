@@ -1,0 +1,153 @@
+pageType: content
+background:
+  type: solid
+  color: "$background"
+elements:
+  - elementId: nav-bar
+    elementType: shape
+    bounds: [0, 0, 1280, 50]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$primary"
+  - elementId: nav1
+    elementType: text
+    bounds: [0, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Intro</p>
+  - elementId: nav2
+    elementType: text
+    bounds: [213, 0, 214, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Stack</p>
+  - elementId: nav3
+    elementType: text
+    bounds: [427, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p><strong>Backlog</strong></p>
+  - elementId: nav4
+    elementType: text
+    bounds: [640, 0, 214, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Pipeline</p>
+  - elementId: nav5
+    elementType: text
+    bounds: [854, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Vistas</p>
+  - elementId: nav6
+    elementType: text
+    bounds: [1067, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Arquitectura</p>
+  - elementId: nav-accent
+    elementType: shape
+    bounds: [427, 50, 213, 2]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: title
+    elementType: text
+    bounds: [60, 65, 1000, 40]
+    content:
+      style: "$heading"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Historias de Usuario – Generación y Evaluación</strong></p>
+  - elementId: title-line
+    elementType: shape
+    bounds: [60, 110, 80, 3]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: hu-table
+    elementType: table
+    bounds: [60, 125, 1160, 520]
+    style: "$default"
+    columnWidths: [0.25, 0.45, 0.15, 0.15]
+    rowHeights: [0.1, 0.3, 0.3, 0.3]
+    rows:
+      - - content:
+            text: |
+              <p><strong>Historia</strong></p>
+        - content:
+            text: |
+              <p><strong>Criterios de Aceptación (BDD)</strong></p>
+        - content:
+            text: |
+              <p><strong>SP</strong></p>
+        - content:
+            text: |
+              <p><strong>Sprint</strong></p>
+      - - content:
+            text: |
+              <p>Como estudiante, quiero que el sistema genere automáticamente flashcards, quizzes y un mapa conceptual a partir de mi clase.</p>
+        - content:
+            text: |
+              <p>Dado una clase procesada, cuando accedo a la vista de la clase, entonces el sistema muestra flashcards, un quiz y un mapa conceptual generados desde el MINI parseado.</p>
+        - content:
+            text: |
+              <p>5</p>
+        - content:
+            text: |
+              <p>2</p>
+      - - content:
+            text: |
+              <p>Como estudiante, quiero realizar el cuestionario múltiples veces con dificultad adaptativa mediante IRT.</p>
+        - content:
+            text: |
+              <p>Dado un cuestionario completado al menos una vez, cuando inicio una nueva sesión de práctica, entonces el sistema selecciona preguntas cuya dificultad IRT corresponda a mi nivel estimado y actualiza el modelo tras cada respuesta.</p>
+        - content:
+            text: |
+              <p>5</p>
+        - content:
+            text: |
+              <p>2</p>
+      - - content:
+            text: |
+              <p>Como estudiante, quiero recibir retroalimentación personalizada con mi nivel pedagógico y recomendaciones de estudio.</p>
+        - content:
+            text: |
+              <p>Dado que completé un quiz, cuando reviso mis resultados, entonces el sistema muestra mi nivel pedagógico (1-7), precisión, XP, racha y recomendaciones basadas en temas débiles.</p>
+        - content:
+            text: |
+              <p>3</p>
+        - content:
+            text: |
+              <p>4</p>
+  - elementId: page-number
+    elementType: text
+    bounds: [1200, 690, 60, 20]
+    content:
+      style: "$caption"
+      align: [right, middle]
+      wrap: false
+      text: |
+        <p>7</p>

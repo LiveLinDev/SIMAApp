@@ -1,0 +1,167 @@
+pageType: content
+background:
+  type: solid
+  color: "$background"
+elements:
+  - elementId: nav-bar
+    elementType: shape
+    bounds: [0, 0, 1280, 50]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$primary"
+  - elementId: nav1
+    elementType: text
+    bounds: [0, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Intro</p>
+  - elementId: nav2
+    elementType: text
+    bounds: [213, 0, 214, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Stack</p>
+  - elementId: nav3
+    elementType: text
+    bounds: [427, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Backlog</p>
+  - elementId: nav4
+    elementType: text
+    bounds: [640, 0, 214, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Pipeline</p>
+  - elementId: nav5
+    elementType: text
+    bounds: [854, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p><strong>Vistas</strong></p>
+  - elementId: nav6
+    elementType: text
+    bounds: [1067, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Arquitectura</p>
+  - elementId: nav-accent
+    elementType: shape
+    bounds: [854, 50, 213, 2]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: title
+    elementType: text
+    bounds: [60, 65, 900, 40]
+    content:
+      style: "$heading"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Vista – Pipeline de Procesamiento</strong></p>
+  - elementId: title-line
+    elementType: shape
+    bounds: [60, 110, 80, 3]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: card1
+    elementType: shape
+    bounds: [60, 130, 700, 380]
+    shapeName: roundRect
+    adjustments: [3000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    border: {style: solid, width: 1, color: "$borderGray"}
+    shadow:
+      blur: 10
+      color: "#00000015"
+      offset: [0, 4]
+  - elementId: img1
+    elementType: image
+    bounds: [70, 140, 680, 300]
+    src: "E:\\PaginasQueHice\\SIMAApp\\output\\playwright\\ui_eval\\pipeline_viz_light.png"
+    fit:
+      mode: cover
+    shapeName: roundRect
+    adjustments: [2000]
+  - elementId: cap1
+    elementType: text
+    bounds: [70, 450, 680, 40]
+    content:
+      style: "$caption"
+      align: [center, top]
+      wrap: true
+      text: |
+        <p>Visualización del pipeline por etapas con estados en tiempo real</p>
+  - elementId: card2
+    elementType: shape
+    bounds: [790, 130, 420, 380]
+    shapeName: roundRect
+    adjustments: [3000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    border: {style: solid, width: 1, color: "$borderGray"}
+    shadow:
+      blur: 10
+      color: "#00000015"
+      offset: [0, 4]
+  - elementId: img2
+    elementType: image
+    bounds: [800, 140, 400, 300]
+    src: "E:\\PaginasQueHice\\SIMAApp\\output\\playwright\\pipeline_verification_modal.png"
+    fit:
+      mode: cover
+    shapeName: roundRect
+    adjustments: [2000]
+  - elementId: cap2
+    elementType: text
+    bounds: [800, 450, 400, 40]
+    content:
+      style: "$caption"
+      align: [center, top]
+      wrap: true
+      text: |
+        <p>Modal de verificación con fuentes web y evidencia</p>
+  - elementId: note
+    elementType: text
+    bounds: [60, 530, 1160, 120]
+    content:
+      style: "$body"
+      fontSize: 16
+      align: [left, top]
+      text: |
+        <p>La <strong>vista pipeline</strong> convierte el proceso interno en evidencia de desarrollo. Cada etapa expone: prompt utilizado, entrada procesada, salida generada, evidencia web recuperada y correcciones aplicadas. Esto permite auditoría completa ante el evaluador.</p>
+  - elementId: page-number
+    elementType: text
+    bounds: [1200, 690, 60, 20]
+    content:
+      style: "$caption"
+      align: [right, middle]
+      wrap: false
+      text: |
+        <p>11</p>

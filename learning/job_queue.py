@@ -16,7 +16,9 @@ from .parse_mini import (
     validate_mini_parse,
 )
 from .services import (
+    LocalAITimeoutError,
     call_ai,
+    chunk_content,
     clean_ai_error,
     count_mini_items,
     extract_mini_lines,
@@ -266,13 +268,13 @@ def _job_content_for_generation(job: LessonJob) -> str:
     return "\n\n".join(parts).strip()
 
 
-def _job_context_for_ai(job: LessonJob, include_mini: bool = False) -> str:
+def _job_context_for_ai(job: LessonJob, include_mini: bool = False, include_transcript: bool = True) -> str:
     parts = [f"TITULO: {job.title}"]
     if job.tags:
         parts.append(f"ETIQUETAS: {job.tags}")
     if job.source_text.strip():
         parts.append(f"TEXTO_ORIGINAL:\n{job.source_text.strip()}")
-    if job.transcript.strip():
+    if include_transcript and job.transcript.strip():
         parts.append(f"TRANSCRIPCION:\n{job.transcript.strip()}")
     if include_mini and job.toon_output.strip():
         parts.append(f"MINI_GENERADO:\n{job.toon_output.strip()}")
@@ -284,28 +286,92 @@ def _auto_repair_transcript(job: LessonJob):
         return
 
     before = job.transcript
-    _set_stage(
-        job,
-        "Corrigiendo transcripcion con IA local",
-        "Qwen revisa errores tipo palabras mal oidas antes de generar items.",
-    )
-    prompt, repaired, backend, trace = repair_transcript_text(
-        before,
-        source_context=_job_context_for_ai(job),
-        backend="local",
-    )
-    changed = bool(trace.get("changed")) or repaired.strip() != before.strip()
-    job.transcript_repair_prompt = prompt
+    source_context = _job_context_for_ai(job, include_transcript=False)
+    chunk_words = max(100, int(getattr(settings, "LOCAL_TRANSCRIPT_REPAIR_CHUNK_WORDS", 500)))
+    words = len(before.split())
+    chunks = [before] if words <= chunk_words else chunk_content(before, max_words=chunk_words)
+
+    if len(chunks) == 1:
+        _set_stage(
+            job,
+            "Corrigiendo transcripcion con IA local",
+            "Qwen revisa errores tipo palabras mal oidas antes de generar items.",
+        )
+    else:
+        _set_stage(
+            job,
+            "Corrigiendo transcripcion con IA local",
+            f"Transcripcion de {words} palabras. Se corrige por partes de ~{chunk_words} palabras ({len(chunks)} partes).",
+        )
+
+    repaired_parts = []
+    total_prompt_chars = 0
+    total_output_chars = 0
+    any_timeout = False
+    for idx, chunk in enumerate(chunks, start=1):
+        if len(chunks) > 1:
+            _set_stage(
+                job,
+                "Corrigiendo transcripcion con IA local",
+                f"Parte {idx}/{len(chunks)} - {len(chunk.split())} palabras.",
+            )
+        try:
+            prompt, repaired_chunk, backend, trace = repair_transcript_text(
+                chunk,
+                source_context=source_context,
+                backend="local",
+            )
+            repaired_parts.append(repaired_chunk)
+            total_prompt_chars += trace.get("prompt_chars", 0)
+            total_output_chars += trace.get("output_chars", 0)
+        except LocalAITimeoutError:
+            any_timeout = True
+            logger.warning("Timeout corrigiendo chunk %s/%s de la transcripcion del job %s", idx, len(chunks), job.pk)
+            repaired_parts.append(chunk)
+            job.processing_log = _append_log(
+                job.processing_log,
+                f"Timeout en correccion parte {idx}/{len(chunks)}",
+                "Se conserva el texto original de esta parte para continuar el pipeline.",
+            )
+            job.save(update_fields=["processing_log", "updated_at"])
+        except Exception as exc:
+            logger.warning("Error corrigiendo chunk %s/%s de la transcripcion del job %s: %s", idx, len(chunks), job.pk, exc)
+            repaired_parts.append(chunk)
+            job.processing_log = _append_log(
+                job.processing_log,
+                f"Error en correccion parte {idx}/{len(chunks)}",
+                f"{clean_ai_error(exc)}. Se conserva el texto original de esta parte.",
+            )
+            job.save(update_fields=["processing_log", "updated_at"])
+
+    repaired = "\n\n".join(repaired_parts)
+    changed = repaired.strip() != before.strip()
+    trace = {
+        "backend": "local",
+        "prompt_chars": total_prompt_chars,
+        "output_chars": total_output_chars,
+        "changed": changed,
+        "chunks": len(chunks),
+        "timeout": any_timeout,
+    }
+    job.transcript_repair_prompt = ""
     job.transcript_repair_trace = [
         *_safe_trace_list(job.transcript_repair_trace),
-        _transcript_repair_entry(before, repaired, trace, backend, "pipeline local previo a generacion"),
+        _transcript_repair_entry(before, repaired, trace, "local", "pipeline local previo a generacion"),
     ][-8:]
     if changed:
         job.transcript = repaired
+    detail = (
+        f"Se aplicaron cambios antes de generar items. {len(chunks)} parte(s) procesada(s)."
+        if changed else
+        f"No se detectaron cambios necesarios. {len(chunks)} parte(s) procesada(s)."
+    )
+    if any_timeout:
+        detail += " Algunas partes no se corrigieron por timeout."
     job.processing_log = _append_log(
         job.processing_log,
         "Transcripcion local revisada",
-        "Se aplicaron cambios antes de generar items." if changed else "No se detectaron cambios necesarios.",
+        detail,
     )
     job.save(update_fields=[
         "transcript",

@@ -1,0 +1,133 @@
+pageType: table_of_contents
+background:
+  type: solid
+  color: "$background"
+elements:
+  - elementId: nav-bar
+    elementType: shape
+    bounds: [0, 0, 1280, 50]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$primary"
+  - elementId: nav-agenda
+    elementType: text
+    bounds: [0, 0, 1280, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p><strong>AGENDA</strong></p>
+  - elementId: left-label
+    elementType: text
+    bounds: [60, 120, 300, 500]
+    content:
+      fontSize: 80
+      color: "$primary"
+      fontFamily: "QuattrocentoSans"
+      align: [left, top]
+      wrap: true
+      lineHeight: 0.9
+      text: |
+        <p><strong>A</strong></p>
+        <p><strong>G</strong></p>
+        <p><strong>E</strong></p>
+        <p><strong>N</strong></p>
+        <p><strong>D</strong></p>
+        <p><strong>A</strong></p>
+  - elementId: accent-bar
+    elementType: shape
+    bounds: [370, 120, 4, 500]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: item1
+    elementType: text
+    bounds: [400, 120, 800, 50]
+    content:
+      fontSize: 20
+      color: "$text"
+      fontFamily: "QuattrocentoSans"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><span style="color:$accent; font-size:24px;"><strong>01</strong></span>   Introducción al OE3</p>
+  - elementId: item2
+    elementType: text
+    bounds: [400, 185, 800, 50]
+    content:
+      fontSize: 20
+      color: "$text"
+      fontFamily: "QuattrocentoSans"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><span style="color:$accent; font-size:24px;"><strong>02</strong></span>   Stack Tecnológico</p>
+  - elementId: item3
+    elementType: text
+    bounds: [400, 250, 800, 50]
+    content:
+      fontSize: 20
+      color: "$text"
+      fontFamily: "QuattrocentoSans"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><span style="color:$accent; font-size:24px;"><strong>03</strong></span>   Product Backlog y User Stories</p>
+  - elementId: item4
+    elementType: text
+    bounds: [400, 315, 800, 50]
+    content:
+      fontSize: 20
+      color: "$text"
+      fontFamily: "QuattrocentoSans"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><span style="color:$accent; font-size:24px;"><strong>04</strong></span>   Pipeline de Desarrollo</p>
+  - elementId: item5
+    elementType: text
+    bounds: [400, 380, 800, 50]
+    content:
+      fontSize: 20
+      color: "$text"
+      fontFamily: "QuattrocentoSans"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><span style="color:$accent; font-size:24px;"><strong>05</strong></span>   Vistas del Sistema</p>
+  - elementId: item6
+    elementType: text
+    bounds: [400, 445, 800, 50]
+    content:
+      fontSize: 20
+      color: "$text"
+      fontFamily: "QuattrocentoSans"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><span style="color:$accent; font-size:24px;"><strong>06</strong></span>   Arquitectura y Evaluación Adaptativa</p>
+  - elementId: item7
+    elementType: text
+    bounds: [400, 510, 800, 50]
+    content:
+      fontSize: 20
+      color: "$text"
+      fontFamily: "QuattrocentoSans"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><span style="color:$accent; font-size:24px;"><strong>07</strong></span>   Futuro y Validación OE4</p>
+  - elementId: item8
+    elementType: text
+    bounds: [400, 575, 800, 50]
+    content:
+      fontSize: 20
+      color: "$text"
+      fontFamily: "QuattrocentoSans"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><span style="color:$accent; font-size:24px;"><strong>08</strong></span>   Conclusiones</p>

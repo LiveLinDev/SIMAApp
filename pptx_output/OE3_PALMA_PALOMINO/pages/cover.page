@@ -1,0 +1,53 @@
+pageType: cover
+background:
+  type: solid
+  color: "$primary"
+elements:
+  - elementId: accent-line
+    elementType: shape
+    bounds: [540, 240, 200, 4]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: title
+    elementType: text
+    bounds: [140, 260, 1000, 120]
+    content:
+      style: "$title"
+      align: [center, middle]
+      wrap: true
+      text: |
+        <p><strong>OE3 – Desarrollo e Implementación de SIMA</strong></p>
+  - elementId: subtitle
+    elementType: text
+    bounds: [240, 390, 800, 80]
+    content:
+      style: "$subtitle"
+      align: [center, middle]
+      wrap: true
+      text: |
+        <p>Plataforma inteligente de microaprendizaje basada en inteligencia artificial</p>
+        <p>para la generación de contenido educativo personalizado y evaluaciones adaptativas</p>
+  - elementId: authors
+    elementType: text
+    bounds: [340, 500, 600, 60]
+    content:
+      fontSize: 18
+      color: "$white"
+      fontFamily: "QuattrocentoSans"
+      align: [center, middle]
+      wrap: true
+      text: |
+        <p>Erick Joaquín Palomino Santa Cruz  |  Adrián Enrique Jesús Palma Obispo</p>
+  - elementId: date
+    elementType: text
+    bounds: [440, 570, 400, 30]
+    content:
+      fontSize: 16
+      color: "$secondary"
+      fontFamily: "QuattrocentoSans"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Junio 2026</p>

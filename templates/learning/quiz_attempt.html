@@ -52,7 +52,7 @@
             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
           </svg>
           <div class="medal-body">
-            <strong>Nivel {{ attempt.theta|floatformat:0 }}</strong>
+            <strong>Nivel {{ level_value }} · {{ level_label }}</strong>
             <span>Habilidad estimada</span>
           </div>
         </div>
@@ -286,7 +286,7 @@
     opacity: .35;
   }
   .medal-icon { color: var(--acid); flex-shrink: 0; filter: drop-shadow(0 0 6px rgba(212,255,0,.35)); }
-  .medal-body strong { display: block; color: var(--ink); font-size: 1.05rem; }
+  .medal-body strong { display: block; color: var(--ink); font-size: 1.05rem; line-height: 1.25; overflow-wrap: anywhere; }
   .medal-body span { display: block; color: var(--muted); font-size: .78rem; }
 
   @keyframes medalIn { to { opacity: 1; transform: translateY(0); } }

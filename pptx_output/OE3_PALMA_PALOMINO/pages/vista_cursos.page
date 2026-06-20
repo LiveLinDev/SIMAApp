@@ -1,0 +1,198 @@
+pageType: content
+background:
+  type: solid
+  color: "$background"
+elements:
+  - elementId: nav-bar
+    elementType: shape
+    bounds: [0, 0, 1280, 50]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$primary"
+  - elementId: nav1
+    elementType: text
+    bounds: [0, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Intro</p>
+  - elementId: nav2
+    elementType: text
+    bounds: [213, 0, 214, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Stack</p>
+  - elementId: nav3
+    elementType: text
+    bounds: [427, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Backlog</p>
+  - elementId: nav4
+    elementType: text
+    bounds: [640, 0, 214, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Pipeline</p>
+  - elementId: nav5
+    elementType: text
+    bounds: [854, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p><strong>Vistas</strong></p>
+  - elementId: nav6
+    elementType: text
+    bounds: [1067, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Arquitectura</p>
+  - elementId: nav-accent
+    elementType: shape
+    bounds: [854, 50, 213, 2]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: title
+    elementType: text
+    bounds: [60, 65, 900, 40]
+    content:
+      style: "$heading"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Vista – Gestión de Cursos y Clases</strong></p>
+  - elementId: title-line
+    elementType: shape
+    bounds: [60, 110, 80, 3]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: card1
+    elementType: shape
+    bounds: [60, 130, 370, 280]
+    shapeName: roundRect
+    adjustments: [3000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    border: {style: solid, width: 1, color: "$borderGray"}
+    shadow:
+      blur: 10
+      color: "#00000015"
+      offset: [0, 4]
+  - elementId: img1
+    elementType: image
+    bounds: [70, 140, 350, 210]
+    src: "E:\\PaginasQueHice\\SIMAApp\\output\\playwright\\09-course-detail.png"
+    fit:
+      mode: cover
+    shapeName: roundRect
+    adjustments: [2000]
+  - elementId: cap1
+    elementType: text
+    bounds: [70, 358, 350, 40]
+    content:
+      style: "$caption"
+      align: [center, top]
+      wrap: true
+      text: |
+        <p>Detalle de curso con clases y materiales</p>
+  - elementId: card2
+    elementType: shape
+    bounds: [450, 130, 370, 280]
+    shapeName: roundRect
+    adjustments: [3000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    border: {style: solid, width: 1, color: "$borderGray"}
+    shadow:
+      blur: 10
+      color: "#00000015"
+      offset: [0, 4]
+  - elementId: img2
+    elementType: image
+    bounds: [460, 140, 350, 210]
+    src: "E:\\PaginasQueHice\\SIMAApp\\output\\playwright\\10-course-form.png"
+    fit:
+      mode: cover
+    shapeName: roundRect
+    adjustments: [2000]
+  - elementId: cap2
+    elementType: text
+    bounds: [460, 358, 350, 40]
+    content:
+      style: "$caption"
+      align: [center, top]
+      wrap: true
+      text: |
+        <p>Formulario de creación de curso</p>
+  - elementId: card3
+    elementType: shape
+    bounds: [840, 130, 370, 280]
+    shapeName: roundRect
+    adjustments: [3000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    border: {style: solid, width: 1, color: "$borderGray"}
+    shadow:
+      blur: 10
+      color: "#00000015"
+      offset: [0, 4]
+  - elementId: img3
+    elementType: image
+    bounds: [850, 140, 350, 210]
+    src: "E:\\PaginasQueHice\\SIMAApp\\output\\playwright\\ui_eval\\lesson_detail_light.png"
+    fit:
+      mode: cover
+    shapeName: roundRect
+    adjustments: [2000]
+  - elementId: cap3
+    elementType: text
+    bounds: [850, 358, 350, 40]
+    content:
+      style: "$caption"
+      align: [center, top]
+      wrap: true
+      text: |
+        <p>Detalle de clase con transcripción y materiales</p>
+  - elementId: note
+    elementType: text
+    bounds: [60, 430, 1160, 220]
+    content:
+      style: "$body"
+      fontSize: 16
+      align: [left, top]
+      text: |
+        <p>El sistema permite <strong>crear cursos</strong> con nombre, ciclo académico, temas principales y objetivo del estudiante. Cada clase subida pertenece a un curso y se procesa para generar materiales. El <strong>detalle de clase</strong> muestra el audio/video original, la transcripción completa, el resumen y acceso a los microcontenidos generados.</p>
+        <p style="margin-top:10px">Antes de procesar, el sistema verifica que el usuario tenga créditos suficientes, valida el formato del archivo y calcula el costo estimado en créditos.</p>
+  - elementId: page-number
+    elementType: text
+    bounds: [1200, 690, 60, 20]
+    content:
+      style: "$caption"
+      align: [right, middle]
+      wrap: false
+      text: |
+        <p>10</p>

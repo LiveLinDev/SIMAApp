@@ -1,0 +1,141 @@
+pageType: content
+background:
+  type: solid
+  color: "$background"
+elements:
+  - elementId: nav-bar
+    elementType: shape
+    bounds: [0, 0, 1280, 50]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$primary"
+  - elementId: nav1
+    elementType: text
+    bounds: [0, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Intro</p>
+  - elementId: nav2
+    elementType: text
+    bounds: [213, 0, 214, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Stack</p>
+  - elementId: nav3
+    elementType: text
+    bounds: [427, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Backlog</p>
+  - elementId: nav4
+    elementType: text
+    bounds: [640, 0, 214, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Pipeline</p>
+  - elementId: nav5
+    elementType: text
+    bounds: [854, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Vistas</p>
+  - elementId: nav6
+    elementType: text
+    bounds: [1067, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p><strong>Arquitectura</strong></p>
+  - elementId: nav-accent
+    elementType: shape
+    bounds: [1067, 50, 213, 2]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: title
+    elementType: text
+    bounds: [60, 65, 900, 40]
+    content:
+      style: "$heading"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Evaluación Adaptativa con IRT 3PL</strong></p>
+  - elementId: title-line
+    elementType: shape
+    bounds: [60, 110, 80, 3]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: left-text
+    elementType: text
+    bounds: [60, 130, 600, 300]
+    content:
+      style: "$body"
+      fontSize: 16
+      align: [left, top]
+      text: |
+        <p><strong>Modelo IRT 3PL propio:</strong></p>
+        <ul>
+        <li><strong>a</strong> (discriminación): qué tan bien el item distingue entre niveles</li>
+        <li><strong>b</strong> (dificultad): nivel de habilidad donde el item es más informativo</li>
+        <li><strong>c</strong> (azar): probabilidad de acertar por adivinación</li>
+        </ul>
+        <p style="margin-top:10px">Tras cada respuesta se estima <strong>theta</strong> (habilidad latente, -3 a +3) y <strong>error estándar</strong>. La siguiente pregunta se elige por <strong>máxima información</strong> para el theta actual.</p>
+  - elementId: right-card
+    elementType: shape
+    bounds: [700, 130, 500, 300]
+    shapeName: roundRect
+    adjustments: [3000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    border: {style: solid, width: 1, color: "$borderGray"}
+  - elementId: right-text
+    elementType: text
+    bounds: [720, 150, 460, 260]
+    content:
+      style: "$body"
+      fontSize: 16
+      align: [left, top]
+      text: |
+        <p><strong>Mapeo theta → Nivel pedagógico:</strong></p>
+        <table>
+        <tr><td>Nivel 1</td><td>Inicial</td><td>theta ≤ -2</td></tr>
+        <tr><td>Nivel 2</td><td>Básico</td><td>-2 a -1.5</td></tr>
+        <tr><td>Nivel 3</td><td>En desarrollo</td><td>-1.5 a -0.5</td></tr>
+        <tr><td>Nivel 4</td><td>Intermedio</td><td>-0.5 a +0.5</td></tr>
+        <tr><td>Nivel 5</td><td>Avanzado</td><td>+0.5 a +1.5</td></tr>
+        <tr><td>Nivel 6</td><td>Dominio</td><td>+1.5 a +2</td></tr>
+        <tr><td>Nivel 7</td><td>Experto</td><td>theta ≥ +2</td></tr>
+        </table>
+        <p style="margin-top:10px">El <strong>banco de items</strong> filtra únicamente aquellos con exactamente 4 alternativas, descartando items incompletos o mal formados.</p>
+  - elementId: page-number
+    elementType: text
+    bounds: [1200, 690, 60, 20]
+    content:
+      style: "$caption"
+      align: [right, middle]
+      wrap: false
+      text: |
+        <p>16</p>

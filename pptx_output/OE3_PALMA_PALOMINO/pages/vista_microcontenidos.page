@@ -1,0 +1,218 @@
+pageType: content
+background:
+  type: solid
+  color: "$background"
+elements:
+  - elementId: nav-bar
+    elementType: shape
+    bounds: [0, 0, 1280, 50]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$primary"
+  - elementId: nav1
+    elementType: text
+    bounds: [0, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Intro</p>
+  - elementId: nav2
+    elementType: text
+    bounds: [213, 0, 214, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Stack</p>
+  - elementId: nav3
+    elementType: text
+    bounds: [427, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Backlog</p>
+  - elementId: nav4
+    elementType: text
+    bounds: [640, 0, 214, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Pipeline</p>
+  - elementId: nav5
+    elementType: text
+    bounds: [854, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p><strong>Vistas</strong></p>
+  - elementId: nav6
+    elementType: text
+    bounds: [1067, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Arquitectura</p>
+  - elementId: nav-accent
+    elementType: shape
+    bounds: [854, 50, 213, 2]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: title
+    elementType: text
+    bounds: [60, 65, 900, 40]
+    content:
+      style: "$heading"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Vista – Microcontenidos Generados</strong></p>
+  - elementId: title-line
+    elementType: shape
+    bounds: [60, 110, 80, 3]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: card1
+    elementType: shape
+    bounds: [60, 130, 560, 260]
+    shapeName: roundRect
+    adjustments: [3000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    border: {style: solid, width: 1, color: "$borderGray"}
+    shadow:
+      blur: 10
+      color: "#00000015"
+      offset: [0, 4]
+  - elementId: img1
+    elementType: image
+    bounds: [70, 140, 540, 190]
+    src: "E:\\PaginasQueHice\\SIMAApp\\output\\playwright\\04-flashcards.png"
+    fit:
+      mode: cover
+    shapeName: roundRect
+    adjustments: [2000]
+  - elementId: cap1
+    elementType: text
+    bounds: [70, 338, 540, 40]
+    content:
+      style: "$caption"
+      align: [center, top]
+      wrap: true
+      text: |
+        <p>Flashcards con pregunta, respuesta y tema asociado</p>
+  - elementId: card2
+    elementType: shape
+    bounds: [640, 130, 560, 260]
+    shapeName: roundRect
+    adjustments: [3000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    border: {style: solid, width: 1, color: "$borderGray"}
+    shadow:
+      blur: 10
+      color: "#00000015"
+      offset: [0, 4]
+  - elementId: img2
+    elementType: image
+    bounds: [650, 140, 540, 190]
+    src: "E:\\PaginasQueHice\\SIMAApp\\output\\playwright\\03-class-map.png"
+    fit:
+      mode: cover
+    shapeName: roundRect
+    adjustments: [2000]
+  - elementId: cap2
+    elementType: text
+    bounds: [650, 338, 540, 40]
+    content:
+      style: "$caption"
+      align: [center, top]
+      wrap: true
+      text: |
+        <p>Mapa conceptual de clase con nodos de dominio</p>
+  - elementId: card3
+    elementType: shape
+    bounds: [60, 410, 560, 240]
+    shapeName: roundRect
+    adjustments: [3000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    border: {style: solid, width: 1, color: "$borderGray"}
+    shadow:
+      blur: 10
+      color: "#00000015"
+      offset: [0, 4]
+  - elementId: img3
+    elementType: image
+    bounds: [70, 420, 540, 170]
+    src: "E:\\PaginasQueHice\\SIMAApp\\output\\playwright\\05-matching.png"
+    fit:
+      mode: cover
+    shapeName: roundRect
+    adjustments: [2000]
+  - elementId: cap3
+    elementType: text
+    bounds: [70, 598, 540, 40]
+    content:
+      style: "$caption"
+      align: [center, top]
+      wrap: true
+      text: |
+        <p>Ejercicio de emparejamiento (matching)</p>
+  - elementId: card4
+    elementType: shape
+    bounds: [640, 410, 560, 240]
+    shapeName: roundRect
+    adjustments: [3000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    border: {style: solid, width: 1, color: "$borderGray"}
+    shadow:
+      blur: 10
+      color: "#00000015"
+      offset: [0, 4]
+  - elementId: img4
+    elementType: image
+    bounds: [650, 420, 540, 170]
+    src: "E:\\PaginasQueHice\\SIMAApp\\output\\playwright\\06-cloze.png"
+    fit:
+      mode: cover
+    shapeName: roundRect
+    adjustments: [2000]
+  - elementId: cap4
+    elementType: text
+    bounds: [650, 598, 540, 40]
+    content:
+      style: "$caption"
+      align: [center, top]
+      wrap: true
+      text: |
+        <p>Ejercicio de completar (cloze)</p>
+  - elementId: page-number
+    elementType: text
+    bounds: [1200, 690, 60, 20]
+    content:
+      style: "$caption"
+      align: [right, middle]
+      wrap: false
+      text: |
+        <p>12</p>

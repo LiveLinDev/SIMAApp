@@ -35,6 +35,9 @@
   .pipeline-layout {
     grid-template-columns: 1fr;
   }
+  .metrics-panel {
+    position: static;
+  }
 }
 
 /* === FLOWCHART === */
@@ -136,8 +139,8 @@
   border: 1px solid var(--border);
   border-radius: 16px;
   width: 90%;
-  max-width: 640px;
-  max-height: 80vh;
+  max-width: 1040px;
+  max-height: 86vh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -191,6 +194,144 @@
 }
 .pipeline-modal-body strong {
   color: var(--fg);
+}
+.detail-summary {
+  margin: 0 0 18px;
+  color: var(--fg-muted);
+  line-height: 1.55;
+}
+.detail-section {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-raised);
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+.detail-section__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.detail-section__head h4 {
+  margin: 0;
+  color: var(--fg);
+  font-size: .9rem;
+}
+.detail-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.detail-stat {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--fg-muted);
+  font-family: 'Space Mono', monospace;
+  font-size: .68rem;
+  padding: 3px 8px;
+}
+.detail-pre {
+  margin: 0;
+  padding: 14px;
+  max-height: 420px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--fg);
+  background: rgba(0,0,0,.16);
+  font-family: 'Space Mono', monospace;
+  font-size: .76rem;
+  line-height: 1.55;
+}
+.detail-diff-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+.detail-diff-grid .detail-pre:first-child {
+  border-right: 1px solid var(--border);
+}
+.detail-changes {
+  padding: 12px 14px;
+  border-top: 1px solid var(--border);
+  display: grid;
+  gap: 8px;
+}
+.detail-change {
+  color: var(--fg-muted);
+  font-size: .78rem;
+}
+.web-evidence {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+.web-query {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  background: rgba(255,255,255,.02);
+}
+.web-query h5 {
+  margin: 0 0 6px;
+  color: var(--fg);
+  font-size: .86rem;
+}
+.web-source {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+}
+.web-source a {
+  color: var(--blue);
+  text-decoration: none;
+  word-break: break-all;
+}
+.web-source p {
+  margin: 6px 0 0;
+  color: var(--fg-muted);
+  font-size: .78rem;
+}
+.detail-empty {
+  color: var(--fg-muted);
+  margin: 0;
+  padding: 18px;
+}
+
+@media (max-width: 720px) {
+  .pipeline-page {
+    padding: 14px;
+  }
+  .flowchart,
+  .metrics-panel {
+    padding: 16px;
+    border-radius: 12px;
+  }
+  .flow-step {
+    min-width: 100%;
+    max-width: none;
+  }
+  .flow-arrow {
+    width: 100%;
+    height: 22px;
+    transform: rotate(90deg);
+  }
+  .pipeline-modal {
+    width: calc(100% - 18px);
+    max-height: 90vh;
+  }
+  .detail-section__head,
+  .detail-diff-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .detail-diff-grid .detail-pre:first-child {
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
 }
 
 .flow-step.type-whisper .flow-step-inner { border-color: #0d6efd; background: rgba(13,110,253,.06); }
@@ -377,6 +518,45 @@
   text-decoration: none;
 }
 .back-link:hover { color: var(--fg); }
+
+@media (max-width: 1024px) {
+  .metrics-panel {
+    position: static;
+  }
+}
+
+@media (max-width: 720px) {
+  .pipeline-page {
+    padding: 14px;
+  }
+  .flowchart,
+  .metrics-panel {
+    padding: 16px;
+    border-radius: 12px;
+  }
+  .flow-step {
+    min-width: 100%;
+    max-width: none;
+  }
+  .flow-arrow {
+    width: 100%;
+    height: 22px;
+    transform: rotate(90deg);
+  }
+  .pipeline-modal {
+    width: calc(100% - 18px);
+    max-height: 90vh;
+  }
+  .detail-section__head,
+  .detail-diff-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .detail-diff-grid .detail-pre:first-child {
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+}
 </style>
 
 <div class="pipeline-page">
@@ -411,8 +591,9 @@
 
         <div class="flow-step type-{{ stage.type }}"
              data-stage="{{ stage.name|lower|slugify }}"
-             onclick="openPipelineModal('{{ stage.name|lower|slugify }}')">
-          <div class="flow-tooltip">Haz clic para ver detalles</div>
+             data-detail-key="{{ stage.detail_key }}"
+             onclick="openPipelineModal('{{ stage.detail_key|default:'' }}', '{{ stage.name|escapejs }}')">
+          <div class="flow-tooltip">Ver dossier tecnico</div>
           <div class="flow-step-inner">
             <div class="step-icon">
               {% if stage.icon == 'queue' %}
@@ -582,9 +763,11 @@
   </div>
 </div>
 
+{{ stage_details|json_script:"pipeline-details-data" }}
 <script>
 (function() {
-  const details = {{ stage_details|default:"{}"|safe }};
+  const detailsEl = document.getElementById('pipeline-details-data');
+  const details = detailsEl ? JSON.parse(detailsEl.textContent || '{}') : {};
   const overlay = document.getElementById('pipeline-modal-overlay');
   const titleEl = document.getElementById('pipeline-modal-title');
   const bodyEl = document.getElementById('pipeline-modal-body');
@@ -617,6 +800,100 @@
 
     titleEl.textContent = title;
     bodyEl.innerHTML = body;
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  };
+
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function renderStats(stats) {
+    if (!stats || !stats.length) return '';
+    return '<div class="detail-stats">' + stats.map(function(stat) {
+      return '<span class="detail-stat">' + escapeHtml(stat.label) + ': ' + escapeHtml(stat.value) + '</span>';
+    }).join('') + '</div>';
+  }
+
+  function renderText(section) {
+    return '<pre class="detail-pre">' + escapeHtml(section.content) + '</pre>';
+  }
+
+  function renderDiff(section) {
+    const changes = (section.changes || []).slice(0, 8).map(function(change) {
+      const label = change.field || change.type || change.error_type || change.item || 'cambio';
+      const note = change.note || change.justification || '';
+      return '<div class="detail-change"><strong>' + escapeHtml(label) + '</strong> ' + escapeHtml(note) + '</div>';
+    }).join('');
+    return '<div class="detail-diff-grid">' +
+      '<pre class="detail-pre">' + escapeHtml(section.before) + '</pre>' +
+      '<pre class="detail-pre">' + escapeHtml(section.after) + '</pre>' +
+      '</div>' +
+      (changes ? '<div class="detail-changes">' + changes + '</div>' : '');
+  }
+
+  function renderWeb(section) {
+    const generation = section.query_generation || {};
+    const rows = [];
+    const academic = section.academic_search || {};
+    rows.push('<div class="web-query"><h5>Modo web activo</h5>' +
+      '<p>Proveedor: ' + escapeHtml(section.search_provider || 'busqueda web') + '</p>' +
+      '<p>Modo: ' + escapeHtml(section.mode || 'web') + ' · Busqueda academica: ' + escapeHtml(academic.enabled ? 'arXiv / Google Scholar / Semantic Scholar' : 'desactivada') + '</p>' +
+      '</div>');
+    if (generation.source || generation.error) {
+      rows.push('<div class="web-query"><h5>Generacion de queries: ' + escapeHtml(generation.source || 'sin datos') + '</h5>' +
+        (generation.error ? '<p>' + escapeHtml(generation.error) + '</p>' : '') + '</div>');
+    }
+    (section.queries || []).forEach(function(query) {
+      const results = (query.results || []).map(function(result) {
+        const state = result.ok ? 'OK' : 'Sin texto util';
+        return '<div class="web-source">' +
+          '<a href="' + escapeHtml(result.url) + '" target="_blank" rel="noopener">' + escapeHtml(result.title || result.url) + '</a>' +
+          '<p>' + escapeHtml(state) + ' · ' + escapeHtml(result.chars || 0) + ' chars</p>' +
+          '<p>Busqueda: ' + escapeHtml(result.search_source || 'web') + '</p>' +
+          '<p>' + escapeHtml(result.snippet || result.error || '') + '</p>' +
+          '</div>';
+      }).join('');
+      rows.push('<div class="web-query"><h5>' + escapeHtml(query.query) + '</h5>' +
+        '<p>Origen: ' + escapeHtml(query.source || 'keyword') + '</p>' +
+        ((query.academic_queries || []).length ? '<p>Academico: ' + escapeHtml(query.academic_queries.join(' | ')) + '</p>' : '') +
+        (results || '<p class="detail-empty">Sin resultados recuperados.</p>') +
+        '</div>');
+    });
+    (section.configured_sources || []).forEach(function(source) {
+      rows.push('<div class="web-query"><h5>Fuente configurada</h5><div class="web-source">' +
+        '<a href="' + escapeHtml(source.url) + '" target="_blank" rel="noopener">' + escapeHtml(source.url) + '</a>' +
+        '<p>' + escapeHtml(source.snippet || source.error || '') + '</p></div></div>');
+    });
+    if (section.eduqg_matches && section.eduqg_matches.length) {
+      rows.push('<div class="web-query"><h5>Matches EduQG</h5><pre class="detail-pre">' + escapeHtml(JSON.stringify(section.eduqg_matches, null, 2)) + '</pre></div>');
+    }
+    return '<div class="web-evidence">' + (rows.join('') || '<p class="detail-empty">No hay evidencia externa registrada.</p>') + '</div>';
+  }
+
+  function renderSection(section) {
+    let body = '';
+    if (section.kind === 'web') body = renderWeb(section);
+    else if (section.kind === 'diff') body = renderDiff(section);
+    else body = renderText(section);
+
+    return '<section class="detail-section">' +
+      '<div class="detail-section__head"><h4>' + escapeHtml(section.label) + '</h4>' + renderStats(section.stats) + '</div>' +
+      body +
+      '</section>';
+  }
+
+  window.openPipelineModal = function(detailKey, stageName) {
+    const detail = details[detailKey] || null;
+    titleEl.textContent = detail ? detail.title : (stageName || 'Detalle del proceso');
+    bodyEl.innerHTML = detail
+      ? '<p class="detail-summary">' + escapeHtml(detail.summary) + '</p>' + (detail.sections || []).map(renderSection).join('')
+      : '<p class="detail-empty">No hay informacion detallada disponible para esta etapa.</p>';
     overlay.classList.add('active');
     document.body.style.overflow = 'hidden';
   };

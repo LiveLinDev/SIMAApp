@@ -1,0 +1,185 @@
+pageType: content
+background:
+  type: solid
+  color: "$background"
+elements:
+  - elementId: nav-bar
+    elementType: shape
+    bounds: [0, 0, 1280, 50]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$primary"
+  - elementId: nav1
+    elementType: text
+    bounds: [0, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Intro</p>
+  - elementId: nav2
+    elementType: text
+    bounds: [213, 0, 214, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p><strong>Stack</strong></p>
+  - elementId: nav3
+    elementType: text
+    bounds: [427, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Backlog</p>
+  - elementId: nav4
+    elementType: text
+    bounds: [640, 0, 214, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Pipeline</p>
+  - elementId: nav5
+    elementType: text
+    bounds: [854, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Vistas</p>
+  - elementId: nav6
+    elementType: text
+    bounds: [1067, 0, 213, 50]
+    content:
+      style: "$navText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Arquitectura</p>
+  - elementId: nav-accent
+    elementType: shape
+    bounds: [213, 50, 214, 2]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: title
+    elementType: text
+    bounds: [60, 65, 900, 40]
+    content:
+      style: "$heading"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Entorno Tecnológico y Stack de Desarrollo</strong></p>
+  - elementId: title-line
+    elementType: shape
+    bounds: [60, 110, 80, 3]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: stack-table
+    elementType: table
+    bounds: [60, 130, 1160, 480]
+    style: "$default"
+    columnWidths: [0.20, 0.25, 0.55]
+    rowHeights: [0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125]
+    rows:
+      - - content:
+            text: |
+              <p><strong>Capa</strong></p>
+        - content:
+            text: |
+              <p><strong>Tecnología</strong></p>
+        - content:
+            text: |
+              <p><strong>Uso en SIMA</strong></p>
+      - - content:
+            text: |
+              <p>Aplicación web</p>
+        - content:
+            text: |
+              <p>Django 5.2</p>
+        - content:
+            text: |
+              <p>Vistas, modelos, formularios, autenticación, cola local y renderizado</p>
+      - - content:
+            text: |
+              <p>IA local</p>
+        - content:
+            text: |
+              <p>Qwen3-30B OpenAI</p>
+        - content:
+            text: |
+              <p>Generación MINI, verificación y postprocesamiento</p>
+      - - content:
+            text: |
+              <p>Proxy IA</p>
+        - content:
+            text: |
+              <p>Node proxy :8003</p>
+        - content:
+            text: |
+              <p>Entrada protegida para /v1/chat/completions</p>
+      - - content:
+            text: |
+              <p>Transcripción</p>
+        - content:
+            text: |
+              <p>Whisper local</p>
+        - content:
+            text: |
+              <p>Conversión de audio de clase a texto base</p>
+      - - content:
+            text: |
+              <p>Búsqueda web</p>
+        - content:
+            text: |
+              <p>ddgs + urllib/HTML</p>
+        - content:
+            text: |
+              <p>Fuentes y snippets para validación factual</p>
+      - - content:
+            text: |
+              <p>Persistencia</p>
+        - content:
+            text: |
+              <p>PostgreSQL / SQLite</p>
+        - content:
+            text: |
+              <p>Clases, trazas, intentos de quiz y progreso</p>
+      - - content:
+            text: |
+              <p>Evaluación</p>
+        - content:
+            text: |
+              <p>IRT 3PL propio</p>
+        - content:
+            text: |
+              <p>Selección adaptativa y estimación theta</p>
+  - elementId: note
+    elementType: text
+    bounds: [60, 620, 1160, 40]
+    content:
+      style: "$caption"
+      align: [left, middle]
+      text: |
+        <p>Nota: La configuración de IA apunta a http://127.0.0.1:8003/v1 para uso del proxy local. Si el acceso remoto se reactiva, la allowlist debe incluir la IP pública vigente.</p>
+  - elementId: page-number
+    elementType: text
+    bounds: [1200, 690, 60, 20]
+    content:
+      style: "$caption"
+      align: [right, middle]
+      wrap: false
+      text: |
+        <p>4</p>

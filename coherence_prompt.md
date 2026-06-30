@@ -10,6 +10,10 @@ ANTES DE REESCRIBIR:
 - Considera roto cualquier item que suene como texto transcrito literalmente pero sin significado evaluable.
 - Considera roto cualquier item con sujeto/objeto absurdo por mala audicion, por ejemplo "datos" cuando el contexto habla de gatos.
 - Considera roto cualquier item donde la respuesta correcta no conteste realmente el enunciado.
+- Considera roto cualquier item que pregunte por "el video", "la clase", "el audio", el canal,
+  el narrador, publicidad, sponsors, llamadas a suscribirse o acciones sugeridas al final.
+- Considera roto cualquier item del tipo "Que importancia tiene el video..." con opciones
+  genericas como importancia nula/moderada/mayor/menor.
 
 REGLAS DE REPARACION:
 - Conserva el formato MINI: una cabecera `a|` y lineas `i<N>|...`.
@@ -23,6 +27,8 @@ REGLAS DE REPARACION:
 - No copies frases corruptas de la transcripcion como si fueran conceptos.
 - No inventes datos no respaldados por el contexto.
 - No generes preguntas triviales, absurdas, ambiguas o tautologicas.
+- No generes ni conserves preguntas sobre publicidad, intro/outro, likes, comentarios,
+  libreria/biblioteca del canal o valor del video como material.
 - No aceptes enunciados como "El movimiento moderno aparecio..." si el contexto real habla de maullidos, vocalizacion o conducta felina.
 - No aceptes distractores que sean sinonimos casi identicos de la respuesta correcta cuando eso vuelve ambigua la pregunta.
 

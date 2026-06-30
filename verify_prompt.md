@@ -26,6 +26,9 @@ IMPORTANTE sobre identificadores:
 
 PROHIBIDO (reportar como error si se detecta):
 - Distractores absurdos o irrelevantes (no plausibles en el dominio)
+- Preguntas sobre "el video", "la clase", "el audio", el narrador, canal, publicidad,
+  sponsors, likes, comentarios, libreria/biblioteca del canal o acciones sugeridas al final
+- Preguntas genericas de valoracion del medio, por ejemplo "Que importancia tiene el video..."
 - Respuesta correcta siempre en posicion A (sesgo de posicion)
 - Items triviales: a < 0.7
 - Todos los items en difficulty_level 1 o 2 (sin distribucion)
@@ -57,3 +60,5 @@ Ejemplos correctos: `i1`, `i2`, `i3`, `i10`, `i45`.
 Ejemplos INCORRECTOS: `L1`, `L2`, `L3` (esos son niveles Bloom, NO IDs de item).
 
 `error_type` puede ser: `wrong_answer`, `wrong_statement`, `ambiguous_statement`, `implausible_distractor`, `irt_mismatch`, `position_bias`, `trivial_item`, `low_discrimination`, `c_too_high`, `topic_invented`, `missing_bloom_level`, `b_out_of_range`
+
+Tu respuesta sera descartada si contiene prosa, explicaciones, bullets, markdown o texto que no empiece con `v|`.

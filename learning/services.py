@@ -34,14 +34,63 @@ def indent_content(content):
     return "\n".join(f"    {line}" for line in content.splitlines())
 
 
-def build_generation_prompt(content, language="es", items_requested="auto", chunk_info=None):
+def strip_non_academic_content_noise(content: str) -> str:
+    """
+    Elimina frases de publicidad, intro/outro y referencias al medio antes de
+    generar MINI. Si el filtro se pasa de agresivo, conserva el texto original.
+    """
+    text = (content or "").strip()
+    if not text:
+        return ""
+
+    parts = re.split(r"(?<=[.!?])\s+|\n+", text)
+    kept = []
+    for part in parts:
+        sentence = part.strip()
+        if not sentence:
+            continue
+        normalized = _normalize_noise_text(sentence)
+        if any(marker in normalized for marker in _NON_ACADEMIC_CONTENT_MARKERS):
+            continue
+        kept.append(sentence)
+
+    cleaned = "\n".join(kept).strip()
+    original_words = len(text.split())
+    cleaned_words = len(cleaned.split())
+    if cleaned_words < 80 or cleaned_words < original_words * 0.35:
+        return text
+    return cleaned
+
+
+def _normalize_noise_text(value: str) -> str:
+    import unicodedata
+
+    text = unicodedata.normalize("NFKD", value or "")
+    text = "".join(char for char in text if not unicodedata.combining(char))
+    return re.sub(r"\s+", " ", text.lower()).strip()
+
+
+_NON_ACADEMIC_CONTENT_MARKERS = {
+    "cabefai", "cabify", "universidad primada", "universidad privada",
+    "san juan bautista", "admision", "520 soles", "estudianla sanjuan",
+    "estudianlasanjuan", "este video llega gracias", "espero que este video",
+    "video explicativo", "intentar hacer un video", "en el video", "del video",
+    "si este video", "soy norlin", "soy merlin", "soy marlin", "detras de esa camara",
+    "detras de camara", "detras de la camara", "dale like", "suscribete", "suscribirse", "comenta",
+    "comentarios", "biblioteca de merlin", "biblioteca de marlin", "libreria solo para fumadores",
+    "solo para fumadores", "visita sus redes", "redes sociales", "novedades editoriales",
+    "auspiciador", "publicidad", "patreon", "instagram", "tiktok",
+}
+
+
+def build_generation_prompt(content, language="es", items_requested="auto", chunk_info=None, cloud_optimized=False):
     """
     Construye el prompt de generación.
     chunk_info solo se incluye cuando hay chunking (backend local con contenido largo).
     """
     template = read_prompt("PROMPT.md")
     chunk_line = f"  chunk: {chunk_info}\n" if chunk_info else ""
-    return (
+    prompt = (
         f"{template}\n\n"
         "INPUT:\n"
         f"  language: {language}\n"
@@ -49,6 +98,22 @@ def build_generation_prompt(content, language="es", items_requested="auto", chun
         f"{chunk_line}"
         "  content: |\n"
         f"{indent_content(content)}"
+    )
+    if cloud_optimized:
+        prompt = f"{prompt}\n\n{cloud_generation_instructions()}"
+    return prompt
+
+
+def cloud_generation_instructions() -> str:
+    return (
+        "MODO_CLOUD_MINI_DIRECTO:\n"
+        "- Usa la mayor capacidad del modelo cloud para entregar un MINI final ya auditado.\n"
+        "- Antes de emitir, limpia mentalmente anuncios, sponsors, intro/outro, canal, narrador, likes, comentarios y referencias al video/clase.\n"
+        "- Genera preguntas solo sobre conceptos academicos del tema central y hechos respaldados por la transcripcion.\n"
+        "- No hagas preguntas sobre la importancia del video, sobre lo que critica el video, ni sobre acciones sugeridas al final.\n"
+        "- Si detectas un candidato ambiguo, sustituyelo por otro concepto claro del contenido.\n"
+        "- Verifica internamente que cada opcion correcta responde al enunciado y que los distractores son de la misma categoria.\n"
+        "- Devuelve solo MINI: una cabecera a| y las lineas i<N>|. No incluyas razonamiento ni reporte de auditoria."
     )
 
 
@@ -334,6 +399,7 @@ def _generate_chunk_safe(
         language=language,
         items_requested=chunk_items,
         chunk_info=chunk_info,
+        cloud_optimized=(backend == "anthropic"),
     )
     try:
         mini = call_generation_prompt(prompt, backend=backend)
@@ -376,7 +442,12 @@ def generate_items(
     chunks, budgets, total_items = generation_chunk_plan(content, backend, items_requested=configured_items)
 
     if len(chunks) == 1:
-        prompt = build_generation_prompt(content, language=language, items_requested=budgets[0])
+        prompt = build_generation_prompt(
+            content,
+            language=language,
+            items_requested=budgets[0],
+            cloud_optimized=(backend == "anthropic"),
+        )
         result = call_generation_prompt(prompt, backend=backend)
         prompt, result = _retry_if_few_items(prompt, result, budgets[0], backend=backend)
         return prompt, result, backend
@@ -412,18 +483,26 @@ def generate_items(
 def get_available_backends() -> dict:
     """
     Devuelve que backends de IA estan disponibles.
-    - anthropic: True si ANTHROPIC_API_KEY existe y NO es "local"
+    - anthropic: True si hay una API cloud configurada.
+      El nombre se conserva porque la UI muestra "Claude" y el modelo usa ese valor.
     - local:     True siempre, asumiendo API compatible con OpenAI en LOCAL_API_BASE
     """
-    anthropic_real = is_real_anthropic_key(settings.ANTHROPIC_API_KEY)
+    anthropic_real = is_real_cloud_key(getattr(settings, "ANTHROPIC_API_KEY", ""))
+    deepseek_real = is_real_cloud_key(getattr(settings, "DEEPSEEK_API_KEY", ""))
+    cloud_provider = "deepseek" if deepseek_real else ("anthropic" if anthropic_real else "")
     return {
-        "anthropic": anthropic_real,
+        "anthropic": bool(cloud_provider),
         "local": True,
-        "default": "anthropic" if anthropic_real else "local",
+        "default": "anthropic" if cloud_provider else "local",
+        "cloud_provider": cloud_provider,
     }
 
 
 def is_real_anthropic_key(key: str | None) -> bool:
+    return is_real_cloud_key(key)
+
+
+def is_real_cloud_key(key: str | None) -> bool:
     value = (key or "").strip()
     if not value:
         return False
@@ -441,6 +520,18 @@ def resolve_backend(backend: str = "auto") -> str:
     return backend
 
 
+def use_direct_cloud_mini(backend: str) -> bool:
+    """
+    DeepSeek usa el backend historico "anthropic" en la UI, pero puede generar
+    MINI final en una pasada y dejar solo filtros deterministas posteriores.
+    """
+    if backend != "anthropic":
+        return False
+    if not getattr(settings, "DEEPSEEK_DIRECT_MINI", True):
+        return False
+    return get_available_backends().get("cloud_provider") == "deepseek"
+
+
 def verify_items(mini_content: str, backend: str = "auto", verification_mode: str = "web") -> tuple[str, str, str, dict]:
     backend = resolve_backend(backend)
     source_context, trace = build_verification_context(mini_content, verification_mode=verification_mode)
@@ -448,10 +539,44 @@ def verify_items(mini_content: str, backend: str = "auto", verification_mode: st
     # /no_think solo para backend local
     call_prompt = prompt + "\n/no_think" if backend == "local" else prompt
     output = call_ai(call_prompt, backend=backend, role="verification")
+    output = ensure_verification_report_format(output, mini_content, backend)
     trace["backend"] = backend
     trace["prompt_chars"] = len(prompt)
     trace["output_chars"] = len(output)
     return prompt, output, backend, trace
+
+
+def ensure_verification_report_format(output: str, mini_content: str, backend: str) -> str:
+    if _looks_like_verification_report(output):
+        return output
+
+    retry_prompt = (
+        "Convierte el reporte informal siguiente al formato MINI de verificacion.\n"
+        "No agregues explicaciones. La primera linea debe empezar con v|.\n"
+        "Usa solo estos formatos:\n"
+        "v|d=<YYYYMMDD>|n=<total_revisados>|e=<errores>|s=<VERIFICADO|CORREGIDO>\n"
+        "e<N>|<item_id>|<error_type>|<field>|<original>|<fix>|<justificacion>\n\n"
+        "Si el reporte informal menciona que una respuesta correcta debe cambiar, usa error_type=wrong_answer y field=options.\n"
+        "Si menciona que el enunciado es ambiguo o meta sobre video/clase, usa error_type=ambiguous_statement y field=statement.\n"
+        "Si no hay correcciones concretas, responde v| con e=0.\n\n"
+        f"MINI_ORIGINAL:\n{mini_content}\n\n"
+        f"REPORTE_INFORMAL:\n{output}"
+    )
+    call_prompt = retry_prompt + "\n/no_think" if backend == "local" else retry_prompt
+    try:
+        coerced = call_ai(call_prompt, backend=backend, role="verification")
+    except Exception:
+        return output
+    return coerced if _looks_like_verification_report(coerced) else output
+
+
+def _looks_like_verification_report(output: str) -> bool:
+    for raw_line in (output or "").splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        return line.startswith("v|")
+    return False
 
 
 def repair_mini_coherence(mini_content: str, source_context: str = "", backend: str = "local") -> tuple[str, str, str, dict]:
@@ -531,10 +656,11 @@ def repair_incoherent_mini(incoherent_mini: str, source_context: str = "", backe
 
 def repair_option_uniformity(mini_content: str, source_context: str = "", backend: str = "local") -> tuple[str, str, str, dict]:
     """
-    Repara items donde las opciones estan malformadas:
+    Repara items donde las opciones o el concepto evaluado estan malformados:
     - Opciones fusionadas por comas (3 en 1)
     - Distractores de longitud muy diferente a la correcta
     - Categorias semanticas inconsistentes entre opciones
+    - Preguntas meta sobre el video/clase, publicidad o escalas genericas
     """
     if not mini_content.strip():
         return "", "", backend, {"changed": False, "note": "No hay items a reparar"}
@@ -542,8 +668,8 @@ def repair_option_uniformity(mini_content: str, source_context: str = "", backen
     resolved_backend = "local" if backend in {"auto", "", None, "local"} else resolve_backend(backend)
     prompt = (
         "Eres un editor de items de evaluacion. Los siguientes items tienen opciones "
-        "MAL FORMATEADAS o NO responden al enunciado. Debes corregir el item "
-        "manteniendo el hecho correcto.\n\n"
+        "MAL FORMATEADAS, NO responden al enunciado, o evaluan ruido/meta del video. "
+        "Debes corregir cada item usando un concepto academico claro del contexto.\n\n"
         "REGLAS DE REPARACION DE OPCIONES:\n"
         "1. Cada item DEBE tener exactamente 4 opciones separadas por comas\n"
         "2. Las 4 opciones deben ser de la MISMA categoria semantica y longitud similar\n"
@@ -552,8 +678,10 @@ def repair_option_uniformity(mini_content: str, source_context: str = "", backen
         "5. Todas las opciones deben ser PLAUSIBLES pero inequivocamente incorrectas (excepto la correcta)\n"
         "6. Conserva el enunciado exacto si las opciones ya responden a ese enunciado\n"
         "7. Si el enunciado y la respuesta correcta NO corresponden (por ejemplo pregunta 'donde vive' pero la correcta es 'felino mas comun'), reescribe minimamente el enunciado para que pregunte por esa respuesta correcta\n"
-        "8. Marca la opcion correcta con * al final de su texto\n"
-        "9. Responde UNICAMENTE con el bloque MINI, sin explicaciones\n\n"
+        "8. Si el item pregunta por 'el video', 'la clase', 'el audio', el narrador, publicidad, likes, comentarios, canal o acciones al final, reemplazalo por una pregunta academica del tema central\n"
+        "9. Si el item usa opciones genericas como importancia nula/moderada/mayor/menor, reemplazalo por opciones conceptuales y verificables\n"
+        "10. Marca la opcion correcta con * al final de su texto\n"
+        "11. Responde UNICAMENTE con el bloque MINI, sin explicaciones\n\n"
         "EJEMPLO DE OPCIONES MALAS (no hacer esto):\n"
         "ciudad de Lima,centro de Ica,valle de Cañete,costa del sur\n"
         "(aqui la primera 'opcion' en realidad son 3 distractores fusionados)\n\n"
@@ -1394,7 +1522,7 @@ def call_ai(prompt: str, backend: str = "auto", role: str = "generation") -> str
     if backend == "anthropic":
         if not backends["anthropic"]:
             raise RuntimeError("Anthropic API no esta configurada. Usa el backend local.")
-        return _call_anthropic(prompt)
+        return _call_cloud_model(prompt, role=role)
     if backend == "local":
         return _call_local(prompt, role=role)
     raise RuntimeError(f"Backend desconocido: {backend}")
@@ -1405,6 +1533,16 @@ def clean_ai_error(exc) -> str:
     if "<!DOCTYPE" in err_str or "<html" in err_str.lower():
         return "No se pudo conectar al servidor de IA. Verifica que el modelo local esté corriendo y que LOCAL_API_BASE en .env sea correcto."
     return err_str
+
+
+def _call_cloud_model(prompt: str, role: str = "generation") -> str:
+    """
+    Mantiene el backend historico "anthropic" para la UI, pero permite usar
+    DeepSeek cloud como proveedor real cuando DEEPSEEK_API_KEY esta configurada.
+    """
+    if is_real_cloud_key(getattr(settings, "DEEPSEEK_API_KEY", "")):
+        return _call_deepseek(prompt, role=role)
+    return _call_anthropic(prompt)
 
 
 def _call_anthropic(prompt: str) -> str:
@@ -1421,6 +1559,68 @@ def _call_anthropic(prompt: str) -> str:
         messages=[{"role": "user", "content": prompt}],
     )
     return "\n".join(block.text for block in message.content if getattr(block, "type", "") == "text")
+
+
+def _call_deepseek(prompt: str, role: str = "generation") -> str:
+    try:
+        from openai import OpenAI
+    except ImportError as exc:
+        raise RuntimeError("Instala openai para usar DeepSeek: pip install openai") from exc
+
+    base_url = (getattr(settings, "DEEPSEEK_API_BASE", "https://api.deepseek.com") or "").strip().rstrip("/")
+    if not base_url:
+        base_url = "https://api.deepseek.com"
+    temperature = (
+        getattr(settings, "DEEPSEEK_VERIFICATION_TEMPERATURE", 0.2)
+        if role in {"verification", "coherence", "transcript"}
+        else getattr(settings, "DEEPSEEK_GENERATION_TEMPERATURE", 0.3)
+    )
+
+    client = OpenAI(
+        api_key=getattr(settings, "DEEPSEEK_API_KEY", ""),
+        base_url=base_url,
+        max_retries=0,
+        timeout=getattr(settings, "DEEPSEEK_API_TIMEOUT", 120),
+    )
+    try:
+        response = client.chat.completions.create(
+            model=getattr(settings, "DEEPSEEK_MODEL", "deepseek-chat"),
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=getattr(settings, "DEEPSEEK_MAX_TOKENS", 6000),
+            temperature=temperature,
+            stream=False,
+            timeout=getattr(settings, "DEEPSEEK_API_TIMEOUT", 120),
+        )
+    except Exception as exc:
+        from openai import APIConnectionError, APITimeoutError, AuthenticationError
+        if isinstance(exc, AuthenticationError):
+            raise RuntimeError("DeepSeek rechazo la API key configurada. Revisa DEEPSEEK_API_KEY en .env.") from exc
+        if isinstance(exc, APITimeoutError):
+            raise RuntimeError(
+                f"DeepSeek no respondio dentro del timeout de {getattr(settings, 'DEEPSEEK_API_TIMEOUT', 120)} segundos."
+            ) from exc
+        if isinstance(exc, APIConnectionError):
+            raise RuntimeError(
+                f"No se pudo conectar a DeepSeek en {base_url}. Revisa DEEPSEEK_API_BASE en .env."
+            ) from exc
+        raise RuntimeError(f"Error llamando a DeepSeek cloud: {exc}") from exc
+
+    return _extract_chat_completion_text(response, "DeepSeek")
+
+
+def _extract_chat_completion_text(response, model_label: str) -> str:
+    choice = response.choices[0]
+    msg = choice.message
+    text = (msg.content or "").strip()
+    if not text:
+        text = (getattr(msg, "reasoning_content", None) or "").strip()
+    if not text:
+        raise RuntimeError(
+            f"{model_label} devolvio una respuesta vacia (finish_reason={choice.finish_reason})."
+        )
+
+    text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+    return text.replace("\x00", "")
 
 
 def _call_local(prompt: str, role: str = "generation") -> str:

@@ -71,6 +71,8 @@ si aparece en bibliografia estandar del area. Descarta:
 - Ruido auditivo y comentarios informales del profesor
 - Ejemplos puramente ilustrativos sin contenido conceptual
 - Repeticiones de conceptos ya cubiertos en el mismo fragmento
+- Publicidad, auspiciadores, saludos, intro/outro, llamadas a suscribirse, nombres
+  del canal, comentarios sobre "el video" o "la clase" como medio audiovisual
 Selecciona N = items_requested x 1.5 candidatos para tener margen de seleccion.
 
 PASO 1B — REPARACION DE RUIDO DE TRANSCRIPCION:
@@ -127,6 +129,16 @@ Distribuir difficulty_level (1–5) de forma uniforme dentro del chunk.
 ## REGLA DE ORO: COHERENCIA ENUNCIADO-ALTERNATIVAS
 
 Esta regla tiene PRIORIDAD ABSOLUTA. Un item que la viole es MEJOR NO EMITIRLO.
+
+**Regla 0: Evalua SOLO conocimiento academico del tema**
+- PROHIBIDO preguntar por "el video", "la clase", "el audio", "el narrador", el canal,
+  publicidad, sponsors, biblioteca/libreria del canal, sorteos, likes, comentarios o
+  acciones sugeridas al final del video.
+- MAL: "Que importancia tiene el video en la comprension critica de la independencia del Peru?"
+- MAL: "Que aspecto del video se enfoca en criticar?"
+- MAL: "Que se ofrece en la libreria solo para fumadores?"
+- BIEN: "Que mecanismo se uso para financiar gastos durante la independencia del Peru?"
+- BIEN: "Como se relacionan las expropiaciones con los primeros patrones de corrupcion republicana?"
 
 **Regla 1: Todo enunciado debe ser pregunta con ? O completacion con ____**
 - MAL: "El asesinato de Manuel Pardo fue un punto de inflexion en la crisis" seguido de "paz,estabilidad,guerra,revolucion". No se sabe que se pregunta.

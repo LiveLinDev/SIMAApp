@@ -30,8 +30,10 @@ from .services import (
     repair_option_uniformity,
     repair_transcript_text,
     resolve_backend,
+    strip_non_academic_content_noise,
     text_change_summary,
     transcribe_audio,
+    use_direct_cloud_mini,
     verify_items,
 )
 
@@ -101,7 +103,15 @@ def process_lesson_job(job_id: int, backend: str = "auto"):
         if requested_backend == "local":
             _auto_repair_transcript(job)
 
-        content = _job_content_for_generation(job)
+        raw_content = _job_content_for_generation(job)
+        content = strip_non_academic_content_noise(raw_content)
+        if content != raw_content:
+            job.processing_log = _append_log(
+                job.processing_log,
+                "Ruido no academico filtrado",
+                f"{len(raw_content.split())} -> {len(content.split())} palabras antes de generar MINI.",
+            )
+            job.save(update_fields=["processing_log", "updated_at"])
 
         if not content:
             raise RuntimeError("Agrega texto o sube un audio para transcribir.")
@@ -171,26 +181,40 @@ def process_lesson_job(job_id: int, backend: str = "auto"):
             job.processing_log = _append_log(job.processing_log, "Relleno MINI", f"{item_count} items tras generacion de relleno.")
             job.save(update_fields=["toon_output", "processing_log", "updated_at"])
 
-        verification_mode = _normalize_verification_mode(job.verification_mode)
-        _set_stage(job, _verification_stage_label(verification_mode), f"Modo de verificacion: {verification_mode}.")
-        verification_prompt, verification_output, _backend, verification_trace = verify_items(
-            job.toon_output,
-            backend=resolved_backend,
-            verification_mode=verification_mode,
-        )
-        job.verification_prompt = _strip_nul(verification_prompt)
-        job.verification_output = _strip_nul(verification_output)
-        job.verification_trace = _strip_nul(verification_trace)
-        _set_stage(
-            job,
-            "Verificacion recibida",
-            f"Fuentes web: {_count_web_sources(verification_trace)}. EduQG matches: {_count_eduqg_matches(verification_trace)}.",
-        )
-        _set_stage(job, "Aplicando correcciones", "Interpretando el reporte y generando la version final.")
-        corrected_output, correction_trace = apply_corrections_with_trace(job.toon_output, verification_output)
-        job.corrected_output = _strip_nul(corrected_output)
-        job.correction_trace = _strip_nul(correction_trace)
-        job.corrected_output, corrected_count, _ = _compile_mini_for_render(job.corrected_output, "Correccion MINI")
+        if use_direct_cloud_mini(resolved_backend):
+            _set_stage(
+                job,
+                "Validando MINI cloud",
+                "DeepSeek genera MINI directo; se aplican filtros deterministas finales.",
+            )
+            job.verification_prompt = ""
+            job.verification_trace = {"backend": resolved_backend, "mode": "deepseek_direct_mini"}
+            job.corrected_output, corrected_count = _finalize_mini_quality(job, job.toon_output, "MINI cloud final")
+            job.verification_output = (
+                f"v|d={timezone.localdate().strftime('%Y%m%d')}|n={corrected_count}|e=0|s=VERIFICADO"
+            )
+            job.correction_trace = []
+        else:
+            verification_mode = _normalize_verification_mode(job.verification_mode)
+            _set_stage(job, _verification_stage_label(verification_mode), f"Modo de verificacion: {verification_mode}.")
+            verification_prompt, verification_output, _backend, verification_trace = verify_items(
+                job.toon_output,
+                backend=resolved_backend,
+                verification_mode=verification_mode,
+            )
+            job.verification_prompt = _strip_nul(verification_prompt)
+            job.verification_output = _strip_nul(verification_output)
+            job.verification_trace = _strip_nul(verification_trace)
+            _set_stage(
+                job,
+                "Verificacion recibida",
+                f"Fuentes web: {_count_web_sources(verification_trace)}. EduQG matches: {_count_eduqg_matches(verification_trace)}.",
+            )
+            _set_stage(job, "Aplicando correcciones", "Interpretando el reporte y generando la version final.")
+            corrected_output, correction_trace = apply_corrections_with_trace(job.toon_output, verification_output)
+            job.corrected_output = _strip_nul(corrected_output)
+            job.correction_trace = _strip_nul(correction_trace)
+            job.corrected_output, corrected_count = _finalize_mini_quality(job, job.corrected_output, "Correccion MINI")
         job.error = ""
         job.status = LessonJob.Status.CORRECTED
         job.processing_stage = "Listo"
@@ -248,7 +272,7 @@ def _append_log(current: str, stage: str, detail: str = "") -> str:
     return "\n".join(part for part in [current.strip(), line] if part)
 
 
-def _compile_mini_for_render(mini_text: str, stage: str) -> tuple[str, int]:
+def _compile_mini_for_render(mini_text: str, stage: str) -> tuple[str, int, str]:
     mini_block = extract_mini_lines(mini_text) or mini_text
     filtered, dropped, incoherent_mini = filter_incoherent_items(mini_block)
     if dropped:
@@ -256,6 +280,20 @@ def _compile_mini_for_render(mini_text: str, stage: str) -> tuple[str, int]:
     normalized = normalize_mini_text(filtered, stage=stage)
     assessment = validate_mini_parse(normalized, stage=stage)
     return normalized, len(assessment.items), incoherent_mini
+
+
+def _finalize_mini_quality(job: LessonJob, mini_text: str, stage: str) -> tuple[str, int]:
+    normalized, _count, _ = _compile_mini_for_render(mini_text, stage)
+    uniform, dropped, _bad_mini = filter_nonuniform_items(normalized)
+    if dropped:
+        job.processing_log = _append_log(
+            job.processing_log,
+            "Filtro final de calidad MINI",
+            f"Se descartaron {len(dropped)} items meta, publicitarios o semanticamente inconsistentes.",
+        )
+        job.save(update_fields=["processing_log", "updated_at"])
+        normalized, _count, _ = _compile_mini_for_render(uniform, f"{stage} filtrado")
+    return normalized, _count
 
 
 def _discard_processed_audio(job: LessonJob):
@@ -433,11 +471,20 @@ def _auto_repair_mini_coherence(job: LessonJob):
         "Revisando coherencia de items con IA local",
         "Qwen revisa si cada pregunta tiene sentido antes de verificar y guardar.",
     )
-    prompt, repaired, backend, trace = repair_mini_coherence(
-        before,
-        source_context=_job_context_for_ai(job),
-        backend="local",
-    )
+    try:
+        prompt, repaired, backend, trace = repair_mini_coherence(
+            before,
+            source_context=_job_context_for_ai(job),
+            backend="local",
+        )
+    except Exception as exc:
+        job.processing_log = _append_log(
+            job.processing_log,
+            "Coherencia MINI no aplicada",
+            f"{clean_ai_error(exc)}. Se conserva el MINI parseable y filtrado.",
+        )
+        job.save(update_fields=["processing_log", "updated_at"])
+        return
     repaired, item_count, _ = _compile_mini_for_render(repaired, "Coherencia MINI")
     changed = bool(trace.get("changed")) or repaired.strip() != before.strip()
     job.mini_coherence_prompt = prompt
@@ -553,6 +600,8 @@ def _fill_items_if_needed(
         fill_prompt = (
             f"Genera exactamente {needed} items MINI adicionales sobre el siguiente contenido. "
             f"Cada item debe ser una pregunta con ? o una completacion con ____. "
+            f"Ignora publicidad, sponsors, intro/outro, canal, narrador, likes, comentarios y referencias al video o la clase. "
+            f"No preguntes por la importancia del video ni por acciones sugeridas al final. "
             f"Distribuye las respuestas correctas entre A, B, C, D. "
             f"Varia los niveles Bloom (L1-L6).\n\n"
             f"CONTENIDO:\n{source_content[:4000]}\n\n"

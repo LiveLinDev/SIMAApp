@@ -420,14 +420,25 @@ def _parse_report(report_text: str) -> list:
             parts = line.split("|", 6)
             if len(parts) >= 6:
                 errors.append({
-                    "item_id": parts[1],
-                    "error_type": parts[2],
-                    "field": parts[3],
-                    "original": parts[4],
-                    "fix": parts[5],
-                    "justification": parts[6] if len(parts) > 6 else "",
+                    "item_id": _clean_report_value(parts[1]),
+                    "error_type": _clean_report_value(parts[2], "error_type"),
+                    "field": _clean_report_value(parts[3], "field"),
+                    "original": _clean_report_value(parts[4], "original"),
+                    "fix": _clean_report_value(parts[5], "fix"),
+                    "justification": _clean_report_value(parts[6], "justificacion") if len(parts) > 6 else "",
                 })
     return errors
+
+
+def _clean_report_value(value: str, key: str | None = None) -> str:
+    cleaned = (value or "").strip()
+    if key and cleaned.lower().startswith(f"{key.lower()}="):
+        cleaned = cleaned.split("=", 1)[1].strip()
+    elif "=" in cleaned and cleaned.split("=", 1)[0].lower() in {
+        "item_id", "error_type", "field", "original", "fix", "justificacion", "justification"
+    }:
+        cleaned = cleaned.split("=", 1)[1].strip()
+    return cleaned.strip().strip("\"'")
 
 
 def _apply_fix(item: MiniItem, err: dict):
@@ -442,7 +453,7 @@ def _apply_fix(item: MiniItem, err: dict):
                 {"text": option.rstrip("*"), "correct": option.endswith("*")}
                 for option in fixed_options
             ]
-        else:
+        elif len(fixed_options) < 2:
             correct_text = fix.rstrip("*")
             for opt in item.options:
                 opt["correct"] = opt["text"] == correct_text
@@ -561,6 +572,7 @@ def check_option_uniformity(item: MiniItem) -> list[str]:
     - Opciones fusionadas por comas (3 en 1)
     - Ratio de longitud > 3x (sesgo de longitud)
     - Menos de 4 opciones
+    - Preguntas meta sobre el video/clase o publicidad/call-to-action
     """
     problems = []
     opts = [o["text"] for o in item.options]
@@ -584,6 +596,10 @@ def check_option_uniformity(item: MiniItem) -> list[str]:
     semantic_problem = _question_option_semantic_problem(item.statement, opts)
     if semantic_problem:
         problems.append(semantic_problem)
+
+    item_quality_problem = _item_semantic_quality_problem(item.statement, opts)
+    if item_quality_problem:
+        problems.append(item_quality_problem)
 
     return problems
 
@@ -625,11 +641,75 @@ def _question_option_semantic_problem(statement: str, options: list[str]) -> str
     return ""
 
 
+def _item_semantic_quality_problem(statement: str, options: list[str]) -> str:
+    question = _quality_text(statement)
+    normalized_options = [_quality_text(option) for option in options]
+    joined_options = " ".join(normalized_options)
+    combined = f"{question} {joined_options}"
+
+    if _is_meta_media_question(question):
+        return "pregunta_meta_sobre_video_o_clase"
+
+    if _is_ad_or_call_to_action_content(combined):
+        return "pregunta_sobre_publicidad_o_call_to_action"
+
+    if _uses_generic_importance_scale(question, normalized_options):
+        return "escala_generica_de_importancia"
+
+    return ""
+
+
+def _is_meta_media_question(question: str) -> bool:
+    return any(marker in question for marker in _META_MEDIA_MARKERS)
+
+
+def _is_ad_or_call_to_action_content(text: str) -> bool:
+    return any(marker in text for marker in _AD_OR_CTA_MARKERS)
+
+
+def _uses_generic_importance_scale(question: str, options: list[str]) -> bool:
+    asks_importance = (
+        "que importancia" in question
+        or "cual es la importancia" in question
+        or "importancia tiene" in question
+    )
+    if not asks_importance:
+        return False
+
+    generic_count = sum(
+        1
+        for option in options
+        if any(marker in option for marker in _GENERIC_IMPORTANCE_OPTION_MARKERS)
+    )
+    return generic_count >= 3
+
+
 def _quality_text(value: str) -> str:
     text = unicodedata.normalize("NFKD", value or "")
     text = "".join(char for char in text if not unicodedata.combining(char))
     return re.sub(r"\s+", " ", text.lower()).strip()
 
+
+_META_MEDIA_MARKERS = {
+    "el video", "del video", "en el video", "este video", "ese video",
+    "video sugiere", "video plantea", "video menciona", "video explica",
+    " la clase", "esta clase", "en la clase", "del audio", "el audio",
+    "la transcripcion", "el material audiovisual", "el narrador", "la narradora",
+    "el canal", "este canal", "el episodio", "al final del video",
+}
+
+_AD_OR_CTA_MARKERS = {
+    "cabefai", "cabify", "universidad primada", "universidad privada",
+    "san juan bautista", "admision", "520 soles", "libreria solo para fumadores",
+    "biblioteca de merlin", "suscribete", "suscribirse", "dale like", "comentarios",
+    "comenta", "instagram", "tiktok", "patreon", "auspiciador", "publicidad",
+}
+
+_GENERIC_IMPORTANCE_OPTION_MARKERS = {
+    "importancia nula", "importancia baja", "importancia menor",
+    "importancia moderada", "importancia media", "importancia mayor",
+    "importancia alta", "poca importancia", "mucha importancia",
+}
 
 _LOCATION_OPTION_MARKERS = {
     "america", "africa", "asia", "europa", "oceania", "peru", "mexico", "brasil", "argentina",

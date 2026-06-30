@@ -1,0 +1,117 @@
+pageType: final
+background:
+  type: gradient
+  gradientType: radial
+  stops:
+    - {position: 0, color: "#1a2a38"}
+    - {position: 1, color: "#0f1a22"}
+elements:
+  - elementId: final-accent-line
+    elementType: shape
+    bounds: [540, 200, 200, 4]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: final-title
+    elementType: text
+    bounds: [140, 230, 1000, 70]
+    content:
+      style: "$title"
+      fontSize: 48
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>SIMA</p>
+  - elementId: final-subtitle
+    elementType: text
+    bounds: [240, 320, 800, 40]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 22
+      color: "$lightText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>De la clase a la dominación, paso a paso</p>
+  - elementId: final-desc
+    elementType: text
+    bounds: [240, 380, 800, 120]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 18
+      color: "$secondary"
+      align: [center, middle]
+      lineHeight: 1.6
+      text: |
+        <p>Convierte tus grabaciones y apuntes en material de estudio inteligente.</p>
+        <p>Evaluaciones adaptativas que entienden tu nivel.</p>
+        <p>Microaprendizaje que se siente como un juego.</p>
+  - elementId: final-badge-green
+    elementType: shape
+    bounds: [380, 530, 160, 40]
+    shapeName: roundRect
+    adjustments: [100000]
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: final-badge-green-text
+    elementType: text
+    bounds: [380, 530, 160, 40]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 14
+      color: "$lightText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Hecho en Perú</p>
+  - elementId: final-badge-blue
+    elementType: shape
+    bounds: [560, 530, 160, 40]
+    shapeName: roundRect
+    adjustments: [100000]
+    fill:
+      type: solid
+      color: "$info"
+  - elementId: final-badge-blue-text
+    elementType: text
+    bounds: [560, 530, 160, 40]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 14
+      color: "$lightText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Para universitarios</p>
+  - elementId: final-badge-yellow
+    elementType: shape
+    bounds: [740, 530, 160, 40]
+    shapeName: roundRect
+    adjustments: [100000]
+    fill:
+      type: solid
+      color: "$warning"
+  - elementId: final-badge-yellow-text
+    elementType: text
+    bounds: [740, 530, 160, 40]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 14
+      color: "$primary"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>En desarrollo activo</p>
+  - elementId: final-footer
+    elementType: text
+    bounds: [340, 600, 600, 30]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 14
+      color: "$secondary"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Sistema Inteligente de Microaprendizaje Adaptativo</p>

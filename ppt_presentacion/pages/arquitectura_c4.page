@@ -1,0 +1,317 @@
+pageType: content
+background:
+  type: solid
+  color: "$background"
+elements:
+  - elementId: arch-accent
+    elementType: shape
+    bounds: [60, 50, 4, 28]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: arch-title
+    elementType: text
+    bounds: [80, 48, 900, 34]
+    content:
+      style: "$subtitle"
+      fontSize: 26
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p>Arquitectura C4 — tres niveles de abstracción reales</p>
+  - elementId: arch-user-bg
+    elementType: shape
+    bounds: [60, 120, 140, 180]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    shadow:
+      blur: 8
+      color: "#00000010"
+      offset: [0, 3]
+  - elementId: arch-user-icon
+    elementType: icon
+    bounds: [105, 140, 40, 40]
+    iconName: "fas:user-graduate"
+    fill:
+      type: solid
+      color: "$info"
+  - elementId: arch-user-label
+    elementType: text
+    bounds: [65, 195, 130, 50]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 13
+      color: "$primary"
+      align: [center, top]
+      lineHeight: 1.3
+      text: |
+        <p><strong>Estudiante</strong></p>
+        <p><span style="font-size:11px; color:$secondary;">Navegador / Móvil</span></p>
+  - elementId: arch-arrow-user
+    elementType: shape
+    bounds: [210, 190, 50, 0]
+    shapeName: straightConnector1
+    arrow: [null, "arrow"]
+    border:
+      style: solid
+      width: 2
+      color: "$secondary"
+  - elementId: arch-web-bg
+    elementType: shape
+    bounds: [270, 100, 220, 220]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill:
+      type: solid
+      color: "$primary"
+    shadow:
+      blur: 12
+      color: "#00000018"
+      offset: [0, 4]
+  - elementId: arch-web-icon
+    elementType: icon
+    bounds: [360, 130, 40, 40]
+    iconName: "fas:server"
+    fill:
+      type: solid
+      color: "$lightText"
+  - elementId: arch-web-label
+    elementType: text
+    bounds: [280, 185, 200, 90]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 14
+      color: "$lightText"
+      align: [center, top]
+      lineHeight: 1.4
+      text: |
+        <p><strong>Web Application</strong></p>
+        <p><span style="font-size:12px; color:#ffffffaa;">Django 4.x</span></p>
+        <p><span style="font-size:12px; color:#ffffffaa;">Views · Models · Services · Templates</span></p>
+  - elementId: arch-arrow-db
+    elementType: shape
+    bounds: [500, 190, 60, 0]
+    shapeName: straightConnector1
+    arrow: [null, "arrow"]
+    border:
+      style: solid
+      width: 2
+      color: "$secondary"
+  - elementId: arch-db-bg
+    elementType: shape
+    bounds: [570, 140, 150, 100]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill:
+      type: solid
+      color: "$cardDarkBg"
+    shadow:
+      blur: 8
+      color: "#00000010"
+      offset: [0, 3]
+  - elementId: arch-db-icon
+    elementType: icon
+    bounds: [615, 155, 30, 30]
+    iconName: "fas:database"
+    fill:
+      type: solid
+      color: "$info"
+  - elementId: arch-db-label
+    elementType: text
+    bounds: [575, 195, 140, 35]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 12
+      color: "$lightText"
+      align: [center, top]
+      lineHeight: 1.3
+      text: |
+        <p><strong>PostgreSQL</strong></p>
+        <p><span style="font-size:11px; color:#ffffffaa;">SQLite dev</span></p>
+  - elementId: arch-arrow-storage
+    elementType: shape
+    bounds: [500, 230, 60, 0]
+    shapeName: straightConnector1
+    arrow: [null, "arrow"]
+    border:
+      style: solid
+      width: 2
+      color: "$secondary"
+  - elementId: arch-storage-bg
+    elementType: shape
+    bounds: [570, 260, 150, 80]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill:
+      type: solid
+      color: "$cardDarkBg"
+    shadow:
+      blur: 8
+      color: "#00000010"
+      offset: [0, 3]
+  - elementId: arch-storage-icon
+    elementType: icon
+    bounds: [615, 275, 30, 30]
+    iconName: "fas:folder-open"
+    fill:
+      type: solid
+      color: "$warning"
+  - elementId: arch-storage-label
+    elementType: text
+    bounds: [575, 310, 140, 20]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 12
+      color: "$lightText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Almacenamiento /media</p>
+  - elementId: arch-whisper-arrow
+    elementType: shape
+    bounds: [380, 330, 0, 60]
+    shapeName: straightConnector1
+    arrow: [null, "arrow"]
+    border:
+      style: solid
+      width: 2
+      color: "$secondary"
+  - elementId: arch-whisper-bg
+    elementType: shape
+    bounds: [250, 400, 160, 80]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill:
+      type: solid
+      color: "$cardDarkBg"
+    shadow:
+      blur: 8
+      color: "#00000010"
+      offset: [0, 3]
+  - elementId: arch-whisper-icon
+    elementType: icon
+    bounds: [295, 415, 30, 30]
+    iconName: "fas:microphone-lines"
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: arch-whisper-label
+    elementType: text
+    bounds: [255, 450, 150, 20]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 12
+      color: "$lightText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Whisper (local)</p>
+  - elementId: arch-claude-arrow
+    elementType: shape
+    bounds: [440, 330, 0, 60]
+    shapeName: straightConnector1
+    arrow: [null, "arrow"]
+    border:
+      style: solid
+      width: 2
+      color: "$secondary"
+  - elementId: arch-claude-bg
+    elementType: shape
+    bounds: [450, 400, 160, 80]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill:
+      type: solid
+      color: "$cardDarkBg"
+    shadow:
+      blur: 8
+      color: "#00000010"
+      offset: [0, 3]
+  - elementId: arch-claude-icon
+    elementType: icon
+    bounds: [495, 415, 30, 30]
+    iconName: "fas:robot"
+    fill:
+      type: solid
+      color: "$info"
+  - elementId: arch-claude-label
+    elementType: text
+    bounds: [455, 450, 150, 20]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 12
+      color: "$lightText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Claude API</p>
+  - elementId: arch-admin-bg
+    elementType: shape
+    bounds: [60, 400, 140, 80]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    shadow:
+      blur: 8
+      color: "#00000010"
+      offset: [0, 3]
+  - elementId: arch-admin-icon
+    elementType: icon
+    bounds: [105, 415, 30, 30]
+    iconName: "fas:user-shield"
+    fill:
+      type: solid
+      color: "$secondary"
+  - elementId: arch-admin-label
+    elementType: text
+    bounds: [65, 450, 130, 20]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 12
+      color: "$primary"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Admin</p>
+  - elementId: arch-admin-arrow
+    elementType: shape
+    bounds: [210, 430, 50, 0]
+    shapeName: straightConnector1
+    arrow: [null, "arrow"]
+    border:
+      style: solid
+      width: 2
+      color: "$secondary"
+  - elementId: arch-legend
+    elementType: text
+    bounds: [760, 120, 460, 340]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 14
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.6
+      text: |
+        <p><span style="color:$secondary;"><strong>■</strong></span>  <strong>Sistema Principal</strong> — SIMA Web App</p>
+        <p><span style="color:$info;"><strong>■</strong></span>  <strong>Usuario</strong> — Estudiante / Admin</p>
+        <p><span style="color:$warning;"><strong>■</strong></span>  <strong>Almacenamiento</strong> — Archivos locales</p>
+        <p><span style="color:$secondary;"><strong>■</strong></span>  <strong>Base de Datos</strong> — PostgreSQL / SQLite</p>
+        <p><span style="color:$secondary;"><strong>■</strong></span>  <strong>Servicios Externos</strong> — Claude API</p>
+        <p><span style="color:$secondary;"><strong>■</strong></span>  <strong>Servicios Locales</strong> — Whisper</p>
+        <p style="margin-top:16px"><strong>Componentes internos:</strong></p>
+        <p>Views · Models · Services · Forms · Templates</p>
+        <p>Django Admin · Auth · Context Processors</p>
+        <p style="margin-top:16px"><strong>Documentación:</strong> Structurizr DSL en /docs/c4-*.dsl</p>
+  - elementId: arch-footer-line
+    elementType: shape
+    bounds: [60, 660, 40, 3]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"

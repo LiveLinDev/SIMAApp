@@ -1,0 +1,54 @@
+pageType: chapter
+background:
+  type: gradient
+  gradientType: radial
+  stops:
+    - {position: 0, color: "#1a2a38"}
+    - {position: 1, color: "#0f1a22"}
+elements:
+  - elementId: ch04-num-bg
+    elementType: shape
+    bounds: [60, 40, 200, 200]
+    shapeName: ellipse
+    fill:
+      type: solid
+      color: "#24323f40"
+  - elementId: ch04-num
+    elementType: text
+    bounds: [60, 60, 180, 160]
+    content:
+      fontFamily: "Liter"
+      fontSize: 120
+      color: "#ffffff30"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>04</p>
+  - elementId: ch04-accent
+    elementType: shape
+    bounds: [60, 300, 80, 4]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: ch04-title
+    elementType: text
+    bounds: [60, 320, 700, 60]
+    content:
+      style: "$chapterTitle"
+      fontSize: 40
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p>Módulos Principales</p>
+  - elementId: ch04-desc
+    elementType: text
+    bounds: [60, 390, 800, 40]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 20
+      color: "$secondary"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p>Transcripción, generación, evaluación adaptativa y seguimiento del progreso</p>

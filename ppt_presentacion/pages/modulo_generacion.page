@@ -1,0 +1,197 @@
+pageType: content
+background:
+  type: solid
+  color: "$background"
+elements:
+  - elementId: mg-accent
+    elementType: shape
+    bounds: [60, 50, 4, 28]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: mg-title
+    elementType: text
+    bounds: [80, 48, 900, 34]
+    content:
+      style: "$subtitle"
+      fontSize: 26
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p>Módulo 2 — Generación de microcontenidos (MINI + IRT 3PL)</p>
+  - elementId: mg-card-1
+    elementType: shape
+    bounds: [60, 110, 360, 240]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    shadow:
+      blur: 10
+      color: "#00000010"
+      offset: [0, 3]
+  - elementId: mg-c1-icon
+    elementType: icon
+    bounds: [90, 140, 32, 32]
+    iconName: "fas:file-code"
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: mg-c1-head
+    elementType: text
+    bounds: [90, 185, 300, 24]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 18
+      color: "$primary"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Formato MINI</strong></p>
+  - elementId: mg-c1-body
+    elementType: text
+    bounds: [90, 215, 300, 115]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 13
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.5
+      text: |
+        <p>Cabecera: <strong>a|m=IRT3PL|d=YYYYMMDD|n=total|l=es|t=tema</strong></p>
+        <p style="margin-top:6px">Items: <strong>iN|bloom|topic|enunciado|ops|a,b,c|diff</strong></p>
+        <p style="margin-top:6px">Parámetros IRT: a (discriminación), b (dificultad), c (pseudoazar)</p>
+  - elementId: mg-card-2
+    elementType: shape
+    bounds: [460, 110, 360, 240]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    shadow:
+      blur: 10
+      color: "#00000010"
+      offset: [0, 3]
+  - elementId: mg-c2-icon
+    elementType: icon
+    bounds: [490, 140, 32, 32]
+    iconName: "fas:sliders"
+    fill:
+      type: solid
+      color: "$info"
+  - elementId: mg-c2-head
+    elementType: text
+    bounds: [490, 185, 300, 24]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 18
+      color: "$primary"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Calibración IRT 3PL</strong></p>
+  - elementId: mg-c2-body
+    elementType: text
+    bounds: [490, 215, 300, 115]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 13
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.5
+      text: |
+        <p><strong>a:</strong> 0.8–2.5 según nivel Bloom</p>
+        <p><strong>b:</strong> -1.5 a 2.0 (dificultad)</p>
+        <p><strong>c:</strong> base 1/4 opciones</p>
+        <p style="margin-top:6px">Regla de oro: enunciado con ? o ____. 4 opciones, misma categoría semántica, longitud similar.</p>
+  - elementId: mg-card-3
+    elementType: shape
+    bounds: [860, 110, 360, 240]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    shadow:
+      blur: 10
+      color: "#00000010"
+      offset: [0, 3]
+  - elementId: mg-c3-icon
+    elementType: icon
+    bounds: [890, 140, 32, 32]
+    iconName: "fas:server"
+    fill:
+      type: solid
+      color: "$warning"
+  - elementId: mg-c3-head
+    elementType: text
+    bounds: [890, 185, 300, 24]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 18
+      color: "$primary"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Backend dual</strong></p>
+  - elementId: mg-c3-body
+    elementType: text
+    bounds: [890, 215, 300, 115]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 13
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.5
+      text: |
+        <p><strong>Claude API</strong> (Anthropic) para verificación y generación cloud.</p>
+        <p style="margin-top:6px"><strong>Modelos locales</strong> vía API OpenAI-compatible (LM Studio, Ollama, Qwen3 30B).</p>
+        <p style="margin-top:6px">Selección dinámica según disponibilidad y plan del usuario.</p>
+  - elementId: mg-lower-card
+    elementType: shape
+    bounds: [60, 380, 1160, 240]
+    shapeName: roundRect
+    adjustments: [8000]
+    fill:
+      type: solid
+      color: "#e8f5e0"
+  - elementId: mg-lower-icon
+    elementType: icon
+    bounds: [90, 410, 32, 32]
+    iconName: "fas:check-double"
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: mg-lower-head
+    elementType: text
+    bounds: [90, 455, 400, 24]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 18
+      color: "$primary"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Reglas de calidad hardcoded</strong></p>
+  - elementId: mg-lower-body
+    elementType: text
+    bounds: [90, 490, 1100, 110]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 14
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.6
+      text: |
+        <p>• Todo enunciado es pregunta con <strong>?</strong> o completación con <strong>____</strong>  •  Las 4 alternativas son de la <strong>misma categoría semántica</strong>  •  Longitud similar (máx 2x entre más corta y más larga)  •  Opción correcta marcada con <strong>*</strong>  •  Distribución correcta en A/B/C/D (~25% cada una)  •  Parámetro c ≤ 0.35</p>
+        <p style="margin-top:8px">Implementado en: <strong>parse_mini.py</strong> (26,594 bytes) + <strong>services.py</strong> (60,768 bytes) + <strong>PROMPT.md</strong> (177 líneas)</p>
+  - elementId: mg-footer-line
+    elementType: shape
+    bounds: [60, 660, 40, 3]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"

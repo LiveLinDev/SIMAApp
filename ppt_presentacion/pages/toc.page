@@ -1,0 +1,262 @@
+pageType: table_of_contents
+background:
+  type: solid
+  color: "$background"
+elements:
+  - elementId: toc-label
+    elementType: text
+    bounds: [60, 50, 400, 30]
+    content:
+      fontFamily: "Liter"
+      fontSize: 14
+      color: "$secondary"
+      align: [left, middle]
+      wrap: false
+      letterSpacing: 2
+      text: |
+        <p>AGENDA</p>
+  - elementId: toc-accent
+    elementType: shape
+    bounds: [60, 90, 60, 4]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: toc-title
+    elementType: text
+    bounds: [60, 110, 400, 70]
+    content:
+      style: "$subtitle"
+      fontSize: 40
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p>Contenido</p>
+  - elementId: toc-card-1
+    elementType: shape
+    bounds: [60, 210, 360, 90]
+    shapeName: roundRect
+    adjustments: [16000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    shadow:
+      blur: 12
+      color: "#00000012"
+      offset: [0, 4]
+  - elementId: toc-num-1
+    elementType: text
+    bounds: [80, 225, 60, 60]
+    content:
+      fontFamily: "Liter"
+      fontSize: 36
+      color: "$accent"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p>01</p>
+  - elementId: toc-text-1
+    elementType: text
+    bounds: [150, 225, 250, 60]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 18
+      color: "$primary"
+      align: [left, middle]
+      lineHeight: 1.3
+      text: |
+        <p><strong>Contexto y Problemática</strong></p>
+        <p><span style="font-size:14px; color:$secondary;">El gap entre clase y repaso</span></p>
+  - elementId: toc-card-2
+    elementType: shape
+    bounds: [460, 210, 360, 90]
+    shapeName: roundRect
+    adjustments: [16000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    shadow:
+      blur: 12
+      color: "#00000012"
+      offset: [0, 4]
+  - elementId: toc-num-2
+    elementType: text
+    bounds: [480, 225, 60, 60]
+    content:
+      fontFamily: "Liter"
+      fontSize: 36
+      color: "$accent"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p>02</p>
+  - elementId: toc-text-2
+    elementType: text
+    bounds: [550, 225, 250, 60]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 18
+      color: "$primary"
+      align: [left, middle]
+      lineHeight: 1.3
+      text: |
+        <p><strong>Arquitectura de SIMA</strong></p>
+        <p><span style="font-size:14px; color:$secondary;">Django, PostgreSQL, IRT/CAT</span></p>
+  - elementId: toc-card-3
+    elementType: shape
+    bounds: [860, 210, 360, 90]
+    shapeName: roundRect
+    adjustments: [16000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    shadow:
+      blur: 12
+      color: "#00000012"
+      offset: [0, 4]
+  - elementId: toc-num-3
+    elementType: text
+    bounds: [880, 225, 60, 60]
+    content:
+      fontFamily: "Liter"
+      fontSize: 36
+      color: "$accent"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p>03</p>
+  - elementId: toc-text-3
+    elementType: text
+    bounds: [950, 225, 250, 60]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 18
+      color: "$primary"
+      align: [left, middle]
+      lineHeight: 1.3
+      text: |
+        <p><strong>Pipeline de Procesamiento</strong></p>
+        <p><span style="font-size:14px; color:$secondary;">11 etapas con trazabilidad</span></p>
+  - elementId: toc-card-4
+    elementType: shape
+    bounds: [60, 330, 360, 90]
+    shapeName: roundRect
+    adjustments: [16000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    shadow:
+      blur: 12
+      color: "#00000012"
+      offset: [0, 4]
+  - elementId: toc-num-4
+    elementType: text
+    bounds: [80, 345, 60, 60]
+    content:
+      fontFamily: "Liter"
+      fontSize: 36
+      color: "$accent"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p>04</p>
+  - elementId: toc-text-4
+    elementType: text
+    bounds: [150, 345, 250, 60]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 18
+      color: "$primary"
+      align: [left, middle]
+      lineHeight: 1.3
+      text: |
+        <p><strong>Módulos Principales</strong></p>
+        <p><span style="font-size:14px; color:$secondary;">Transcripción, generación, evaluación</span></p>
+  - elementId: toc-card-5
+    elementType: shape
+    bounds: [460, 330, 360, 90]
+    shapeName: roundRect
+    adjustments: [16000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    shadow:
+      blur: 12
+      color: "#00000012"
+      offset: [0, 4]
+  - elementId: toc-num-5
+    elementType: text
+    bounds: [480, 345, 60, 60]
+    content:
+      fontFamily: "Liter"
+      fontSize: 36
+      color: "$accent"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p>05</p>
+  - elementId: toc-text-5
+    elementType: text
+    bounds: [550, 345, 250, 60]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 18
+      color: "$primary"
+      align: [left, middle]
+      lineHeight: 1.3
+      text: |
+        <p><strong>UI/UX y Gamificación</strong></p>
+        <p><span style="font-size:14px; color:$secondary;">Mobile-first, Duolingo-style</span></p>
+  - elementId: toc-card-6
+    elementType: shape
+    bounds: [860, 330, 360, 90]
+    shapeName: roundRect
+    adjustments: [16000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    shadow:
+      blur: 12
+      color: "#00000012"
+      offset: [0, 4]
+  - elementId: toc-num-6
+    elementType: text
+    bounds: [880, 345, 60, 60]
+    content:
+      fontFamily: "Liter"
+      fontSize: 36
+      color: "$accent"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p>06</p>
+  - elementId: toc-text-6
+    elementType: text
+    bounds: [950, 345, 250, 60]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 18
+      color: "$primary"
+      align: [left, middle]
+      lineHeight: 1.3
+      text: |
+        <p><strong>Stack y Estado Actual</strong></p>
+        <p><span style="font-size:14px; color:$secondary;">Django 4.x, Python, IRT propio</span></p>
+  - elementId: toc-footer-line
+    elementType: shape
+    bounds: [60, 620, 40, 3]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: toc-footer
+    elementType: text
+    bounds: [60, 640, 300, 20]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 12
+      color: "$secondary"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p>20 diapositivas · 6 capítulos</p>

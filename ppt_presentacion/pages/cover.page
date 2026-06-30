@@ -1,0 +1,116 @@
+pageType: cover
+background:
+  type: gradient
+  gradientType: radial
+  stops:
+    - {position: 0, color: "#1a2a38"}
+    - {position: 1, color: "#0f1a22"}
+elements:
+  - elementId: cover-accent-line
+    elementType: shape
+    bounds: [540, 220, 200, 4]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: cover-title
+    elementType: text
+    bounds: [140, 240, 1000, 80]
+    content:
+      style: "$title"
+      fontSize: 64
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>SIMA</p>
+  - elementId: cover-subtitle
+    elementType: text
+    bounds: [140, 340, 1000, 40]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 24
+      color: "$lightText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Sistema Inteligente de Microaprendizaje Adaptativo</p>
+  - elementId: cover-desc
+    elementType: text
+    bounds: [240, 400, 800, 90]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 18
+      color: "$secondary"
+      align: [center, middle]
+      lineHeight: 1.6
+      text: |
+        <p>Plataforma web que transforma grabaciones y apuntes de clases universitarias</p>
+        <p>en material de estudio personalizado con evaluaciones adaptativas IRT 3PL</p>
+  - elementId: cover-badge-green
+    elementType: shape
+    bounds: [440, 520, 140, 36]
+    shapeName: roundRect
+    adjustments: [100000]
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: cover-badge-green-text
+    elementType: text
+    bounds: [440, 520, 140, 36]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 14
+      color: "$lightText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>IRT 3PL</p>
+  - elementId: cover-badge-blue
+    elementType: shape
+    bounds: [600, 520, 140, 36]
+    shapeName: roundRect
+    adjustments: [100000]
+    fill:
+      type: solid
+      color: "$info"
+  - elementId: cover-badge-blue-text
+    elementType: text
+    bounds: [600, 520, 140, 36]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 14
+      color: "$lightText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>CAT Motor</p>
+  - elementId: cover-badge-yellow
+    elementType: shape
+    bounds: [760, 520, 140, 36]
+    shapeName: roundRect
+    adjustments: [100000]
+    fill:
+      type: solid
+      color: "$warning"
+  - elementId: cover-badge-yellow-text
+    elementType: text
+    bounds: [760, 520, 140, 36]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 14
+      color: "$primary"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Bloom L1-L6</p>
+  - elementId: cover-footer
+    elementType: text
+    bounds: [340, 620, 600, 30]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 14
+      color: "$secondary"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Desarrollo de Aplicaciones — Objetivo 3 de 4</p>

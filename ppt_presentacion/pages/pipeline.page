@@ -1,0 +1,413 @@
+pageType: content
+background:
+  type: solid
+  color: "$background"
+elements:
+  - elementId: pipe-accent
+    elementType: shape
+    bounds: [60, 50, 4, 28]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: pipe-title
+    elementType: text
+    bounds: [80, 48, 900, 34]
+    content:
+      style: "$subtitle"
+      fontSize: 26
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p>Pipeline end-to-end: 11 etapas con trazabilidad completa</p>
+  - elementId: pipe-line
+    elementType: shape
+    bounds: [60, 200, 1160, 4]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$border"
+  - elementId: pipe-n1
+    elementType: shape
+    bounds: [60, 100, 36, 36]
+    shapeName: ellipse
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: pipe-n1-text
+    elementType: text
+    bounds: [60, 100, 36, 36]
+    content:
+      fontFamily: "Liter"
+      fontSize: 14
+      color: "$lightText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>1</p>
+  - elementId: pipe-n1-label
+    elementType: text
+    bounds: [40, 145, 80, 50]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 12
+      color: "$text"
+      align: [center, top]
+      lineHeight: 1.3
+      text: |
+        <p>Entrada audio/texto</p>
+  - elementId: pipe-n2
+    elementType: shape
+    bounds: [160, 100, 36, 36]
+    shapeName: ellipse
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: pipe-n2-text
+    elementType: text
+    bounds: [160, 100, 36, 36]
+    content:
+      fontFamily: "Liter"
+      fontSize: 14
+      color: "$lightText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>2</p>
+  - elementId: pipe-n2-label
+    elementType: text
+    bounds: [140, 145, 80, 50]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 12
+      color: "$text"
+      align: [center, top]
+      lineHeight: 1.3
+      text: |
+        <p>Whisper transcripción</p>
+  - elementId: pipe-n3
+    elementType: shape
+    bounds: [260, 100, 36, 36]
+    shapeName: ellipse
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: pipe-n3-text
+    elementType: text
+    bounds: [260, 100, 36, 36]
+    content:
+      fontFamily: "Liter"
+      fontSize: 14
+      color: "$lightText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>3</p>
+  - elementId: pipe-n3-label
+    elementType: text
+    bounds: [240, 145, 80, 50]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 12
+      color: "$text"
+      align: [center, top]
+      lineHeight: 1.3
+      text: |
+        <p>Generación MINI</p>
+  - elementId: pipe-n4
+    elementType: shape
+    bounds: [360, 100, 36, 36]
+    shapeName: ellipse
+    fill:
+      type: solid
+      color: "$warning"
+  - elementId: pipe-n4-text
+    elementType: text
+    bounds: [360, 100, 36, 36]
+    content:
+      fontFamily: "Liter"
+      fontSize: 14
+      color: "$primary"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>4</p>
+  - elementId: pipe-n4-label
+    elementType: text
+    bounds: [340, 145, 80, 50]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 12
+      color: "$text"
+      align: [center, top]
+      lineHeight: 1.3
+      text: |
+        <p>Filtro incoherentes</p>
+  - elementId: pipe-n5
+    elementType: shape
+    bounds: [460, 100, 36, 36]
+    shapeName: ellipse
+    fill:
+      type: solid
+      color: "$warning"
+  - elementId: pipe-n5-text
+    elementType: text
+    bounds: [460, 100, 36, 36]
+    content:
+      fontFamily: "Liter"
+      fontSize: 14
+      color: "$primary"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>5</p>
+  - elementId: pipe-n5-label
+    elementType: text
+    bounds: [440, 145, 80, 50]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 12
+      color: "$text"
+      align: [center, top]
+      lineHeight: 1.3
+      text: |
+        <p>Reparar incoherentes</p>
+  - elementId: pipe-n6
+    elementType: shape
+    bounds: [560, 100, 36, 36]
+    shapeName: ellipse
+    fill:
+      type: solid
+      color: "$warning"
+  - elementId: pipe-n6-text
+    elementType: text
+    bounds: [560, 100, 36, 36]
+    content:
+      fontFamily: "Liter"
+      fontSize: 14
+      color: "$primary"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>6</p>
+  - elementId: pipe-n6-label
+    elementType: text
+    bounds: [540, 145, 80, 50]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 12
+      color: "$text"
+      align: [center, top]
+      lineHeight: 1.3
+      text: |
+        <p>Coherencia general</p>
+  - elementId: pipe-n7
+    elementType: shape
+    bounds: [660, 100, 36, 36]
+    shapeName: ellipse
+    fill:
+      type: solid
+      color: "$info"
+  - elementId: pipe-n7-text
+    elementType: text
+    bounds: [660, 100, 36, 36]
+    content:
+      fontFamily: "Liter"
+      fontSize: 14
+      color: "$lightText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>7</p>
+  - elementId: pipe-n7-label
+    elementType: text
+    bounds: [640, 145, 80, 50]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 12
+      color: "$text"
+      align: [center, top]
+      lineHeight: 1.3
+      text: |
+        <p>Contexto verificación</p>
+  - elementId: pipe-n8
+    elementType: shape
+    bounds: [760, 100, 36, 36]
+    shapeName: ellipse
+    fill:
+      type: solid
+      color: "$info"
+  - elementId: pipe-n8-text
+    elementType: text
+    bounds: [760, 100, 36, 36]
+    content:
+      fontFamily: "Liter"
+      fontSize: 14
+      color: "$lightText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>8</p>
+  - elementId: pipe-n8-label
+    elementType: text
+    bounds: [740, 145, 80, 50]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 12
+      color: "$text"
+      align: [center, top]
+      lineHeight: 1.3
+      text: |
+        <p>Verificación IA</p>
+  - elementId: pipe-n9
+    elementType: shape
+    bounds: [860, 100, 36, 36]
+    shapeName: ellipse
+    fill:
+      type: solid
+      color: "$info"
+  - elementId: pipe-n9-text
+    elementType: text
+    bounds: [860, 100, 36, 36]
+    content:
+      fontFamily: "Liter"
+      fontSize: 14
+      color: "$lightText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>9</p>
+  - elementId: pipe-n9-label
+    elementType: text
+    bounds: [840, 145, 80, 50]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 12
+      color: "$text"
+      align: [center, top]
+      lineHeight: 1.3
+      text: |
+        <p>Correcciones</p>
+  - elementId: pipe-n10
+    elementType: shape
+    bounds: [960, 100, 36, 36]
+    shapeName: ellipse
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: pipe-n10-text
+    elementType: text
+    bounds: [960, 100, 36, 36]
+    content:
+      fontFamily: "Liter"
+      fontSize: 14
+      color: "$lightText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>10</p>
+  - elementId: pipe-n10-label
+    elementType: text
+    bounds: [940, 145, 80, 50]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 12
+      color: "$text"
+      align: [center, top]
+      lineHeight: 1.3
+      text: |
+        <p>Relleno items</p>
+  - elementId: pipe-n11
+    elementType: shape
+    bounds: [1060, 100, 36, 36]
+    shapeName: ellipse
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: pipe-n11-text
+    elementType: text
+    bounds: [1060, 100, 36, 36]
+    content:
+      fontFamily: "Liter"
+      fontSize: 14
+      color: "$lightText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>11</p>
+  - elementId: pipe-n11-label
+    elementType: text
+    bounds: [1040, 145, 100, 50]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 12
+      color: "$text"
+      align: [center, top]
+      lineHeight: 1.3
+      text: |
+        <p>Validación final</p>
+  - elementId: pipe-detail-card
+    elementType: shape
+    bounds: [60, 210, 1160, 420]
+    shapeName: roundRect
+    adjustments: [8000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    shadow:
+      blur: 10
+      color: "#00000010"
+      offset: [0, 3]
+  - elementId: pipe-detail-title
+    elementType: text
+    bounds: [90, 230, 400, 28]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 18
+      color: "$primary"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Detalle del pipeline (basado en código real)</strong></p>
+  - elementId: pipe-detail-left
+    elementType: text
+    bounds: [90, 270, 530, 340]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 14
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.6
+      text: |
+        <p><span style="color:$accent;"><strong>01-03</strong></span>  <strong>Ingesta y Generación</strong></p>
+        <p>Audio → Whisper local → texto crudo. El texto se divide en chunks de ~2,000 palabras. Cada chunk se envía a Qwen3 30B (local) o Claude API con el prompt PROMPT.md. Output: formato MINI con cabecera IRT3PL.</p>
+        <p style="margin-top:10px"><span style="color:$warning;"><strong>04-06</strong></span>  <strong>Filtrado y Reparación</strong></p>
+        <p>Filtro de incoherentes: detecta enunciados sin ? ni ____. 53 items generados → 22 incoherentes detectados. No se descartan: se reparan con prompt específico. Luego reparación de coherencia general con reescritura quirúrgica.</p>
+        <p style="margin-top:10px"><span style="color:$info;"><strong>07-09</strong></span>  <strong>Verificación y Corrección</strong></p>
+        <p>Búsqueda web vía ddgs + dataset EduQG local. El verificador revisa factualidad, plausibilidad de distractores, coherencia IRT/Bloom. Correcciones aplicadas línea por línea con fallback por nivel Bloom.</p>
+  - elementId: pipe-detail-right
+    elementType: text
+    bounds: [650, 270, 530, 340]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 14
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.6
+      text: |
+        <p><span style="color:$accent;"><strong>10-11</strong></span>  <strong>Relleno y Validación</strong></p>
+        <p>Si el conteo es menor al 80% del objetivo, se generan items adicionales (máx 15 por llamada). Validación final: n= en cabecera debe coincidir con items reales. Estado final: CORRECTED. Traza JSON completa persistida.</p>
+        <p style="margin-top:10px"><strong>Métricas reales de prueba:</strong></p>
+        <p>Input: 4,439 palabras (historia del Perú)</p>
+        <p>Generados: 53 items en 2 chunks</p>
+        <p>Post-filtro: 22 incoherentes detectados, no descartados</p>
+        <p>Post-recuperación: ~50 items, 0 incoherentes</p>
+        <p>Errores detectados: 10 (fechas, causas, nombres)</p>
+        <p>Correcciones aplicadas: 10 tras fix de IDs</p>
+  - elementId: pipe-footer-line
+    elementType: shape
+    bounds: [60, 660, 40, 3]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"

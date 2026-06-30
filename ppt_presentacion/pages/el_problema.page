@@ -1,0 +1,199 @@
+pageType: content
+background:
+  type: solid
+  color: "$background"
+elements:
+  - elementId: prob-accent
+    elementType: shape
+    bounds: [60, 50, 4, 28]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: prob-title
+    elementType: text
+    bounds: [80, 48, 900, 34]
+    content:
+      style: "$subtitle"
+      fontSize: 26
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p>El estudiante universitario peruano enfrenta un problema de retención</p>
+  - elementId: prob-card-1
+    elementType: shape
+    bounds: [60, 120, 360, 200]
+    shapeName: roundRect
+    adjustments: [16000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    shadow:
+      blur: 10
+      color: "#00000010"
+      offset: [0, 3]
+  - elementId: prob-icon-1
+    elementType: icon
+    bounds: [80, 140, 32, 32]
+    iconName: "fas:microphone"
+    fill:
+      type: solid
+      color: "$info"
+  - elementId: prob-head-1
+    elementType: text
+    bounds: [80, 185, 320, 28]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 18
+      color: "$primary"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Grabaciones sin utilidad</strong></p>
+  - elementId: prob-body-1
+    elementType: text
+    bounds: [80, 220, 320, 85]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 15
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.5
+      text: |
+        <p>Los estudiantes graban clases pero no tienen herramientas para convertir ese audio en material de estudio accionable.</p>
+  - elementId: prob-card-2
+    elementType: shape
+    bounds: [460, 120, 360, 200]
+    shapeName: roundRect
+    adjustments: [16000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    shadow:
+      blur: 10
+      color: "#00000010"
+      offset: [0, 3]
+  - elementId: prob-icon-2
+    elementType: icon
+    bounds: [480, 140, 32, 32]
+    iconName: "fas:file-lines"
+    fill:
+      type: solid
+      color: "$warning"
+  - elementId: prob-head-2
+    elementType: text
+    bounds: [480, 185, 320, 28]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 18
+      color: "$primary"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Apuntes masivos, sin estructura</strong></p>
+  - elementId: prob-body-2
+    elementType: text
+    bounds: [480, 220, 320, 85]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 15
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.5
+      text: |
+        <p>Textos largos que no se transforman en flashcards, quizzes ni resúmenes. El estudiante no sabe por dónde empezar.</p>
+  - elementId: prob-card-3
+    elementType: shape
+    bounds: [860, 120, 360, 200]
+    shapeName: roundRect
+    adjustments: [16000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    shadow:
+      blur: 10
+      color: "#00000010"
+      offset: [0, 3]
+  - elementId: prob-icon-3
+    elementType: icon
+    bounds: [880, 140, 32, 32]
+    iconName: "fas:chart-line"
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: prob-head-3
+    elementType: text
+    bounds: [880, 185, 320, 28]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 18
+      color: "$primary"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Sin seguimiento de progreso</strong></p>
+  - elementId: prob-body-3
+    elementType: text
+    bounds: [880, 220, 320, 85]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 15
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.5
+      text: |
+        <p>No existe plataforma que genere contenido a partir de las clases propias del estudiante y mida su dominio real.</p>
+  - elementId: prob-big-number
+    elementType: text
+    bounds: [60, 360, 200, 80]
+    content:
+      style: "$bigNumber"
+      fontSize: 64
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p>94%</p>
+  - elementId: prob-big-label
+    elementType: text
+    bounds: [60, 445, 400, 60]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 16
+      color: "$secondary"
+      align: [left, top]
+      lineHeight: 1.5
+      text: |
+        <p>de profesionales L&D favorece el microaprendizaje</p>
+  - elementId: prob-solution-bar
+    elementType: shape
+    bounds: [60, 530, 1160, 100]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill:
+      type: solid
+      color: "#e8f5e0"
+  - elementId: prob-solution-icon
+    elementType: icon
+    bounds: [90, 560, 36, 36]
+    iconName: "fas:lightbulb"
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: prob-solution-text
+    elementType: text
+    bounds: [145, 545, 1050, 70]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 18
+      color: "$primary"
+      align: [left, middle]
+      lineHeight: 1.5
+      text: |
+        <p><strong>SIMA</strong> convierte audio/texto de clase en resúmenes, flashcards, quizzes adaptativos y recomendaciones personalizadas — calibrado con IRT 3PL y taxonomía Bloom.</p>
+  - elementId: prob-footer-line
+    elementType: shape
+    bounds: [60, 660, 40, 3]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"

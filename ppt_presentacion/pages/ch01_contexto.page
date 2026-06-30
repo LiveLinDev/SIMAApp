@@ -1,0 +1,54 @@
+pageType: chapter
+background:
+  type: gradient
+  gradientType: radial
+  stops:
+    - {position: 0, color: "#1a2a38"}
+    - {position: 1, color: "#0f1a22"}
+elements:
+  - elementId: ch01-num-bg
+    elementType: shape
+    bounds: [60, 40, 200, 200]
+    shapeName: ellipse
+    fill:
+      type: solid
+      color: "#24323f40"
+  - elementId: ch01-num
+    elementType: text
+    bounds: [60, 60, 180, 160]
+    content:
+      fontFamily: "Liter"
+      fontSize: 120
+      color: "#ffffff30"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>01</p>
+  - elementId: ch01-accent
+    elementType: shape
+    bounds: [60, 300, 80, 4]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: ch01-title
+    elementType: text
+    bounds: [60, 320, 700, 60]
+    content:
+      style: "$chapterTitle"
+      fontSize: 40
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p>Contexto y Problemática</p>
+  - elementId: ch01-desc
+    elementType: text
+    bounds: [60, 390, 600, 40]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 20
+      color: "$secondary"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p>El gap entre la clase tradicional y el repaso efectivo</p>

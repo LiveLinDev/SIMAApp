@@ -1,0 +1,153 @@
+pageType: content
+background:
+  type: solid
+  color: "$background"
+elements:
+  - elementId: mt-accent
+    elementType: shape
+    bounds: [60, 50, 4, 28]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: mt-title
+    elementType: text
+    bounds: [80, 48, 900, 34]
+    content:
+      style: "$subtitle"
+      fontSize: 26
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p>Módulo 1 — Transcripción automática con Whisper local</p>
+  - elementId: mt-left-card
+    elementType: shape
+    bounds: [60, 110, 560, 380]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    shadow:
+      blur: 10
+      color: "#00000010"
+      offset: [0, 3]
+  - elementId: mt-left-icon
+    elementType: icon
+    bounds: [90, 140, 40, 40]
+    iconName: "fas:microphone-lines"
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: mt-left-head
+    elementType: text
+    bounds: [90, 195, 500, 28]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 20
+      color: "$primary"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>openai-whisper (modelo configurable)</strong></p>
+  - elementId: mt-left-body
+    elementType: text
+    bounds: [90, 235, 500, 230]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 15
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.6
+      text: |
+        <p>Archivo de audio subido a <strong>/media</strong> → transcrito localmente en el mismo servidor.</p>
+        <p style="margin-top:8px">Modelo configurable vía <strong>WHISPER_MODEL</strong> (default "base"). Sin dependencias de APIs externas de transcripción.</p>
+        <p style="margin-top:8px">Resultado: <strong>Transcript.full_text</strong> + segmentos por tiempo (TranscriptSegment: start_seconds, end_seconds, text, topic, confidence).</p>
+  - elementId: mt-right-card
+    elementType: shape
+    bounds: [660, 110, 560, 380]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    shadow:
+      blur: 10
+      color: "#00000010"
+      offset: [0, 3]
+  - elementId: mt-right-icon
+    elementType: icon
+    bounds: [690, 140, 40, 40]
+    iconName: "fas:wand-magic-sparkles"
+    fill:
+      type: solid
+      color: "$info"
+  - elementId: mt-right-head
+    elementType: text
+    bounds: [690, 195, 500, 28]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 20
+      color: "$primary"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Reparación de transcripción</strong></p>
+  - elementId: mt-right-body
+    elementType: text
+    bounds: [690, 235, 500, 230]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 15
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.6
+      text: |
+        <p>Si la transcripción tiene ruido o deformaciones, un prompt específico (<strong>transcript_prompt.md</strong>) reconstruye el contenido antes de generar items.</p>
+        <p style="margin-top:8px">Trazabilidad: <strong>transcript_repair_prompt</strong> + <strong>transcript_repair_trace</strong> (JSON) en LessonJob.</p>
+        <p style="margin-top:8px"><strong>Ventaja:</strong> costo cero, privacidad total del contenido académico.</p>
+  - elementId: mt-badge-cost
+    elementType: shape
+    bounds: [60, 520, 180, 40]
+    shapeName: roundRect
+    adjustments: [100000]
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: mt-badge-cost-text
+    elementType: text
+    bounds: [60, 520, 180, 40]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 14
+      color: "$lightText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Costo: $0</p>
+  - elementId: mt-badge-privacy
+    elementType: shape
+    bounds: [260, 520, 220, 40]
+    shapeName: roundRect
+    adjustments: [100000]
+    fill:
+      type: solid
+      color: "$info"
+  - elementId: mt-badge-privacy-text
+    elementType: text
+    bounds: [260, 520, 220, 40]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 14
+      color: "$lightText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Privacidad total</p>
+  - elementId: mt-footer-line
+    elementType: shape
+    bounds: [60, 660, 40, 3]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"

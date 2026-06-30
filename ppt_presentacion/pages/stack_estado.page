@@ -1,0 +1,133 @@
+pageType: content
+background:
+  type: solid
+  color: "$background"
+elements:
+  - elementId: se-accent
+    elementType: shape
+    bounds: [60, 50, 4, 28]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: se-title
+    elementType: text
+    bounds: [80, 48, 1000, 34]
+    content:
+      style: "$subtitle"
+      fontSize: 26
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p>Stack real y estado de implementación</p>
+  - elementId: se-left-card
+    elementType: shape
+    bounds: [60, 110, 560, 520]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    shadow:
+      blur: 10
+      color: "#00000010"
+      offset: [0, 3]
+  - elementId: se-left-icon
+    elementType: icon
+    bounds: [90, 140, 32, 32]
+    iconName: "fas:layer-group"
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: se-left-head
+    elementType: text
+    bounds: [90, 185, 500, 24]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 20
+      color: "$primary"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Stack tecnológico</strong></p>
+  - elementId: se-left-body
+    elementType: text
+    bounds: [90, 220, 500, 390]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 14
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.6
+      text: |
+        <p><strong>Backend:</strong> Django 4.x + Python 3.11</p>
+        <p><strong>Database:</strong> SQLite (dev) / PostgreSQL (prod)</p>
+        <p><strong>Frontend:</strong> HTML + CSS vanilla, zero framework JS</p>
+        <p><strong>Templates:</strong> 18 templates HTML + base.html + landing</p>
+        <p><strong>Estilos:</strong> CSS custom, responsive mobile-first, dark mode</p>
+        <p style="margin-top:10px"><strong>IA Generación:</strong> Anthropic Claude API + Qwen3 30B local vía OpenAI-compatible API</p>
+        <p><strong>IA Verificación:</strong> Claude API (más preciso)</p>
+        <p><strong>Transcripción:</strong> openai-whisper local</p>
+        <p><strong>Motor CAT:</strong> cat.py (157 líneas, puro Python + math)</p>
+        <p><strong>Pipeline:</strong> 11 etapas con trazabilidad JSON</p>
+        <p><strong>Tests:</strong> Pipeline validado con logs reales</p>
+  - elementId: se-right-card
+    elementType: shape
+    bounds: [660, 110, 560, 520]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    shadow:
+      blur: 10
+      color: "#00000010"
+      offset: [0, 3]
+  - elementId: se-right-icon
+    elementType: icon
+    bounds: [690, 140, 32, 32]
+    iconName: "fas:list-check"
+    fill:
+      type: solid
+      color: "$info"
+  - elementId: se-right-head
+    elementType: text
+    bounds: [690, 185, 500, 24]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 20
+      color: "$primary"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Estado: prácticamente terminado</strong></p>
+  - elementId: se-right-body
+    elementType: text
+    bounds: [690, 220, 500, 390]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 14
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.6
+      text: |
+        <p><span style="color:$accent;">✓</span> Transcripción automática (Whisper local)</p>
+        <p><span style="color:$accent;">✓</span> Generación MINI con IRT 3PL</p>
+        <p><span style="color:$accent;">✓</span> Verificación y correcciones automáticas</p>
+        <p><span style="color:$accent;">✓</span> Quiz adaptativo con motor CAT propio</p>
+        <p><span style="color:$accent;">✓</span> Flashcards con mastery tracking</p>
+        <p><span style="color:$accent;">✓</span> Gamificación (racha, XP, niveles)</p>
+        <p><span style="color:$accent;">✓</span> Dashboard con cursos, clases, progreso</p>
+        <p><span style="color:$accent;">✓</span> Planes de crédito y suscripción</p>
+        <p><span style="color:$accent;">✓</span> Compartir clases (privada/link/pública)</p>
+        <p style="margin-top:10px"><span style="color:$warning;">○</span> Motor SM-2 para flashcards (próximo)</p>
+        <p><span style="color:$warning;">○</span> Ranking por clase (próximo)</p>
+        <p><span style="color:$warning;">○</span> Notificaciones push (próximo)</p>
+        <p><span style="color:$warning;">○</span> Grupos de estudio (próximo)</p>
+  - elementId: se-footer-line
+    elementType: shape
+    bounds: [60, 660, 40, 3]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"

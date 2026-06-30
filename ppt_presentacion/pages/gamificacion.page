@@ -1,0 +1,237 @@
+pageType: content
+background:
+  type: solid
+  color: "$background"
+elements:
+  - elementId: gam-accent
+    elementType: shape
+    bounds: [60, 50, 4, 28]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: gam-title
+    elementType: text
+    bounds: [80, 48, 1000, 34]
+    content:
+      style: "$subtitle"
+      fontSize: 26
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p>Gamificación implementada — Créditos, racha, niveles y logros</p>
+  - elementId: gam-card-1
+    elementType: shape
+    bounds: [60, 110, 360, 230]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    shadow:
+      blur: 10
+      color: "#00000010"
+      offset: [0, 3]
+  - elementId: gam-c1-icon
+    elementType: icon
+    bounds: [90, 140, 36, 36]
+    iconName: "fas:coins"
+    fill:
+      type: solid
+      color: "$warning"
+  - elementId: gam-c1-head
+    elementType: text
+    bounds: [90, 190, 300, 24]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 18
+      color: "$primary"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Sistema de créditos</strong></p>
+  - elementId: gam-c1-body
+    elementType: text
+    bounds: [90, 220, 300, 100]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 14
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.5
+      text: |
+        <p>Cada acción consume/gana créditos: transcripción, generación, quiz, evaluación, regeneración.</p>
+        <p style="margin-top:4px">CreditLedgerEntry con balance_after trazable.</p>
+  - elementId: gam-card-2
+    elementType: shape
+    bounds: [460, 110, 360, 230]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    shadow:
+      blur: 10
+      color: "#00000010"
+      offset: [0, 3]
+  - elementId: gam-c2-icon
+    elementType: icon
+    bounds: [490, 140, 36, 36]
+    iconName: "fas:fire"
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: gam-c2-head
+    elementType: text
+    bounds: [490, 190, 300, 24]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 18
+      color: "$primary"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Racha y nivel</strong></p>
+  - elementId: gam-c2-body
+    elementType: text
+    bounds: [490, 220, 300, 100]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 14
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.5
+      text: |
+        <p>current_streak / longest_streak (días seguidos). total_xp. Nivel = (total_xp // 100) + 1.</p>
+        <p style="margin-top:4px">Meta diaria configurable (default 10 preguntas).</p>
+  - elementId: gam-card-3
+    elementType: shape
+    bounds: [860, 110, 360, 230]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    shadow:
+      blur: 10
+      color: "#00000010"
+      offset: [0, 3]
+  - elementId: gam-c3-icon
+    elementType: icon
+    bounds: [890, 140, 36, 36]
+    iconName: "fas:share-nodes"
+    fill:
+      type: solid
+      color: "$info"
+  - elementId: gam-c3-head
+    elementType: text
+    bounds: [890, 190, 300, 24]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 18
+      color: "$primary"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Visibilidad y compartir</strong></p>
+  - elementId: gam-c3-body
+    elementType: text
+    bounds: [890, 220, 300, 100]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 14
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.5
+      text: |
+        <p>Privada, compartida con link (share_token), pública en explorar.</p>
+        <p style="margin-top:4px">Modal funcional con backdrop, radio buttons, copiar link vía navigator.clipboard.</p>
+  - elementId: gam-plans-table
+    elementType: table
+    bounds: [60, 370, 1160, 230]
+    columnWidths: [0.20, 0.15, 0.20, 0.20, 0.25]
+    rowHeights: [0.20, 0.20, 0.20, 0.20, 0.20]
+    style: "$default"
+    rows:
+      - - content:
+            text: |
+              <p>Plan</p>
+        - content:
+            text: |
+              <p>Precio</p>
+        - content:
+            text: |
+              <p>Créditos</p>
+        - content:
+            text: |
+              <p>Clases API</p>
+        - content:
+            text: |
+              <p>API IA</p>
+      - - content:
+            text: |
+              <p>Gratis</p>
+        - content:
+            text: |
+              <p>$0</p>
+        - content:
+            text: |
+              <p>30</p>
+        - content:
+            text: |
+              <p>0</p>
+        - content:
+            text: |
+              <p>No</p>
+      - - content:
+            text: |
+              <p>Básico</p>
+        - content:
+            text: |
+              <p>$5/mes</p>
+        - content:
+            text: |
+              <p>600</p>
+        - content:
+            text: |
+              <p>6</p>
+        - content:
+            text: |
+              <p>Sí</p>
+      - - content:
+            text: |
+              <p>Pro</p>
+        - content:
+            text: |
+              <p>$10/mes</p>
+        - content:
+            text: |
+              <p>2200</p>
+        - content:
+            text: |
+              <p>20</p>
+        - content:
+            text: |
+              <p>Sí</p>
+      - - content:
+            text: |
+              <p>Ilimitado</p>
+        - content:
+            text: |
+              <p>$25/mes</p>
+        - content:
+            text: |
+              <p>Ilimitados</p>
+        - content:
+            text: |
+              <p>Infinitas</p>
+        - content:
+            text: |
+              <p>Sí</p>
+  - elementId: gam-footer-line
+    elementType: shape
+    bounds: [60, 660, 40, 3]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"

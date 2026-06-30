@@ -1,0 +1,135 @@
+pageType: content
+background:
+  type: solid
+  color: "$background"
+elements:
+  - elementId: dat-accent
+    elementType: shape
+    bounds: [60, 50, 4, 28]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: dat-title
+    elementType: text
+    bounds: [80, 48, 900, 34]
+    content:
+      style: "$subtitle"
+      fontSize: 26
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p>Modelo de datos relacional — 16 entidades principales</p>
+  - elementId: dat-table
+    elementType: table
+    bounds: [60, 100, 1160, 540]
+    columnWidths: [0.22, 0.35, 0.43]
+    rowHeights: [0.08, 0.092, 0.092, 0.092, 0.092, 0.092, 0.092, 0.092, 0.092, 0.092, 0.092]
+    style: "$default"
+    rows:
+      - - content:
+            text: |
+              <p>Entidad</p>
+        - content:
+            text: |
+              <p>Rol principal</p>
+        - content:
+            text: |
+              <p>Campos clave</p>
+      - - content:
+            text: |
+              <p>Course</p>
+        - content:
+            text: |
+              <p>Curso académico</p>
+        - content:
+            text: |
+              <p>name, academic_period, level, student_goal, main_topics</p>
+      - - content:
+            text: |
+              <p>ClassSession</p>
+        - content:
+            text: |
+              <p>Clase procesada</p>
+        - content:
+            text: |
+              <p>title, media_file, status, duration, processing_log</p>
+      - - content:
+            text: |
+              <p>Transcript</p>
+        - content:
+            text: |
+              <p>Transcripción completa</p>
+        - content:
+            text: |
+              <p>full_text, source, language, average_confidence</p>
+      - - content:
+            text: |
+              <p>Flashcard</p>
+        - content:
+            text: |
+              <p>Repaso espaciado</p>
+        - content:
+            text: |
+              <p>question, answer, mastery_level, next_review_at</p>
+      - - content:
+            text: |
+              <p>Quiz / Question</p>
+        - content:
+            text: |
+              <p>Evaluación adaptativa</p>
+        - content:
+            text: |
+              <p>irt_a, irt_b, irt_c, bloom_level, difficulty</p>
+      - - content:
+            text: |
+              <p>StudentAnswer</p>
+        - content:
+            text: |
+              <p>Respuesta del estudiante</p>
+        - content:
+            text: |
+              <p>theta_before, theta_after, is_correct, answered_at</p>
+      - - content:
+            text: |
+              <p>AdaptiveProfile</p>
+        - content:
+            text: |
+              <p>Perfil adaptativo por curso</p>
+        - content:
+            text: |
+              <p>theta, standard_error, weak_topics, strong_topics</p>
+      - - content:
+            text: |
+              <p>Profile</p>
+        - content:
+            text: |
+              <p>Usuario y gamificación</p>
+        - content:
+            text: |
+              <p>plan, current_streak, total_xp, level = xp//100 + 1</p>
+      - - content:
+            text: |
+              <p>CreditLedgerEntry</p>
+        - content:
+            text: |
+              <p>Sistema de créditos</p>
+        - content:
+            text: |
+              <p>action, amount, balance_after, metadata</p>
+      - - content:
+            text: |
+              <p>Recommendation</p>
+        - content:
+            text: |
+              <p>Recomendaciones</p>
+        - content:
+            text: |
+              <p>title, message, priority, status, due_at</p>
+  - elementId: dat-footer-line
+    elementType: shape
+    bounds: [60, 660, 40, 3]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"

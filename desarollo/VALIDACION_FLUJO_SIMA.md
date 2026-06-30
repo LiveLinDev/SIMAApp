@@ -226,7 +226,7 @@ Para validar una clase desde cero:
 # Modelo local
 LOCAL_MODEL=qwen3-30b-endpoint
 LOCAL_API_BASE=http://127.0.0.1:8003/v1
-LOCAL_API_TIMEOUT=120
+LOCAL_API_TIMEOUT=7200
 
 # Verificación
 VERIFICATION_DEFAULT_MODE=web

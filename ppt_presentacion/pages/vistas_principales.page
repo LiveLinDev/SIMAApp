@@ -1,0 +1,204 @@
+pageType: content
+background:
+  type: solid
+  color: "$background"
+elements:
+  - elementId: vp-accent
+    elementType: shape
+    bounds: [60, 50, 4, 28]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: vp-title
+    elementType: text
+    bounds: [80, 48, 1000, 34]
+    content:
+      style: "$subtitle"
+      fontSize: 26
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p>Vistas principales — Landing, Dashboard y Detalle de Clase</p>
+  - elementId: vp-mock-1
+    elementType: shape
+    bounds: [60, 110, 360, 260]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    shadow:
+      blur: 10
+      color: "#00000010"
+      offset: [0, 3]
+  - elementId: vp-m1-header
+    elementType: shape
+    bounds: [60, 110, 360, 50]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill:
+      type: solid
+      color: "$primary"
+  - elementId: vp-m1-header-text
+    elementType: text
+    bounds: [70, 118, 340, 34]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 16
+      color: "$lightText"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Landing Page (/)</strong></p>
+  - elementId: vp-m1-body
+    elementType: text
+    bounds: [80, 180, 320, 170]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 13
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.5
+      text: |
+        <p>• Hero con preview de producto</p>
+        <p>• Flujo de 3 pasos: curso → clase → repaso</p>
+        <p>• Bento grid de outputs</p>
+        <p>• Resumen, quiz, flashcards, recomendación</p>
+        <p>• Planes de suscripción visibles</p>
+  - elementId: vp-mock-2
+    elementType: shape
+    bounds: [460, 110, 360, 260]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    shadow:
+      blur: 10
+      color: "#00000010"
+      offset: [0, 3]
+  - elementId: vp-m2-header
+    elementType: shape
+    bounds: [460, 110, 360, 50]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill:
+      type: solid
+      color: "$info"
+  - elementId: vp-m2-header-text
+    elementType: text
+    bounds: [470, 118, 340, 34]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 16
+      color: "$lightText"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Dashboard (/dashboard/)</strong></p>
+  - elementId: vp-m2-body
+    elementType: text
+    bounds: [480, 180, 320, 170]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 13
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.5
+      text: |
+        <p>• Tabs: cursos, clases, explorar, guardadas, preferencias</p>
+        <p>• Header gamificado: racha, nivel, XP</p>
+        <p>• Grid de cursos con periodo, clases, tags</p>
+        <p>• Clases con badges de visibilidad y estado</p>
+  - elementId: vp-mock-3
+    elementType: shape
+    bounds: [860, 110, 360, 260]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    shadow:
+      blur: 10
+      color: "#00000010"
+      offset: [0, 3]
+  - elementId: vp-m3-header
+    elementType: shape
+    bounds: [860, 110, 360, 50]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: vp-m3-header-text
+    elementType: text
+    bounds: [870, 118, 340, 34]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 16
+      color: "$lightText"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Detalle de Clase (/clase/&lt;pk&gt;/)</strong></p>
+  - elementId: vp-m3-body
+    elementType: text
+    bounds: [880, 180, 320, 170]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 13
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.5
+      text: |
+        <p>• Meta: badges de preguntas, IRT, verificado</p>
+        <p>• Selector de intensidad: 5 / 10 / 15</p>
+        <p>• Barra gamificada con nivel y racha</p>
+        <p>• Acciones: repasar, pipeline, mapa, emparejar, completar</p>
+  - elementId: vp-detail-card
+    elementType: shape
+    bounds: [60, 400, 1160, 220]
+    shapeName: roundRect
+    adjustments: [8000]
+    fill:
+      type: solid
+      color: "#e8f5e0"
+  - elementId: vp-detail-icon
+    elementType: icon
+    bounds: [90, 430, 32, 32]
+    iconName: "fas:code"
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: vp-detail-head
+    elementType: text
+    bounds: [90, 475, 400, 24]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 18
+      color: "$primary"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Implementación real en templates</strong></p>
+  - elementId: vp-detail-body
+    elementType: text
+    bounds: [90, 510, 1100, 90]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 14
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.6
+      text: |
+        <p>18 templates HTML en <strong>templates/learning/</strong> + base.html + landing pages. CSS custom con variables CSS, responsive mobile-first, dark mode soportado.</p>
+        <p>Zero dependencias de build. Zero frameworks JS. Puro Django server-side rendering + CSS vanilla.</p>
+        <p>SVGs inline para todos los iconos (fuego, rayo, libro, candado, link, globo) — sin emojis, consistentes en todos los OS.</p>
+  - elementId: vp-footer-line
+    elementType: shape
+    bounds: [60, 660, 40, 3]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"

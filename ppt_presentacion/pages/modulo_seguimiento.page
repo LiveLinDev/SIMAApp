@@ -1,0 +1,192 @@
+pageType: content
+background:
+  type: solid
+  color: "$background"
+elements:
+  - elementId: ms-accent
+    elementType: shape
+    bounds: [60, 50, 4, 28]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: ms-title
+    elementType: text
+    bounds: [80, 48, 1000, 34]
+    content:
+      style: "$subtitle"
+      fontSize: 26
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p>Módulo 4 — Seguimiento de progreso y recomendaciones</p>
+  - elementId: ms-card-1
+    elementType: shape
+    bounds: [60, 110, 360, 230]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    shadow:
+      blur: 10
+      color: "#00000010"
+      offset: [0, 3]
+  - elementId: ms-c1-icon
+    elementType: icon
+    bounds: [90, 140, 32, 32]
+    iconName: "fas:user-gear"
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: ms-c1-head
+    elementType: text
+    bounds: [90, 185, 300, 24]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 18
+      color: "$primary"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>AdaptiveProfile</strong></p>
+  - elementId: ms-c1-body
+    elementType: text
+    bounds: [90, 215, 300, 110]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 14
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.5
+      text: |
+        <p>θ por curso, weak_topics, strong_topics, recommended_difficulty. Único por (user, course).</p>
+  - elementId: ms-card-2
+    elementType: shape
+    bounds: [460, 110, 360, 230]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    shadow:
+      blur: 10
+      color: "#00000010"
+      offset: [0, 3]
+  - elementId: ms-c2-icon
+    elementType: icon
+    bounds: [490, 140, 32, 32]
+    iconName: "fas:arrow-trend-up"
+    fill:
+      type: solid
+      color: "$info"
+  - elementId: ms-c2-head
+    elementType: text
+    bounds: [490, 185, 300, 24]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 18
+      color: "$primary"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>StudentAnswer</strong></p>
+  - elementId: ms-c2-body
+    elementType: text
+    bounds: [490, 215, 300, 110]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 14
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.5
+      text: |
+        <p>Cada respuesta guarda theta_before y theta_after. Evolución de habilidad trazable en el tiempo por curso y por tema.</p>
+  - elementId: ms-card-3
+    elementType: shape
+    bounds: [860, 110, 360, 230]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    shadow:
+      blur: 10
+      color: "#00000010"
+      offset: [0, 3]
+  - elementId: ms-c3-icon
+    elementType: icon
+    bounds: [890, 140, 32, 32]
+    iconName: "fas:bullseye"
+    fill:
+      type: solid
+      color: "$warning"
+  - elementId: ms-c3-head
+    elementType: text
+    bounds: [890, 185, 300, 24]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 18
+      color: "$primary"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Recommendation</strong></p>
+  - elementId: ms-c3-body
+    elementType: text
+    bounds: [890, 215, 300, 110]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 14
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.5
+      text: |
+        <p>Sistema de recomendaciones pendientes / completadas / descartadas con prioridad (1-5) y fecha límite.</p>
+  - elementId: ms-lower
+    elementType: shape
+    bounds: [60, 370, 1160, 250]
+    shapeName: roundRect
+    adjustments: [8000]
+    fill:
+      type: solid
+      color: "#e8f5e0"
+  - elementId: ms-lower-icon
+    elementType: icon
+    bounds: [90, 400, 32, 32]
+    iconName: "fas:chart-column"
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: ms-lower-head
+    elementType: text
+    bounds: [90, 445, 400, 24]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 18
+      color: "$primary"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Dashboard de progreso</strong></p>
+  - elementId: ms-lower-body
+    elementType: text
+    bounds: [90, 480, 1100, 120]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 15
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.6
+      text: |
+        <p>• Cursos activos, clases creadas, materiales listos, meta diaria configurable</p>
+        <p>• Heatmap de actividad, racha actual, nivel y XP totales</p>
+        <p>• StudyActivity tracking: XP y tiempo por actividad (clase subida, resumen revisado, flashcards repasadas, quiz completado)</p>
+        <p>• Modelos: Profile, UserPreference, StudyStreak, CreditLedgerEntry</p>
+  - elementId: ms-footer-line
+    elementType: shape
+    bounds: [60, 660, 40, 3]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"

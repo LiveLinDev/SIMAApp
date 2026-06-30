@@ -1,0 +1,193 @@
+pageType: content
+background:
+  type: solid
+  color: "$background"
+elements:
+  - elementId: mc-accent
+    elementType: shape
+    bounds: [60, 50, 4, 28]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: mc-title
+    elementType: text
+    bounds: [80, 48, 1000, 34]
+    content:
+      style: "$subtitle"
+      fontSize: 26
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p>Módulo 3 — Evaluaciones adaptativas (CAT motor propio)</p>
+  - elementId: mc-left
+    elementType: shape
+    bounds: [60, 110, 580, 400]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    shadow:
+      blur: 10
+      color: "#00000010"
+      offset: [0, 3]
+  - elementId: mc-left-icon
+    elementType: icon
+    bounds: [90, 140, 36, 36]
+    iconName: "fas:brain"
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: mc-left-head
+    elementType: text
+    bounds: [90, 190, 520, 28]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 20
+      color: "$primary"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Motor CAT implementado en cat.py</strong></p>
+  - elementId: mc-left-body
+    elementType: text
+    bounds: [90, 230, 520, 260]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 15
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.6
+      text: |
+        <p><strong>Selección de ítems:</strong> máxima información de Fisher (IRT 3PL), distribución balanceada por nivel Bloom, penalización por exposición.</p>
+        <p style="margin-top:8px"><strong>Configuración CAT:</strong> θ_init=0, θ_min=-3, θ_max=3, se_stop=0.30, max_items=10, exposure_control=SH.</p>
+        <p style="margin-top:8px"><strong>Estimación θ:</strong> máxima verosimilitud con 18 iteraciones, clamped al rango [-3, 3].</p>
+        <p style="margin-top:8px"><strong>Niveles de habilidad:</strong> Inicial → Básico → En desarrollo → Intermedio → Avanzado → Dominio → Experto.</p>
+  - elementId: mc-right-top
+    elementType: shape
+    bounds: [680, 110, 540, 180]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    shadow:
+      blur: 10
+      color: "#00000010"
+      offset: [0, 3]
+  - elementId: mc-rt-icon
+    elementType: icon
+    bounds: [710, 140, 32, 32]
+    iconName: "fas:gauge-high"
+    fill:
+      type: solid
+      color: "$info"
+  - elementId: mc-rt-head
+    elementType: text
+    bounds: [710, 185, 480, 24]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 18
+      color: "$primary"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>Intensidad configurable</strong></p>
+  - elementId: mc-rt-body
+    elementType: text
+    bounds: [710, 215, 480, 60]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 14
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.5
+      text: |
+        <p>5 preguntas (rápido, 3 min) · 10 preguntas (estándar, 6 min) · 15 preguntas (intenso, 10 min)</p>
+  - elementId: mc-right-bottom
+    elementType: shape
+    bounds: [680, 320, 540, 190]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill:
+      type: solid
+      color: "$cardBg"
+    shadow:
+      blur: 10
+      color: "#00000010"
+      offset: [0, 3]
+  - elementId: mc-rb-icon
+    elementType: icon
+    bounds: [710, 350, 32, 32]
+    iconName: "fas:chart-pie"
+    fill:
+      type: solid
+      color: "$warning"
+  - elementId: mc-rb-head
+    elementType: text
+    bounds: [710, 395, 480, 24]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 18
+      color: "$primary"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><strong>UI de resultado animada</strong></p>
+  - elementId: mc-rb-body
+    elementType: text
+    bounds: [710, 425, 480, 70]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 14
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.5
+      text: |
+        <p>Anillo SVG animado con stroke-dasharray, medallas de nivel, XP ganado, barras Bloom por nivel de pensamiento.</p>
+  - elementId: mc-badge-cat
+    elementType: shape
+    bounds: [60, 540, 160, 40]
+    shapeName: roundRect
+    adjustments: [100000]
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: mc-badge-cat-text
+    elementType: text
+    bounds: [60, 540, 160, 40]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 14
+      color: "$lightText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>157 líneas Python</p>
+  - elementId: mc-badge-pure
+    elementType: shape
+    bounds: [240, 540, 180, 40]
+    shapeName: roundRect
+    adjustments: [100000]
+    fill:
+      type: solid
+      color: "$info"
+  - elementId: mc-badge-pure-text
+    elementType: text
+    bounds: [240, 540, 180, 40]
+    content:
+      fontFamily: "QuattrocentoSans"
+      fontSize: 14
+      color: "$lightText"
+      align: [center, middle]
+      wrap: false
+      text: |
+        <p>Puro math + Python</p>
+  - elementId: mc-footer-line
+    elementType: shape
+    bounds: [60, 660, 40, 3]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"

@@ -1,0 +1,91 @@
+title: SIMA — Sistema Inteligente de Microaprendizaje Adaptativo
+size: [1280, 720]
+theme:
+  colors:
+    primary: "#24323f"
+    secondary: "#6b7a88"
+    accent: "#58cc02"
+    info: "#1cb0f6"
+    warning: "#ffc800"
+    background: "#f8fcff"
+    darkBg: "#0f1a22"
+    text: "#1a2633"
+    lightText: "#ffffff"
+    cardBg: "#ffffff"
+    cardDarkBg: "#1a2a38"
+    border: "#e0e8ef"
+  textStyles:
+    title:
+      fontSize: 56
+      color: "$lightText"
+      fontFamily: "Liter"
+      letterSpacing: 2
+      lineHeight: 1.1
+    chapterTitle:
+      fontSize: 44
+      color: "$lightText"
+      fontFamily: "Liter"
+      letterSpacing: 2
+      lineHeight: 1.2
+    subtitle:
+      fontSize: 28
+      color: "$primary"
+      fontFamily: "QuattrocentoSans"
+      lineHeight: 1.3
+    heading:
+      fontSize: 22
+      color: "$primary"
+      fontFamily: "QuattrocentoSans"
+      lineHeight: 1.3
+    body:
+      fontSize: 18
+      color: "$text"
+      fontFamily: "QuattrocentoSans"
+      lineHeight: 1.6
+    caption:
+      fontSize: 14
+      color: "$secondary"
+      fontFamily: "QuattrocentoSans"
+      lineHeight: 1.4
+    bigNumber:
+      fontSize: 56
+      color: "$accent"
+      fontFamily: "Liter"
+      lineHeight: 1.0
+  tableStyles:
+    default:
+      fontSize: 14
+      fontFamily: "QuattrocentoSans"
+      headerFill: "$primary"
+      headerColor: "$lightText"
+      headerBold: true
+      bodyFill:
+        - "#f8fcff"
+        - "#ffffff"
+      bodyColor: "$text"
+      firstColumnBold: true
+      border:
+        style: solid
+        width: 1
+        color: "$border"
+pages:
+  - pages/cover.page
+  - pages/toc.page
+  - pages/ch01_contexto.page
+  - pages/el_problema.page
+  - pages/ch02_arquitectura.page
+  - pages/arquitectura_c4.page
+  - pages/modelo_datos.page
+  - pages/ch03_pipeline.page
+  - pages/pipeline.page
+  - pages/ch04_modulos.page
+  - pages/modulo_transcripcion.page
+  - pages/modulo_generacion.page
+  - pages/modulo_cat.page
+  - pages/modulo_seguimiento.page
+  - pages/ch05_uiux.page
+  - pages/vistas_principales.page
+  - pages/gamificacion.page
+  - pages/ch06_stack.page
+  - pages/stack_estado.page
+  - pages/final.page

@@ -1,0 +1,1018 @@
+{
+  "assessment": {
+    "meta": {
+      "model": "IRT3PL",
+      "generated_at": "20260630",
+      "total_items": 28,
+      "language": "es",
+      "topic": "fotosintesis",
+      "bloom_distribution": [
+        5,
+        8,
+        12,
+        9,
+        0,
+        0
+      ],
+      "cat_params": {
+        "theta_init": 0,
+        "theta_min": -3,
+        "theta_max": 3,
+        "se_stop": 0.3,
+        "max_items": 20,
+        "exposure_control": "SH"
+      },
+      "raw": {
+        "m": "IRT3PL",
+        "d": "20260630",
+        "n": "28",
+        "l": "es",
+        "t": "fotosintesis",
+        "bd": "5,8,12,9,0,0",
+        "cat": "0,-3,3,0.3,20,SH"
+      }
+    },
+    "items": [
+      {
+        "id": "i1",
+        "bloom_level": "L1",
+        "topic": "Recordar",
+        "statement": "¿Cuál es el proceso biológico mediante el cual las plantas captan energía del sol?",
+        "options": [
+          {
+            "text": "fotosintesis",
+            "correct": true
+          },
+          {
+            "text": "respiracion",
+            "correct": false
+          },
+          {
+            "text": "fermentacion",
+            "correct": false
+          },
+          {
+            "text": "difusion",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 0.9,
+          "b": -1.5,
+          "c": 0.25
+        },
+        "difficulty_level": 1,
+        "cat_meta": {
+          "content_area": "Fund",
+          "exposure_cap": 0.2,
+          "cognitive_demand": "low"
+        }
+      },
+      {
+        "id": "i2",
+        "bloom_level": "L3",
+        "topic": "Aplicar",
+        "statement": "Si una planta se encuentra en un ambiente con baja luminosidad, ¿qué organelo celular es más importante para maximizar la captación de luz?",
+        "options": [
+          {
+            "text": "cloroplasto",
+            "correct": true
+          },
+          {
+            "text": "mitocondrio",
+            "correct": false
+          },
+          {
+            "text": "nucleo",
+            "correct": false
+          },
+          {
+            "text": "endotelio",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 1.5,
+          "b": -0.8,
+          "c": 0.25
+        },
+        "difficulty_level": 3,
+        "cat_meta": {
+          "content_area": "Fund",
+          "exposure_cap": 0.2,
+          "cognitive_demand": "medium"
+        }
+      },
+      {
+        "id": "i3",
+        "bloom_level": "L4",
+        "topic": "Analizar",
+        "statement": "¿Cuál de las siguientes reacciones no es parte del proceso de la fotosintesis?",
+        "options": [
+          {
+            "text": "reducción de dioxido de carbono",
+            "correct": true
+          },
+          {
+            "text": "absorción de luz",
+            "correct": false
+          },
+          {
+            "text": "fabricación de glucosa",
+            "correct": false
+          },
+          {
+            "text": "liberación de oxigeno",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 1.2,
+          "b": -0.5,
+          "c": 0.25
+        },
+        "difficulty_level": 4,
+        "cat_meta": {
+          "content_area": "Fund",
+          "exposure_cap": 0.2,
+          "cognitive_demand": "high"
+        }
+      },
+      {
+        "id": "i4",
+        "bloom_level": "L3",
+        "topic": "Aplicar",
+        "statement": "¿Dónde ocurre principalmente la fotosintesis en las plantas?",
+        "options": [
+          {
+            "text": "hojas",
+            "correct": true
+          },
+          {
+            "text": "raíces",
+            "correct": false
+          },
+          {
+            "text": "flores",
+            "correct": false
+          },
+          {
+            "text": "tallo",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 0.8,
+          "b": -1.3,
+          "c": 0.25
+        },
+        "difficulty_level": 2,
+        "cat_meta": {
+          "content_area": "Fund",
+          "exposure_cap": 0.2,
+          "cognitive_demand": "medium"
+        }
+      },
+      {
+        "id": "i5",
+        "bloom_level": "L4",
+        "topic": "Analizar",
+        "statement": "¿Qué papel desempeña la clorofila en el proceso de fotosintesis?",
+        "options": [
+          {
+            "text": "transporta oxigeno",
+            "correct": true
+          },
+          {
+            "text": "captura luz",
+            "correct": false
+          },
+          {
+            "text": "produce glucosa",
+            "correct": false
+          },
+          {
+            "text": "regula estomas",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 1.8,
+          "b": -0.9,
+          "c": 0.25
+        },
+        "difficulty_level": 3,
+        "cat_meta": {
+          "content_area": "Fund",
+          "exposure_cap": 0.2,
+          "cognitive_demand": "high"
+        }
+      },
+      {
+        "id": "i6",
+        "bloom_level": "L2",
+        "topic": "Comprender",
+        "statement": "¿Cuál es la importancia de los estomas en el proceso de fotosintesis?",
+        "options": [
+          {
+            "text": "regulan intercambio gaseoso",
+            "correct": true
+          },
+          {
+            "text": "producen cloroplastos",
+            "correct": false
+          },
+          {
+            "text": "fabrican glucosa",
+            "correct": false
+          },
+          {
+            "text": "absorben luz solar",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 1.0,
+          "b": -1.4,
+          "c": 0.25
+        },
+        "difficulty_level": 3,
+        "cat_meta": {
+          "content_area": "Fund",
+          "exposure_cap": 0.2,
+          "cognitive_demand": "medium"
+        }
+      },
+      {
+        "id": "i7",
+        "bloom_level": "L1",
+        "topic": "Recordar",
+        "statement": "¿Qué proceso permite a los organismos autotrofos fabricar su propio alimento?",
+        "options": [
+          {
+            "text": "fotosintesis",
+            "correct": true
+          },
+          {
+            "text": "respiración",
+            "correct": false
+          },
+          {
+            "text": "fermentación",
+            "correct": false
+          },
+          {
+            "text": "difusión",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 0.6,
+          "b": -1.2,
+          "c": 0.25
+        },
+        "difficulty_level": 1,
+        "cat_meta": {
+          "content_area": "Fund",
+          "exposure_cap": 0.2,
+          "cognitive_demand": "low"
+        }
+      },
+      {
+        "id": "i8",
+        "bloom_level": "L3",
+        "topic": "Aplicar",
+        "statement": "La fotosintesis se inicia en los ____ y requiere la luz solar.",
+        "options": [
+          {
+            "text": "cloroplastos",
+            "correct": true
+          },
+          {
+            "text": "tilacoides",
+            "correct": false
+          },
+          {
+            "text": "mitocondrias",
+            "correct": false
+          },
+          {
+            "text": "nucleos",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 2.5,
+          "b": 0.8,
+          "c": 0.25
+        },
+        "difficulty_level": 3,
+        "cat_meta": {
+          "content_area": "Fisica",
+          "exposure_cap": 0.2,
+          "cognitive_demand": "medium"
+        }
+      },
+      {
+        "id": "i9",
+        "bloom_level": "L4",
+        "topic": "Analizar",
+        "statement": "Durante la fosforilacion fotosintetica, que molécula se reduce para formar NADPH?",
+        "options": [
+          {
+            "text": "ATP",
+            "correct": true
+          },
+          {
+            "text": "NADP+",
+            "correct": false
+          },
+          {
+            "text": "clorofila",
+            "correct": false
+          },
+          {
+            "text": "H2O",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 1.5,
+          "b": 1.6,
+          "c": 0.25
+        },
+        "difficulty_level": 4,
+        "cat_meta": {
+          "content_area": "Bioquimica",
+          "exposure_cap": 0.3,
+          "cognitive_demand": "medium"
+        }
+      },
+      {
+        "id": "i10",
+        "bloom_level": "L2",
+        "topic": "Entender",
+        "statement": "¿Qué papel juega el oxígeno en la fotosintesis?",
+        "options": [
+          {
+            "text": "Donador de electrones",
+            "correct": true
+          },
+          {
+            "text": "Absorción de luz",
+            "correct": false
+          },
+          {
+            "text": "Producción de ATP",
+            "correct": false
+          },
+          {
+            "text": "Regulación del ciclo de Calvin",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 1.8,
+          "b": -1.5,
+          "c": 0.25
+        },
+        "difficulty_level": 2,
+        "cat_meta": {
+          "content_area": "Bioquimica",
+          "exposure_cap": 0.3,
+          "cognitive_demand": "medium"
+        }
+      },
+      {
+        "id": "i11",
+        "bloom_level": "L3",
+        "topic": "Aplicar",
+        "statement": "¿Qué ocurre si el oxígeno se fija a la rubisco en lugar del dioxido de carbono?",
+        "options": [
+          {
+            "text": "Se produce fotorespiración",
+            "correct": true
+          },
+          {
+            "text": "No hay efectos negativos",
+            "correct": false
+          },
+          {
+            "text": "Se incrementa la eficiencia fotosintetica",
+            "correct": false
+          },
+          {
+            "text": "Se libera dióxido de carbono",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 2.0,
+          "b": -1.8,
+          "c": 0.25
+        },
+        "difficulty_level": 3,
+        "cat_meta": {
+          "content_area": "Bioquimica",
+          "exposure_cap": 0.3,
+          "cognitive_demand": "medium"
+        }
+      },
+      {
+        "id": "i12",
+        "bloom_level": "L4",
+        "topic": "Analizar",
+        "statement": "¿Qué mecanismo especializado utiliza el maiz para reducir la fotorespiración?",
+        "options": [
+          {
+            "text": "Fotosíntesis C4",
+            "correct": true
+          },
+          {
+            "text": "Fotosíntesis CAM",
+            "correct": false
+          },
+          {
+            "text": "Fotosíntesis C3",
+            "correct": false
+          },
+          {
+            "text": "Fotosíntesis acuática",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 1.2,
+          "b": 1.9,
+          "c": 0.25
+        },
+        "difficulty_level": 4,
+        "cat_meta": {
+          "content_area": "Bioquimica",
+          "exposure_cap": 0.3,
+          "cognitive_demand": "medium"
+        }
+      },
+      {
+        "id": "i13",
+        "bloom_level": "L3",
+        "topic": "Aplicar",
+        "statement": "¿Dónde se libera el dioxido de carbono en la fotosíntesis CAM?",
+        "options": [
+          {
+            "text": "En las células del mesofilo",
+            "correct": true
+          },
+          {
+            "text": "Alrededor de la rubisco",
+            "correct": false
+          },
+          {
+            "text": "Dentro del estroma",
+            "correct": false
+          },
+          {
+            "text": "En los cloroplastos",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 1.0,
+          "b": -2.0,
+          "c": 0.25
+        },
+        "difficulty_level": 3,
+        "cat_meta": {
+          "content_area": "Bioquimica",
+          "exposure_cap": 0.3,
+          "cognitive_demand": "medium"
+        }
+      },
+      {
+        "id": "i15",
+        "bloom_level": "L3",
+        "topic": "Aplicar",
+        "statement": "¿Qué etapa del ciclo de Calvin produce gliceraldehído tres fosfato?",
+        "options": [
+          {
+            "text": "Fijación del dioxido de carbono",
+            "correct": true
+          },
+          {
+            "text": "Reducción del NADP+",
+            "correct": false
+          },
+          {
+            "text": "Regeneración de ribulosa bisfosfato",
+            "correct": false
+          },
+          {
+            "text": "Fotolisis del agua",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 2.3,
+          "b": -1.0,
+          "c": 0.25
+        },
+        "difficulty_level": 3,
+        "cat_meta": {
+          "content_area": "Bioquimica",
+          "exposure_cap": 0.3,
+          "cognitive_demand": "medium"
+        }
+      },
+      {
+        "id": "i17",
+        "bloom_level": "L2",
+        "topic": "Comprender",
+        "statement": "Los fitoplancton realizan aproximadamente la mitad de la fotosintesis global en los océanos. ¿Qué contribuye a esta alta eficiencia?",
+        "options": [
+          {
+            "text": "clorofila",
+            "correct": false
+          },
+          {
+            "text": "temperatura",
+            "correct": false
+          },
+          {
+            "text": "dioxido de carbono",
+            "correct": true
+          },
+          {
+            "text": "nutrientes",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 1.5,
+          "b": 0.3,
+          "c": 0.25
+        },
+        "difficulty_level": 3,
+        "cat_meta": {
+          "content_area": "Fisica",
+          "exposure_cap": 0.2,
+          "cognitive_demand": "medium"
+        }
+      },
+      {
+        "id": "i18",
+        "bloom_level": "L3",
+        "topic": "Aplicar",
+        "statement": "En el desarrollo de paneles solares fotovoltaicos, se busca imitar la capacidad de las plantas para capturar energía solar. ¿Qué proceso biológico es clave en este aspecto?",
+        "options": [
+          {
+            "text": "respiración",
+            "correct": false
+          },
+          {
+            "text": "fotosíntesis",
+            "correct": true
+          },
+          {
+            "text": "clorofila",
+            "correct": false
+          },
+          {
+            "text": "fermentación",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 1.2,
+          "b": 0.5,
+          "c": 0.3
+        },
+        "difficulty_level": 4,
+        "cat_meta": {
+          "content_area": "Quimica",
+          "exposure_cap": 0.2,
+          "cognitive_demand": "medium"
+        }
+      },
+      {
+        "id": "i19",
+        "bloom_level": "L1",
+        "topic": "Reconocer",
+        "statement": "La fotosintesis es un proceso biológico central para la vida en la Tierra. ¿Qué organismo es responsable de producir la mayor parte del oxígeno que respiramos?",
+        "options": [
+          {
+            "text": "hongos",
+            "correct": false
+          },
+          {
+            "text": "animales",
+            "correct": false
+          },
+          {
+            "text": "plantas",
+            "correct": true
+          },
+          {
+            "text": "microalgas",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 0.9,
+          "b": 0.5,
+          "c": 0.3
+        },
+        "difficulty_level": 4,
+        "cat_meta": {
+          "content_area": "Biología",
+          "exposure_cap": 0.2,
+          "cognitive_demand": "medium"
+        }
+      },
+      {
+        "id": "i20",
+        "bloom_level": "L4",
+        "topic": "Analizar",
+        "statement": "La fotosintesis C4 y CAM son adaptaciones especializadas en diferentes tipos de plantas para mejorar su eficiencia. ¿En qué tipo de ambiente se observa más a menudo la fotosíntesis C4?",
+        "options": [
+          {
+            "text": "climas secos",
+            "correct": false
+          },
+          {
+            "text": "ambientes acuáticos",
+            "correct": false
+          },
+          {
+            "text": "climas cálidos",
+            "correct": true
+          },
+          {
+            "text": "climas fríos",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 1.6,
+          "b": 0.5,
+          "c": 0.3
+        },
+        "difficulty_level": 4,
+        "cat_meta": {
+          "content_area": "Biología",
+          "exposure_cap": 0.2,
+          "cognitive_demand": "medium"
+        }
+      },
+      {
+        "id": "i22",
+        "bloom_level": "L2",
+        "topic": "Comprender",
+        "statement": "La deforestación y el cambio de uso del suelo pueden afectar negativamente la capacidad de los bosques tropicales como sumideros de carbono. ¿Qué proceso biológico es crucial para esta función?",
+        "options": [
+          {
+            "text": "respiración",
+            "correct": false
+          },
+          {
+            "text": "fotosíntesis",
+            "correct": true
+          },
+          {
+            "text": "clorofila",
+            "correct": false
+          },
+          {
+            "text": "fermentación",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 1.3,
+          "b": 0.5,
+          "c": 0.3
+        },
+        "difficulty_level": 4,
+        "cat_meta": {
+          "content_area": "Biología",
+          "exposure_cap": 0.2,
+          "cognitive_demand": "medium"
+        }
+      },
+      {
+        "id": "i23",
+        "bloom_level": "L1",
+        "topic": "Reconocer",
+        "statement": "La fotosíntesis ocurre principalmente en las hojas, dentro de los cloroplastos. ¿Qué estructura celular es responsable de la absorción de luz solar durante este proceso?",
+        "options": [
+          {
+            "text": "mitocondria",
+            "correct": false
+          },
+          {
+            "text": "nucleo",
+            "correct": true
+          },
+          {
+            "text": "cloroplasto",
+            "correct": false
+          },
+          {
+            "text": "ribosoma",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 0.8,
+          "b": 0.5,
+          "c": 0.3
+        },
+        "difficulty_level": 4,
+        "cat_meta": {
+          "content_area": "Biología",
+          "exposure_cap": 0.2,
+          "cognitive_demand": "medium"
+        }
+      },
+      {
+        "id": "i26",
+        "bloom_level": "L4",
+        "topic": "Analizar",
+        "statement": "En el ciclo del carbono, la fotosintesis ____ dioxido de carbono y lo incorpora a compuestos orgánicos",
+        "options": [
+          {
+            "text": "retira",
+            "correct": true
+          },
+          {
+            "text": "libera",
+            "correct": false
+          },
+          {
+            "text": "combina",
+            "correct": false
+          },
+          {
+            "text": "separa",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 1.6,
+          "b": 0.9,
+          "c": 0.25
+        },
+        "difficulty_level": 3,
+        "cat_meta": {
+          "content_area": "Fund",
+          "exposure_cap": 0.2,
+          "cognitive_demand": "medium"
+        }
+      },
+      {
+        "id": "i28",
+        "bloom_level": "L3",
+        "topic": "Aplicar",
+        "statement": "El oxigeno producido durante la fotosintesis se libera a la ____",
+        "options": [
+          {
+            "text": "atmósfera",
+            "correct": true
+          },
+          {
+            "text": "agua",
+            "correct": false
+          },
+          {
+            "text": "suelo",
+            "correct": false
+          },
+          {
+            "text": "bacterias",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 1.3,
+          "b": 0.7,
+          "c": 0.25
+        },
+        "difficulty_level": 3,
+        "cat_meta": {
+          "content_area": "Fund",
+          "exposure_cap": 0.2,
+          "cognitive_demand": "medium"
+        }
+      },
+      {
+        "id": "i29",
+        "bloom_level": "L4",
+        "topic": "Analizar",
+        "statement": "Las adaptaciones de las plantas a diferentes ambientes son posibles gracias a su ____ fotosintetico",
+        "options": [
+          {
+            "text": "estático",
+            "correct": true
+          },
+          {
+            "text": "dinámico y regulado",
+            "correct": false
+          },
+          {
+            "text": "静止的，动态和调节性",
+            "correct": false
+          },
+          {
+            "text": "固定不变的，动态和可调节的",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 1.5,
+          "b": 0.8,
+          "c": 0.25
+        },
+        "difficulty_level": 3,
+        "cat_meta": {
+          "content_area": "Fund",
+          "exposure_cap": 0.2,
+          "cognitive_demand": "medium"
+        }
+      },
+      {
+        "id": "i30",
+        "bloom_level": "L2",
+        "topic": "Comprender",
+        "statement": "La fotosintesis es crucial para la agricultura sostenible ya que maximiza el tiempo durante el cual el suelo está ocupado por plantas ____ activas",
+        "options": [
+          {
+            "text": "fotosintéticas",
+            "correct": true
+          },
+          {
+            "text": "respiratorias",
+            "correct": false
+          },
+          {
+            "text": "metabólicas",
+            "correct": false
+          },
+          {
+            "text": "químicas",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 1.0,
+          "b": 0.4,
+          "c": 0.25
+        },
+        "difficulty_level": 3,
+        "cat_meta": {
+          "content_area": "Fund",
+          "exposure_cap": 0.2,
+          "cognitive_demand": "medium"
+        }
+      },
+      {
+        "id": "i31",
+        "bloom_level": "L3",
+        "topic": "Reacción",
+        "statement": "¿En qué fase de la fotosíntesis se utilizan principalmente el agua y el dióxido de carbono?",
+        "options": [
+          {
+            "text": "fase oscura",
+            "correct": true
+          },
+          {
+            "text": "fase luminosa",
+            "correct": false
+          },
+          {
+            "text": "germinación",
+            "correct": false
+          },
+          {
+            "text": "ciclo etiolítico",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 0.9,
+          "b": -1.2,
+          "c": 0.25
+        },
+        "difficulty_level": 3,
+        "cat_meta": {
+          "content_area": "Fund",
+          "exposure_cap": 0.2,
+          "cognitive_demand": "medium"
+        }
+      },
+      {
+        "id": "i32",
+        "bloom_level": "L2",
+        "topic": "Comprender",
+        "statement": "¿Qué producen las plantas durante la fotosíntesis?",
+        "options": [
+          {
+            "text": "oxigeno",
+            "correct": true
+          },
+          {
+            "text": "glucosa y oxigeno",
+            "correct": false
+          },
+          {
+            "text": "cloroplastos",
+            "correct": false
+          },
+          {
+            "text": "luz solar",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 1.5,
+          "b": 0.3,
+          "c": 0.25
+        },
+        "difficulty_level": 4,
+        "cat_meta": {
+          "content_area": "-1.8",
+          "exposure_cap": -1.6,
+          "cognitive_demand": "low"
+        }
+      },
+      {
+        "id": "i33",
+        "bloom_level": "L1",
+        "topic": "Recordar",
+        "statement": "¿Qué necesitan principalmente las plantas para realizar la fotosíntesis?",
+        "options": [
+          {
+            "text": "agua y luz solar",
+            "correct": true
+          },
+          {
+            "text": "luz solar y oxigeno",
+            "correct": false
+          },
+          {
+            "text": "cloroplastos y agua",
+            "correct": false
+          },
+          {
+            "text": "hojas y clorofila",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 0.9,
+          "b": -1.2,
+          "c": 0.25
+        },
+        "difficulty_level": 1,
+        "cat_meta": {
+          "content_area": "Fund",
+          "exposure_cap": 0.2,
+          "cognitive_demand": "low"
+        }
+      },
+      {
+        "id": "i34",
+        "bloom_level": "L3",
+        "topic": "Aplicar",
+        "statement": "¿Dónde ocurre principalmente la fotosíntesis en las plantas?",
+        "options": [
+          {
+            "text": "cloroplastos",
+            "correct": true
+          },
+          {
+            "text": "hojas",
+            "correct": false
+          },
+          {
+            "text": "flores",
+            "correct": false
+          },
+          {
+            "text": "tallo",
+            "correct": false
+          }
+        ],
+        "irt": {
+          "a": 1.5,
+          "b": 0.3,
+          "c": 0.25
+        },
+        "difficulty_level": 3,
+        "cat_meta": {
+          "content_area": "-2.2",
+          "exposure_cap": -1.8,
+          "cognitive_demand": "medium"
+        }
+      }
+    ]
+  }
+}

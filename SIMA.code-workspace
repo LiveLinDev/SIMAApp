@@ -1,0 +1,132 @@
+{
+  "folders": [
+    {
+      "path": "E:\\PaginasQueHice\\SIMAApp",
+      "name": "SIMA App"
+    },
+    {
+      "path": "F:\\Agente",
+      "name": "Agente IA"
+    }
+  ],
+  "settings": {
+    "terminal.integrated.defaultProfile.windows": "Command Prompt",
+    "terminal.integrated.cwd": "${workspaceFolder:SIMA App}",
+    "editor.formatOnSave": true,
+    "files.exclude": {
+      "**/__pycache__": true,
+      "**/.git": true,
+      "**/node_modules": true,
+      "**/.playwright-cli": true,
+      "**/.codex": true,
+      "**/.claude": true,
+      "**/.vscode": false
+    },
+    "search.exclude": {
+      "**/__pycache__": true,
+      "**/node_modules": true,
+      "**/media": true,
+      "**/static": true,
+      "**/.git": true
+    },
+    "python.analysis.exclude": [
+      "**/node_modules",
+      "**/__pycache__",
+      "**/migrations"
+    ],
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.typeCheckingMode": "basic"
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "SIMA: Iniciar todo (modelo + app + publico)",
+        "type": "shell",
+        "command": "F:\\Agente\\iniciar-todo-sima.bat",
+        "problemMatcher": [],
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared",
+          "showReuseMessage": false,
+          "clear": false
+        }
+      },
+      {
+        "label": "SIMA: Iniciar solo app",
+        "type": "shell",
+        "command": "${workspaceFolder:SIMA App}\\start-all.bat",
+        "problemMatcher": [],
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared",
+          "showReuseMessage": false,
+          "clear": false
+        }
+      },
+      {
+        "label": "SIMA: Iniciar solo el modelo local",
+        "type": "shell",
+        "command": "${workspaceFolder:Agente IA}\\iniciar-endpoint-publico.bat",
+        "problemMatcher": [],
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared",
+          "showReuseMessage": false,
+          "clear": false
+        }
+      },
+      {
+        "label": "SIMA: Detener todo (cerrar puertos)",
+        "type": "shell",
+        "command": "powershell -NoProfile -Command \"8001,8003,8002,25564 | ForEach-Object { $p = $_; netstat -ano | Select-String \":$p .*LISTENING\" | ForEach-Object { ($_ -split '\s+')[-1] } | Select-Object -Unique | ForEach-Object { taskkill /F /PID $_ } }\"",
+        "problemMatcher": [],
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared",
+          "showReuseMessage": false,
+          "clear": false
+        }
+      }
+    ]
+  },
+  "extensions": {
+    "recommendations": [
+      "ms-python.python",
+      "ms-python.vscode-pylance",
+      "bat-bat.BAT-Highlight",
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode"
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Django: runserver",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${workspaceFolder:SIMA App}\\manage.py",
+        "args": [
+          "runserver",
+          "0.0.0.0:8002"
+        ],
+        "django": true,
+        "justMyCode": false,
+        "cwd": "${workspaceFolder:SIMA App}"
+      }
+    ]
+  }
+}

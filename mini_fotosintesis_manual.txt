@@ -1,0 +1,13 @@
+a|m=IRT3PL|d=20260630|n=12|l=es|t=fotosintesis|bd=4,4,2,1,1,0|cat=0,-3,3,0.3,10,SH
+i1|L1|Definicion|La fotosintesis es el proceso por el cual los organismos autotrofos convierten la energia ____ en energia quimica.|termica,luminosa*,electrica,cinetica|0.9,-1.2,0.25|1|Fund,0.2,low
+i2|L1|Reactantes|Que elementos principales necesitan las plantas para realizar la fotosintesis?|oxigeno tierra y azucar|luz solar agua y dioxido de carbono*|agua sal y oxigeno|sombra agua y proteinas|1.0,-1.5,0.25|1|Fund,0.2,low
+i3|L1|Productos|Cual de las siguientes sustancias es un producto directo de la fotosintesis?|arena|glucosa*|plastico|sal marina|0.9,-1.3,0.25|1|Fund,0.2,low
+i4|L1|Localizacion|En que parte de la planta ocurre principalmente la fotosintesis?|en las raices|en el tallo|en las hojas*|en las flores|1.0,-1.4,0.25|1|Fund,0.2,low
+i5|L1|Organelo|Dentro de cual organelo se realiza la fotosintesis?|mitocondria|cloroplasto*|nucleo|ribosoma|1.1,-1.0,0.25|2|Fund,0.2,low
+i6|L1|Pigmento|Cual es el pigmento principal que absorbe la luz solar durante la fotosintesis?|melanina|clorofila*|hemoglobina|caroteno|1.0,-1.1,0.25|2|Fund,0.2,low
+i7|L2|Etapas|Cual de las siguientes es una de las dos etapas principales de la fotosintesis?|digestion|respiracion|ciclo de Calvin*|fermentacion|1.2,-0.5,0.25|2|Comp,0.2,medium
+i8|L2|Reacciones luminosas|Donde ocurren las reacciones luminosas de la fotosintesis?|en el estroma|en la membrana de los tilacoides*|en el citoplasma|en la pared celular|1.3,-0.3,0.25|3|Comp,0.2,medium
+i9|L2|Ciclo de Calvin|Que moleculas producidas en las reacciones luminosas se usan en el ciclo de Calvin?|oxigeno y agua|ATP y NADPH*|glucosa y fructosa|ADP y NADP|1.4,0.0,0.25|3|Comp,0.2,medium
+i10|L3|Estomas|Si los estomas de una hoja se cierran por falta de agua que gas deja de entrar?|oxigeno|dioxido de carbono*|nitrogeno|hidrogeno|1.5,0.5,0.25|4|Apli,0.2,medium
+i11|L4|Factores limitantes|Un aumento excesivo de temperatura puede reducir la fotosintesis porque afecta principalmente a las ____.|enzimas*|membranas celulares|paredes celulares|vacuolas|1.7,1.0,0.25|5|Anal,0.2,high
+i12|L2|Tipos de fotosintesis|Cual de estos tipos de fotosintesis es tipico de cactus adaptados al desierto?|C3|C4|CAM*|C2|1.2,-0.2,0.25|3|Comp,0.2,medium

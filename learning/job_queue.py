@@ -178,16 +178,18 @@ def process_lesson_job(job_id: int, backend: str = "auto"):
             backend=resolved_backend,
             verification_mode=verification_mode,
         )
-        job.verification_prompt = verification_prompt
-        job.verification_output = verification_output
-        job.verification_trace = verification_trace
+        job.verification_prompt = _strip_nul(verification_prompt)
+        job.verification_output = _strip_nul(verification_output)
+        job.verification_trace = _strip_nul(verification_trace)
         _set_stage(
             job,
             "Verificacion recibida",
             f"Fuentes web: {_count_web_sources(verification_trace)}. EduQG matches: {_count_eduqg_matches(verification_trace)}.",
         )
         _set_stage(job, "Aplicando correcciones", "Interpretando el reporte y generando la version final.")
-        job.corrected_output, job.correction_trace = apply_corrections_with_trace(job.toon_output, verification_output)
+        corrected_output, correction_trace = apply_corrections_with_trace(job.toon_output, verification_output)
+        job.corrected_output = _strip_nul(corrected_output)
+        job.correction_trace = _strip_nul(correction_trace)
         job.corrected_output, corrected_count, _ = _compile_mini_for_render(job.corrected_output, "Correccion MINI")
         job.error = ""
         job.status = LessonJob.Status.CORRECTED
@@ -217,6 +219,17 @@ def process_lesson_job(job_id: int, backend: str = "auto"):
         job.processing_log = _append_log(job.processing_log, "Error", job.error)
         job.save(update_fields=["error", "status", "processing_stage", "processing_log", "updated_at"])
         _sync_class_session_status(job)
+
+
+def _strip_nul(value):
+    """Elimina caracteres NUL de strings, listas y dicts para evitar errores de PostgreSQL."""
+    if isinstance(value, str):
+        return value.replace("\x00", "")
+    if isinstance(value, list):
+        return [_strip_nul(item) for item in value]
+    if isinstance(value, dict):
+        return {key: _strip_nul(val) for key, val in value.items()}
+    return value
 
 
 def _set_stage(job: LessonJob, stage: str, detail: str = ""):

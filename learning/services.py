@@ -1493,6 +1493,9 @@ def _call_local(prompt: str, role: str = "generation") -> str:
     import re
     text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
 
+    # Algunos servidores locales (Ollama) pueden devolver bytes NUL que PostgreSQL rechaza
+    text = text.replace("\x00", "")
+
     return text
 
 

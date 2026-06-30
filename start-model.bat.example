@@ -1,0 +1,32 @@
+@echo off
+REM ===================================================================
+REM Ejemplo de arranque del modelo local de IA.
+REM Copia este archivo como "start-model.bat" y ajusta el comando
+REM para tu entorno (llama-server, LM Studio, etc.).
+REM El modelo debe quedar escuchando en 127.0.0.1:8001.
+REM ===================================================================
+
+setlocal
+
+echo.
+echo [INFO] Iniciando modelo local de IA en 127.0.0.1:8001...
+echo.
+
+REM --- Ejemplo 1: llama-server de llama.cpp ----------------------------
+REM Ajusta la ruta al ejecutable y al modelo GGUF.
+REM cd /d "C:\herramientas\llama.cpp\build\bin"
+REM llama-server.exe -m "C:\modelos\qwen3-30b-endpoint.gguf" --port 8001 -ngl 99 -c 32768 --host 127.0.0.1
+
+REM --- Ejemplo 2: LM Studio con CLI (si esta disponible) ---------------
+REM "C:\Users\%USERNAME%\.cache\lm-studio\bin\lmstudio-cli.exe" serve --port 8001
+
+REM --- Ejemplo 3: cualquier otro servidor compatible OpenAI ------------
+REM python mi_modelo_local.py
+
+echo.
+echo [ERROR] No has configurado el comando de inicio del modelo local.
+echo 1. Copia start-model.bat.example a start-model.bat
+echo 2. Edita start-model.bat con el comando que inicia tu modelo en 127.0.0.1:8001
+echo.
+pause
+exit /b 1

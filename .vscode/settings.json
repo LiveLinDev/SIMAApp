@@ -1,2 +1,14 @@
 {
+  "python.analysis.extraPaths": ["${workspaceFolder}"],
+  "python.testing.pytestEnabled": false,
+  "python.testing.unittestEnabled": false,
+  "files.associations": {
+    "*.bat": "bat"
+  },
+  "editor.formatOnSave": true,
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/.git": true,
+    "**/node_modules": true
+  }
 }

@@ -209,15 +209,26 @@ def estimate_adaptive_item_count(content_or_words, items_requested=None) -> int:
 def generation_chunk_plan(content: str, backend: str, items_requested=None) -> tuple[list[str], list[int], int]:
     word_count = len((content or "").split())
     total_items = estimate_adaptive_item_count(word_count, items_requested=items_requested)
-    chunk_words = max(300, int(getattr(settings, "LOCAL_CHUNK_WORDS", 2000)))
-    per_chunk_setting = "CLOUD_ITEMS_PER_CHUNK_MAX" if backend == "anthropic" else "LOCAL_ITEMS_PER_CHUNK_MAX"
-    fallback_per_chunk = 32 if backend == "anthropic" else 22
-    per_chunk_max = max(5, int(getattr(settings, per_chunk_setting, fallback_per_chunk)))
+
+    # Chunks mas pequenos para el backend local: menos tokens por llamada,
+    # menor probabilidad de timeout en textos largos.
+    if backend == "anthropic":
+        chunk_words = max(500, int(getattr(settings, "CLOUD_CHUNK_WORDS", 3000)))
+        per_chunk_max = max(5, int(getattr(settings, "CLOUD_ITEMS_PER_CHUNK_MAX", 32)))
+    else:
+        chunk_words = max(250, int(getattr(settings, "LOCAL_CHUNK_WORDS", 1500)))
+        per_chunk_max = max(5, int(getattr(settings, "LOCAL_ITEMS_PER_CHUNK_MAX", 15)))
+
+    # Para textos muy largos con modelos locales, forzar chunks mas pequenos
+    # y menos items por llamada, evitando timeouts por prompt excesivo.
+    if backend != "anthropic" and word_count > 10000:
+        chunk_words = min(chunk_words, 1500)
+        per_chunk_max = min(per_chunk_max, 15)
 
     chunks = chunk_content(content, max_words=chunk_words)
     needed_by_items = max(1, math.ceil(total_items / per_chunk_max))
     if needed_by_items > len(chunks):
-        adjusted_words = max(300, math.ceil(max(word_count, 1) / needed_by_items))
+        adjusted_words = max(250, math.ceil(max(word_count, 1) / needed_by_items))
         chunks = chunk_content(content, max_words=min(chunk_words, adjusted_words))
 
     budgets = allocate_item_budget(chunks, total_items, per_chunk_max=per_chunk_max)
@@ -287,62 +298,78 @@ def count_mini_items(raw_output: str) -> int:
     return len(re.findall(r"^i\d+\|", mini, flags=re.M))
 
 
-def _generate_items_legacy(content: str, backend: str = "auto", language="es", items_requested=None) -> tuple[str, str, str]:
+def _retry_if_few_items(prompt: str, mini: str, target_items: int, backend: str) -> tuple[str, str]:
+    """Reintenta una llamada si devolvio muy pocos items MINI."""
+    if count_mini_items(mini) >= max(3, math.floor(target_items * 0.75)):
+        return prompt, mini
+    retry_prompt = (
+        f"{prompt}\n\n"
+        f"REFUERZO: este chunk debe contener exactamente {target_items} lineas i<N>|. "
+        "Cubre conceptos distintos del fragmento y evita repetir enunciados."
+    )
+    retry_mini = call_generation_prompt(retry_prompt, backend=backend)
+    if count_mini_items(retry_mini) > count_mini_items(mini):
+        return retry_prompt, retry_mini
+    return prompt, mini
+
+
+def _generate_chunk_safe(
+    chunk: str,
+    chunk_items: int,
+    chunk_info: str,
+    backend: str,
+    language: str = "es",
+    depth: int = 0,
+) -> tuple[str, str]:
     """
-    Genera ítems IRT desde el contenido.
-
-    Claude: una sola llamada con el contenido completo. Contexto de 200k tokens,
-    no necesita chunking. items_requested="auto" → el modelo decide según SCALE_GUIDE.
-
-    Local (Qwen): si el contenido supera LOCAL_CHUNK_WORDS palabras, divide en chunks,
-    genera por separado y mergea. Cada chunk recibe /no_think para respuesta directa.
+    Genera items para un chunk. Si el modelo local hace timeout,
+    divide el chunk en dos partes mas pequenas y reintenta.
     """
-    backend = resolve_backend(backend)
+    if depth > 3:
+        # Ultimo recurso: pide menos items para un fragmento mas corto.
+        chunk_items = max(3, chunk_items // 2)
 
-    if backend == "anthropic":
-        # Claude: contenido completo, una sola llamada, sin /no_think
-        req = items_requested or "auto"
-        prompt = build_generation_prompt(content, language=language, items_requested=req)
-        result = call_ai(prompt, backend="anthropic", role="generation")
-        return prompt, result, backend
-
-    # backend == "local" (Qwen u otro modelo local)
-    word_count = len(content.split())
-    chunk_max = int(getattr(settings, "LOCAL_CHUNK_WORDS", 2000))
-    local_items = items_requested or getattr(settings, "LOCAL_ITEMS_REQUESTED", "auto")
-
-    if word_count <= chunk_max:
-        # contenido corto — una sola llamada con /no_think
-        prompt = build_generation_prompt(
-            content, language=language, items_requested=local_items
+    prompt = build_generation_prompt(
+        chunk,
+        language=language,
+        items_requested=chunk_items,
+        chunk_info=chunk_info,
+    )
+    try:
+        mini = call_generation_prompt(prompt, backend=backend)
+    except LocalAITimeoutError:
+        words = chunk.split()
+        if len(words) < 200 or depth > 3:
+            raise
+        mid = len(words) // 2
+        first = " ".join(words[:mid])
+        second = " ".join(words[mid:])
+        half_items = max(3, chunk_items // 2)
+        prompt1, mini1 = _generate_chunk_safe(
+            first, half_items, chunk_info + " [parte A]", backend, language, depth + 1
         )
-        result = call_ai(prompt + "\n/no_think", backend="local", role="generation")
-        return prompt, result, backend
-
-    # contenido largo — chunking
-    chunks = chunk_content(content, max_words=chunk_max)
-    all_prompts = []
-    all_minis = []
-
-    for i, chunk in enumerate(chunks, 1):
-        prompt = build_generation_prompt(
-            chunk, language=language,
-            items_requested=local_items,
-            chunk_info=f"{i} de {len(chunks)}"
+        prompt2, mini2 = _generate_chunk_safe(
+            second, max(3, chunk_items - half_items), chunk_info + " [parte B]", backend, language, depth + 1
         )
-        mini = call_ai(prompt + "\n/no_think", backend="local", role="generation")
-        all_prompts.append(f"--- chunk {i}/{len(chunks)} ---\n{prompt}")
-        all_minis.append(mini)
+        merged = _get_merge_fn()([mini1, mini2])
+        combined_prompt = prompt1 + "\n\n--- division por timeout ---\n\n" + prompt2
+        return combined_prompt, merged
 
-    merged = _get_merge_fn()(all_minis)
-    combined_prompt = "\n\n".join(all_prompts)
-    return combined_prompt, merged, backend
+    prompt, mini = _retry_if_few_items(prompt, mini, chunk_items, backend=backend)
+    return prompt, mini
 
 
-def generate_items(content: str, backend: str = "auto", language="es", items_requested=None) -> tuple[str, str, str]:
+def generate_items(
+    content: str,
+    backend: str = "auto",
+    language: str = "es",
+    items_requested=None,
+    progress_callback=None,
+) -> tuple[str, str, str]:
     """
     Genera bancos MINI con un presupuesto adaptativo y llamadas stateless.
     Cada chunk recibe un objetivo numerico pequeno para evitar salidas truncadas.
+    Si un chunk local hace timeout, se divide automaticamente.
     """
     backend = resolve_backend(backend)
     configured_items = items_requested or getattr(settings, "LOCAL_ITEMS_REQUESTED", "auto")
@@ -351,16 +378,7 @@ def generate_items(content: str, backend: str = "auto", language="es", items_req
     if len(chunks) == 1:
         prompt = build_generation_prompt(content, language=language, items_requested=budgets[0])
         result = call_generation_prompt(prompt, backend=backend)
-        if count_mini_items(result) < max(3, math.floor(budgets[0] * 0.75)):
-            retry_prompt = (
-                f"{prompt}\n\n"
-                f"REFUERZO: la respuesta debe contener exactamente {budgets[0]} lineas i<N>|. "
-                "No reduzcas el banco si hay conceptos evaluables suficientes."
-            )
-            retry_result = call_generation_prompt(retry_prompt, backend=backend)
-            if count_mini_items(retry_result) > count_mini_items(result):
-                prompt = retry_prompt
-                result = retry_result
+        prompt, result = _retry_if_few_items(prompt, result, budgets[0], backend=backend)
         return prompt, result, backend
 
     all_prompts = []
@@ -370,25 +388,14 @@ def generate_items(content: str, backend: str = "auto", language="es", items_req
             f"{i} de {len(chunks)}; objetivo_global={total_items}; "
             f"objetivo_chunk={chunk_items}; generar exactamente {chunk_items} items unicos"
         )
-        prompt = build_generation_prompt(
-            chunk,
-            language=language,
-            items_requested=chunk_items,
-            chunk_info=chunk_info,
-        )
-        mini = call_generation_prompt(prompt, backend=backend)
-        if count_mini_items(mini) < max(3, math.floor(chunk_items * 0.75)):
-            retry_prompt = (
-                f"{prompt}\n\n"
-                f"REFUERZO: este chunk debe contener exactamente {chunk_items} lineas i<N>|. "
-                "Cubre conceptos distintos del fragmento y evita repetir enunciados."
-            )
-            retry_mini = call_generation_prompt(retry_prompt, backend=backend)
-            if count_mini_items(retry_mini) > count_mini_items(mini):
-                prompt = retry_prompt
-                mini = retry_mini
+        prompt, mini = _generate_chunk_safe(chunk, chunk_items, chunk_info, backend=backend, language=language)
         all_prompts.append(f"--- chunk {i}/{len(chunks)} ---\n{prompt}")
         all_minis.append(mini)
+        if progress_callback:
+            try:
+                progress_callback(i, len(chunks), _get_merge_fn()(all_minis))
+            except Exception:
+                pass
 
     merged = _get_merge_fn()(all_minis)
     plan_header = (

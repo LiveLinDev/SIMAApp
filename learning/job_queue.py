@@ -121,7 +121,21 @@ def process_lesson_job(job_id: int, backend: str = "auto"):
                 f"en {len(chunks)} llamadas ({', '.join(str(value) for value in budgets)})."
             ),
         )
-        generation_prompt, toon_output, resolved_backend = generate_items(content, backend=requested_backend)
+
+        def _progress_callback(done_index: int, total_chunks: int, partial_mini: str):
+            partial_count = count_mini_items(partial_mini)
+            job.processing_log = _append_log(
+                job.processing_log,
+                f"Chunk {done_index}/{total_chunks} completado",
+                f"{partial_count} items generados hasta ahora; reiniciando contexto para el siguiente chunk.",
+            )
+            job.save(update_fields=["processing_log", "updated_at"])
+
+        generation_prompt, toon_output, resolved_backend = generate_items(
+            content,
+            backend=requested_backend,
+            progress_callback=_progress_callback,
+        )
         toon_output, item_count, incoherent_mini = _compile_mini_for_render(toon_output, "Generacion MINI")
 
         # Recuperar items incoherentes (enunciados sin ? ni ____)

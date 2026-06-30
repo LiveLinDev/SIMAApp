@@ -1,0 +1,346 @@
+- generic [ref=f5e2]:
+  - banner [ref=f5e3]:
+    - link "SIMA inicio" [ref=f5e4] [cursor=pointer]:
+      - /url: /
+      - generic [ref=f5e5]: //
+      - generic [ref=f5e6]: .
+      - strong [ref=f5e7]: SIMA
+    - navigation "Navegacion principal" [ref=f5e8]:
+      - link "Inicio" [ref=f5e9] [cursor=pointer]:
+        - /url: /dashboard/
+      - link "Cursos" [ref=f5e10] [cursor=pointer]:
+        - /url: /cursos/nuevo/
+      - link ".mini" [ref=f5e11] [cursor=pointer]:
+        - /url: /mini
+      - link "Benchmark" [ref=f5e12] [cursor=pointer]:
+        - /url: /mini/benchmark/
+      - link "Planes" [ref=f5e13] [cursor=pointer]:
+        - /url: /planes/
+      - button "Salir" [ref=f5e15] [cursor=pointer]
+  - generic [ref=f5e16]:
+    - complementary "Panel de usuario" [ref=f5e17]:
+      - generic [ref=f5e19]:
+        - generic [ref=f5e20]:
+          - paragraph [ref=f5e21]: Cuenta activa
+          - button "Cambiar a modo oscuro" [ref=f5e22]
+        - heading "apoapio" [level=2] [ref=f5e23]
+        - text: Basico API - Nivel 1
+      - navigation "Secciones del dashboard" [ref=f5e24]:
+        - link "Cursos 3" [ref=f5e25] [cursor=pointer]:
+          - /url: /dashboard/
+          - generic [ref=f5e26]: Cursos
+          - generic [ref=f5e27]: "3"
+        - link "Mis clases 5" [ref=f5e28] [cursor=pointer]:
+          - /url: /dashboard/?tab=mis-clases
+          - generic [ref=f5e29]: Mis clases
+          - generic [ref=f5e30]: "5"
+        - link "Horarios 4" [ref=f5e31] [cursor=pointer]:
+          - /url: /dashboard/?tab=horario
+          - generic [ref=f5e32]: Horarios
+          - generic [ref=f5e33]: "4"
+        - link "Explorar 0" [ref=f5e34] [cursor=pointer]:
+          - /url: /dashboard/?tab=explorar
+          - generic [ref=f5e35]: Explorar
+          - generic [ref=f5e36]: "0"
+        - link "Preferencias 10" [ref=f5e37] [cursor=pointer]:
+          - /url: /dashboard/?tab=preferencias
+          - generic [ref=f5e38]: Preferencias
+          - generic [ref=f5e39]: "10"
+      - generic [ref=f5e40]:
+        - paragraph [ref=f5e41]: Acciones rapidas
+        - link "Nuevo curso" [ref=f5e42] [cursor=pointer]:
+          - /url: /cursos/nuevo/
+        - link "Clase manual" [ref=f5e43] [cursor=pointer]:
+          - /url: /gratis/nueva/
+      - generic [ref=f5e44]:
+        - generic [ref=f5e45]: Creditos disponibles
+        - strong [ref=f5e46]: "418"
+        - link "Gestionar plan" [ref=f5e47] [cursor=pointer]:
+          - /url: /planes/
+    - main [ref=f5e48]:
+      - generic [ref=f5e49]:
+        - link "Volver a la clase" [ref=f5e50] [cursor=pointer]:
+          - /url: /clase/64/
+          - img [ref=f5e51]
+          - text: Volver a la clase
+        - generic [ref=f5e53]:
+          - heading "Pipeline de Generación" [level=1] [ref=f5e54]
+          - paragraph [ref=f5e55]: "Clase larga prueba chunking · Backend: local · Verificación: Fuentes web"
+        - generic [ref=f5e56]:
+          - generic [ref=f5e57]:
+            - generic [ref=f5e58]:
+              - generic [ref=f5e59]:
+                - generic: Ver dossier tecnico
+                - generic [ref=f5e60]:
+                  - img [ref=f5e62]
+                  - generic [ref=f5e65]: En cola
+                  - generic [ref=f5e66]: Esperando turno en el procesador local.
+              - img [ref=f5e68]
+              - generic [ref=f5e70]:
+                - generic: Ver dossier tecnico
+                - generic [ref=f5e71]:
+                  - img [ref=f5e73]
+                  - generic [ref=f5e76]: 01:54:48
+                  - generic [ref=f5e77]: Preparando contenido
+                  - generic [ref=f5e78]: Leyendo texto, audio y configuracion del trabajo.
+              - img [ref=f5e80]
+              - generic [ref=f5e82]:
+                - generic: Ver dossier tecnico
+                - generic [ref=f5e83]:
+                  - img [ref=f5e85]
+                  - generic [ref=f5e88]: 01:54:48
+                  - generic [ref=f5e89]: Generando items con IA
+                  - generic [ref=f5e90]: "Backend: local. 22800 palabras -> objetivo 150 items en 16 llamadas (10, 10, 10, 10, 10, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 10)."
+              - img [ref=f5e92]
+              - generic [ref=f5e94]:
+                - generic: Ver dossier tecnico
+                - generic [ref=f5e95]:
+                  - img [ref=f5e97]
+                  - generic [ref=f5e99]: 01:54:50
+                  - generic [ref=f5e100]: Chunk 1/16 completado
+                  - generic [ref=f5e101]: 10 items generados hasta ahora; reiniciando contexto para el siguiente chunk.
+            - generic [ref=f5e102]:
+              - generic [ref=f5e103]:
+                - generic: Ver dossier tecnico
+                - generic [ref=f5e104]:
+                  - img [ref=f5e106]
+                  - generic [ref=f5e108]: 01:54:50
+                  - generic [ref=f5e109]: Chunk 2/16 completado
+                  - generic [ref=f5e110]: 10 items generados hasta ahora; reiniciando contexto para el siguiente chunk.
+              - img [ref=f5e112]
+              - generic [ref=f5e114]:
+                - generic: Ver dossier tecnico
+                - generic [ref=f5e115]:
+                  - img [ref=f5e117]
+                  - generic [ref=f5e119]: 01:54:50
+                  - generic [ref=f5e120]: Chunk 3/16 completado
+                  - generic [ref=f5e121]: 10 items generados hasta ahora; reiniciando contexto para el siguiente chunk.
+              - img [ref=f5e123]
+              - generic [ref=f5e125]:
+                - generic: Ver dossier tecnico
+                - generic [ref=f5e126]:
+                  - img [ref=f5e128]
+                  - generic [ref=f5e130]: 01:54:50
+                  - generic [ref=f5e131]: Chunk 4/16 completado
+                  - generic [ref=f5e132]: 10 items generados hasta ahora; reiniciando contexto para el siguiente chunk.
+              - img [ref=f5e134]
+              - generic [ref=f5e136]:
+                - generic: Ver dossier tecnico
+                - generic [ref=f5e137]:
+                  - img [ref=f5e139]
+                  - generic [ref=f5e141]: 01:54:51
+                  - generic [ref=f5e142]: Chunk 5/16 completado
+                  - generic [ref=f5e143]: 10 items generados hasta ahora; reiniciando contexto para el siguiente chunk.
+            - generic [ref=f5e144]:
+              - generic [ref=f5e145]:
+                - generic: Ver dossier tecnico
+                - generic [ref=f5e146]:
+                  - img [ref=f5e148]
+                  - generic [ref=f5e150]: 01:54:51
+                  - generic [ref=f5e151]: Chunk 6/16 completado
+                  - generic [ref=f5e152]: 10 items generados hasta ahora; reiniciando contexto para el siguiente chunk.
+              - img [ref=f5e154]
+              - generic [ref=f5e156]:
+                - generic: Ver dossier tecnico
+                - generic [ref=f5e157]:
+                  - img [ref=f5e159]
+                  - generic [ref=f5e161]: 01:54:51
+                  - generic [ref=f5e162]: Chunk 7/16 completado
+                  - generic [ref=f5e163]: 10 items generados hasta ahora; reiniciando contexto para el siguiente chunk.
+              - img [ref=f5e165]
+              - generic [ref=f5e167]:
+                - generic: Ver dossier tecnico
+                - generic [ref=f5e168]:
+                  - img [ref=f5e170]
+                  - generic [ref=f5e172]: 01:54:51
+                  - generic [ref=f5e173]: Chunk 8/16 completado
+                  - generic [ref=f5e174]: 10 items generados hasta ahora; reiniciando contexto para el siguiente chunk.
+              - img [ref=f5e176]
+              - generic [ref=f5e178]:
+                - generic: Ver dossier tecnico
+                - generic [ref=f5e179]:
+                  - img [ref=f5e181]
+                  - generic [ref=f5e183]: 01:54:52
+                  - generic [ref=f5e184]: Chunk 9/16 completado
+                  - generic [ref=f5e185]: 10 items generados hasta ahora; reiniciando contexto para el siguiente chunk.
+            - generic [ref=f5e186]:
+              - generic [ref=f5e187]:
+                - generic: Ver dossier tecnico
+                - generic [ref=f5e188]:
+                  - img [ref=f5e190]
+                  - generic [ref=f5e192]: 01:54:52
+                  - generic [ref=f5e193]: Chunk 10/16 completado
+                  - generic [ref=f5e194]: 10 items generados hasta ahora; reiniciando contexto para el siguiente chunk.
+              - img [ref=f5e196]
+              - generic [ref=f5e198]:
+                - generic: Ver dossier tecnico
+                - generic [ref=f5e199]:
+                  - img [ref=f5e201]
+                  - generic [ref=f5e203]: 01:54:52
+                  - generic [ref=f5e204]: Chunk 11/16 completado
+                  - generic [ref=f5e205]: 10 items generados hasta ahora; reiniciando contexto para el siguiente chunk.
+              - img [ref=f5e207]
+              - generic [ref=f5e209]:
+                - generic: Ver dossier tecnico
+                - generic [ref=f5e210]:
+                  - img [ref=f5e212]
+                  - generic [ref=f5e214]: 01:54:52
+                  - generic [ref=f5e215]: Chunk 12/16 completado
+                  - generic [ref=f5e216]: 10 items generados hasta ahora; reiniciando contexto para el siguiente chunk.
+              - img [ref=f5e218]
+              - generic [ref=f5e220]:
+                - generic: Ver dossier tecnico
+                - generic [ref=f5e221]:
+                  - img [ref=f5e223]
+                  - generic [ref=f5e225]: 01:54:53
+                  - generic [ref=f5e226]: Chunk 13/16 completado
+                  - generic [ref=f5e227]: 10 items generados hasta ahora; reiniciando contexto para el siguiente chunk.
+            - generic [ref=f5e228]:
+              - generic [ref=f5e229]:
+                - generic: Ver dossier tecnico
+                - generic [ref=f5e230]:
+                  - img [ref=f5e232]
+                  - generic [ref=f5e234]: 01:54:53
+                  - generic [ref=f5e235]: Chunk 14/16 completado
+                  - generic [ref=f5e236]: 10 items generados hasta ahora; reiniciando contexto para el siguiente chunk.
+              - img [ref=f5e238]
+              - generic [ref=f5e240]:
+                - generic: Ver dossier tecnico
+                - generic [ref=f5e241]:
+                  - img [ref=f5e243]
+                  - generic [ref=f5e245]: 01:54:53
+                  - generic [ref=f5e246]: Chunk 15/16 completado
+                  - generic [ref=f5e247]: 10 items generados hasta ahora; reiniciando contexto para el siguiente chunk.
+              - img [ref=f5e249]
+              - generic [ref=f5e251]:
+                - generic: Ver dossier tecnico
+                - generic [ref=f5e252]:
+                  - img [ref=f5e254]
+                  - generic [ref=f5e256]: 01:54:53
+                  - generic [ref=f5e257]: Chunk 16/16 completado
+                  - generic [ref=f5e258]: 10 items generados hasta ahora; reiniciando contexto para el siguiente chunk.
+              - img [ref=f5e260]
+              - generic [ref=f5e262]:
+                - generic: Ver dossier tecnico
+                - generic [ref=f5e263]:
+                  - img [ref=f5e265]
+                  - generic [ref=f5e268]: 01:54:53
+                  - generic [ref=f5e269]: MINI parseado
+                  - generic [ref=f5e270]: 10 items listos para renderizar.
+            - generic [ref=f5e271]:
+              - generic [ref=f5e272]:
+                - generic: Ver dossier tecnico
+                - generic [ref=f5e273]:
+                  - img [ref=f5e275]
+                  - generic [ref=f5e278]: 01:54:53
+                  - generic [ref=f5e279]: Revisando coherencia de items con IA local
+                  - generic [ref=f5e280]: Qwen revisa si cada pregunta tiene sentido antes de verificar y guardar.
+              - img [ref=f5e282]
+              - generic [ref=f5e284]:
+                - generic: Ver dossier tecnico
+                - generic [ref=f5e285]:
+                  - img [ref=f5e287]
+                  - generic [ref=f5e289]: 01:54:54
+                  - generic [ref=f5e290]: Coherencia MINI revisada
+                  - generic [ref=f5e291]: Se repararon items incoherentes. 5 items renderizables.
+              - img [ref=f5e293]
+              - generic [ref=f5e295]:
+                - generic: Ver dossier tecnico
+                - generic [ref=f5e296]:
+                  - img [ref=f5e298]
+                  - generic [ref=f5e301]: 01:54:54
+                  - generic [ref=f5e302]: Generando items de relleno
+                  - generic [ref=f5e303]: "Objetivo: 150, actual: 10, faltan: 15."
+              - img [ref=f5e305]
+              - generic [ref=f5e307]:
+                - generic: Ver dossier tecnico
+                - generic [ref=f5e308]:
+                  - img [ref=f5e310]
+                  - generic [ref=f5e311]: 01:54:54
+                  - generic [ref=f5e312]: Relleno MINI
+                  - generic [ref=f5e313]: 10 items tras generacion de relleno.
+            - generic [ref=f5e314]:
+              - generic [ref=f5e315]:
+                - generic: Ver dossier tecnico
+                - generic [ref=f5e316]:
+                  - img [ref=f5e318]
+                  - generic [ref=f5e321]: 01:54:54
+                  - generic [ref=f5e322]: Verificando con fuentes web
+                  - generic [ref=f5e323]: "Modo de verificacion: web."
+              - img [ref=f5e325]
+              - generic [ref=f5e327]:
+                - generic: Ver dossier tecnico
+                - generic [ref=f5e328]:
+                  - img [ref=f5e330]
+                  - generic [ref=f5e332]: 01:54:54
+                  - generic [ref=f5e333]: Verificacion recibida
+                  - generic [ref=f5e334]: "Fuentes web: 0. EduQG matches: 0."
+              - img [ref=f5e336]
+              - generic [ref=f5e338]:
+                - generic: Ver dossier tecnico
+                - generic [ref=f5e339]:
+                  - img [ref=f5e341]
+                  - generic [ref=f5e343]: 01:54:54
+                  - generic [ref=f5e344]: Aplicando correcciones
+                  - generic [ref=f5e345]: Interpretando el reporte y generando la version final.
+              - img [ref=f5e347]
+              - generic [ref=f5e349]:
+                - generic: Ver dossier tecnico
+                - generic [ref=f5e350]:
+                  - img [ref=f5e352]
+                  - generic [ref=f5e354]: 01:54:54
+                  - generic [ref=f5e355]: MINI final parseado
+                  - generic [ref=f5e356]: 10 items listos para estudiar.
+            - generic [ref=f5e358]:
+              - generic: Ver dossier tecnico
+              - generic [ref=f5e359]:
+                - img [ref=f5e361]
+                - generic [ref=f5e363]: 01:54:54
+                - generic [ref=f5e364]: Listo
+                - generic [ref=f5e365]: Clase verificada y corregida.
+            - generic [ref=f5e366]:
+              - generic [ref=f5e367]: Whisper local
+              - generic [ref=f5e369]: Qwen local
+              - generic [ref=f5e371]: Recuperación
+              - generic [ref=f5e373]: Verificación web
+              - generic [ref=f5e375]: Listo
+          - complementary [ref=f5e377]:
+            - heading "Métricas clave" [level=2] [ref=f5e378]
+            - generic [ref=f5e379]:
+              - img [ref=f5e381]
+              - generic [ref=f5e384]:
+                - generic [ref=f5e385]: "22800"
+                - generic [ref=f5e386]: palabras de entrada
+            - generic [ref=f5e387]:
+              - img [ref=f5e389]
+              - generic [ref=f5e392]:
+                - generic [ref=f5e393]: "456"
+                - generic [ref=f5e394]: ítems objetivo IRT
+            - generic [ref=f5e395]:
+              - img [ref=f5e397]
+              - generic [ref=f5e399]:
+                - generic [ref=f5e400]: "10"
+                - generic [ref=f5e401]: ítems renderizables
+            - generic [ref=f5e402]:
+              - img [ref=f5e404]
+              - generic [ref=f5e407]:
+                - generic [ref=f5e408]: "0"
+                - generic [ref=f5e409]: fuentes web consultadas
+            - generic [ref=f5e410]:
+              - img [ref=f5e412]
+              - generic [ref=f5e415]:
+                - generic [ref=f5e416]: "0"
+                - generic [ref=f5e417]: matches EduQG
+            - generic [ref=f5e418]:
+              - img [ref=f5e420]
+              - generic [ref=f5e423]:
+                - generic [ref=f5e424]: 6s
+                - generic [ref=f5e425]: duración total
+      - generic:
+        - generic:
+          - generic:
+            - heading "Detalle del proceso" [level=3]
+            - button "Cerrar":
+              - img
+          - generic:
+            - paragraph: Selecciona una etapa del pipeline para ver sus detalles.

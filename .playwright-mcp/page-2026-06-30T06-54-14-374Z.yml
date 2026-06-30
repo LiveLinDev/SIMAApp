@@ -1,0 +1,129 @@
+- generic [ref=f2e2]:
+  - banner [ref=f2e3]:
+    - link "SIMA inicio" [ref=f2e4] [cursor=pointer]:
+      - /url: /
+      - generic [ref=f2e5]: //
+      - generic [ref=f2e6]: .
+      - strong [ref=f2e7]: SIMA
+    - navigation "Navegacion principal" [ref=f2e8]:
+      - link "Inicio" [ref=f2e9] [cursor=pointer]:
+        - /url: /dashboard/
+      - link "Cursos" [ref=f2e10] [cursor=pointer]:
+        - /url: /cursos/nuevo/
+      - link ".mini" [ref=f2e11] [cursor=pointer]:
+        - /url: /mini
+      - link "Benchmark" [ref=f2e12] [cursor=pointer]:
+        - /url: /mini/benchmark/
+      - link "Planes" [ref=f2e13] [cursor=pointer]:
+        - /url: /planes/
+      - button "Salir" [ref=f2e15] [cursor=pointer]
+  - generic [ref=f2e16]:
+    - complementary "Panel de usuario" [ref=f2e17]:
+      - generic [ref=f2e19]:
+        - generic [ref=f2e20]:
+          - paragraph [ref=f2e21]: Cuenta activa
+          - button "Cambiar a modo oscuro" [ref=f2e22]
+        - heading "apoapio" [level=2] [ref=f2e23]
+        - text: Basico API - Nivel 1
+      - navigation "Secciones del dashboard" [ref=f2e24]:
+        - link "Cursos 3" [ref=f2e25] [cursor=pointer]:
+          - /url: /dashboard/
+          - generic [ref=f2e26]: Cursos
+          - generic [ref=f2e27]: "3"
+        - link "Mis clases 4" [ref=f2e28] [cursor=pointer]:
+          - /url: /dashboard/?tab=mis-clases
+          - generic [ref=f2e29]: Mis clases
+          - generic [ref=f2e30]: "4"
+        - link "Horarios 3" [ref=f2e31] [cursor=pointer]:
+          - /url: /dashboard/?tab=horario
+          - generic [ref=f2e32]: Horarios
+          - generic [ref=f2e33]: "3"
+        - link "Explorar 0" [ref=f2e34] [cursor=pointer]:
+          - /url: /dashboard/?tab=explorar
+          - generic [ref=f2e35]: Explorar
+          - generic [ref=f2e36]: "0"
+        - link "Preferencias 10" [ref=f2e37] [cursor=pointer]:
+          - /url: /dashboard/?tab=preferencias
+          - generic [ref=f2e38]: Preferencias
+          - generic [ref=f2e39]: "10"
+      - generic [ref=f2e40]:
+        - paragraph [ref=f2e41]: Acciones rapidas
+        - link "Nuevo curso" [ref=f2e42] [cursor=pointer]:
+          - /url: /cursos/nuevo/
+        - link "Clase manual" [ref=f2e43] [cursor=pointer]:
+          - /url: /gratis/nueva/
+      - generic [ref=f2e44]:
+        - generic [ref=f2e45]: Creditos disponibles
+        - strong [ref=f2e46]: "443"
+        - link "Gestionar plan" [ref=f2e47] [cursor=pointer]:
+          - /url: /planes/
+    - main [ref=f2e48]:
+      - generic [ref=f2e49]:
+        - paragraph [ref=f2e50]: Crear clase
+        - heading "Nueva clase" [level=1] [ref=f2e51]
+        - paragraph [ref=f2e52]: Te quedan 2 clases este mes.
+        - paragraph [ref=f2e53]: "Creditos disponibles: 443."
+      - generic [ref=f2e54]:
+        - generic [ref=f2e55]: Esta clase consumira desde 60 creditos si usas audio y generacion completa.
+        - paragraph [ref=f2e56]:
+          - generic [ref=f2e57]: "Curso:"
+          - combobox "Curso:" [ref=f2e58]:
+            - option "Selecciona un curso" [selected]
+            - option "PRION MAS PELIGROSO (YOUTUBE)"
+            - option "proteccion"
+            - option "Test IA (2026-1)"
+          - generic [ref=f2e59]: Cada clase debe pertenecer a un curso para conservar contexto y progreso.
+        - paragraph [ref=f2e60]:
+          - generic [ref=f2e61]: "Titulo:"
+          - textbox "Titulo:" [ref=f2e62]:
+            - /placeholder: "Ej: Clase de economia"
+            - text: Clase sin titulo
+        - paragraph [ref=f2e63]:
+          - generic [ref=f2e64]: "Etiquetas:"
+          - textbox "Etiquetas:" [ref=f2e65]:
+            - /placeholder: moba, historia, videojuegos
+          - generic [ref=f2e66]: "Opcional: separalas con comas."
+        - group "Donde quieres generar?" [ref=f2e67]:
+          - generic [ref=f2e68]: Donde quieres generar?
+          - paragraph [ref=f2e69]: Qwen local usa tu equipo. Nube Claude consume mas creditos y solo se activa con ANTHROPIC_API_KEY configurada.
+          - generic [ref=f2e70]:
+            - generic [ref=f2e71] [cursor=pointer]:
+              - radio "Local Qwen mock · 60 creditos aprox." [checked]
+              - generic [ref=f2e72]:
+                - img [ref=f2e73]
+                - generic [ref=f2e75]:
+                  - strong [ref=f2e76]: Local Qwen
+                  - generic [ref=f2e77]: mock · 60 creditos aprox.
+            - generic [ref=f2e78]:
+              - 'radio "Nube Claude Deshabilitado: falta configurar Claude" [disabled]'
+              - generic [ref=f2e79]:
+                - img [ref=f2e80]
+                - generic [ref=f2e84]:
+                  - strong [ref=f2e85]: Nube Claude
+                  - generic [ref=f2e86]: "Deshabilitado: falta configurar Claude"
+        - group "Que vas a usar?" [ref=f2e87]:
+          - generic [ref=f2e88]: Que vas a usar?
+          - generic [ref=f2e89]:
+            - generic [ref=f2e90] [cursor=pointer]:
+              - radio "Texto Pega el contenido de tu clase." [checked]
+              - generic [ref=f2e91]:
+                - img [ref=f2e92]
+                - generic [ref=f2e95]:
+                  - strong [ref=f2e96]: Texto
+                  - generic [ref=f2e97]: Pega el contenido de tu clase.
+            - generic [ref=f2e98] [cursor=pointer]:
+              - radio "Audio Sube un audio o grabalo aqui."
+              - generic [ref=f2e99]:
+                - img [ref=f2e100]
+                - generic [ref=f2e103]:
+                  - strong [ref=f2e104]: Audio
+                  - generic [ref=f2e105]: Sube un audio o grabalo aqui.
+        - paragraph [ref=f2e107]:
+          - generic [ref=f2e108]: "Texto de la clase:"
+          - textbox "Texto de la clase:" [ref=f2e109]:
+            - /placeholder: Opcional si subes audio. Tambien puedes pegar texto directo.
+        - group [ref=f2e110]:
+          - generic "Ajustes" [ref=f2e111] [cursor=pointer]:
+            - img [ref=f2e112]
+            - text: Ajustes
+        - button "Crear clase" [ref=f2e115] [cursor=pointer]

@@ -1,0 +1,131 @@
+- generic [ref=f1e2]:
+  - banner [ref=f1e3]:
+    - link "SIMA inicio" [ref=f1e4] [cursor=pointer]:
+      - /url: /
+      - generic [ref=f1e5]: //
+      - generic [ref=f1e6]: .
+      - strong [ref=f1e7]: SIMA
+    - navigation "Navegacion principal" [ref=f1e8]:
+      - link "Inicio" [ref=f1e9] [cursor=pointer]:
+        - /url: /dashboard/
+      - link "Cursos" [ref=f1e10] [cursor=pointer]:
+        - /url: /cursos/nuevo/
+      - link ".mini" [ref=f1e11] [cursor=pointer]:
+        - /url: /mini
+      - link "Benchmark" [ref=f1e12] [cursor=pointer]:
+        - /url: /mini/benchmark/
+      - link "Planes" [ref=f1e13] [cursor=pointer]:
+        - /url: /planes/
+      - button "Salir" [ref=f1e15] [cursor=pointer]
+  - generic [ref=f1e16]:
+    - complementary "Panel de usuario" [ref=f1e17]:
+      - generic [ref=f1e19]:
+        - generic [ref=f1e20]:
+          - paragraph [ref=f1e21]: Cuenta activa
+          - button "Cambiar a modo oscuro" [ref=f1e22] [cursor=pointer]
+        - heading "apoapio" [level=2] [ref=f1e25]
+        - text: Basico API - Nivel 1
+      - navigation "Secciones del dashboard" [ref=f1e26]:
+        - link "Cursos 3" [ref=f1e27] [cursor=pointer]:
+          - /url: /dashboard/
+          - generic [ref=f1e28]: Cursos
+          - generic [ref=f1e29]: "3"
+        - link "Mis clases 4" [ref=f1e30] [cursor=pointer]:
+          - /url: /dashboard/?tab=mis-clases
+          - generic [ref=f1e31]: Mis clases
+          - generic [ref=f1e32]: "4"
+        - link "Horarios 3" [ref=f1e33] [cursor=pointer]:
+          - /url: /dashboard/?tab=horario
+          - generic [ref=f1e34]: Horarios
+          - generic [ref=f1e35]: "3"
+        - link "Explorar 0" [ref=f1e36] [cursor=pointer]:
+          - /url: /dashboard/?tab=explorar
+          - generic [ref=f1e37]: Explorar
+          - generic [ref=f1e38]: "0"
+        - link "Preferencias 10" [ref=f1e39] [cursor=pointer]:
+          - /url: /dashboard/?tab=preferencias
+          - generic [ref=f1e40]: Preferencias
+          - generic [ref=f1e41]: "10"
+      - generic [ref=f1e42]:
+        - paragraph [ref=f1e43]: Acciones rapidas
+        - link "Nuevo curso" [ref=f1e44] [cursor=pointer]:
+          - /url: /cursos/nuevo/
+        - link "Clase manual" [ref=f1e45] [cursor=pointer]:
+          - /url: /gratis/nueva/
+      - generic [ref=f1e46]:
+        - generic [ref=f1e47]: Creditos disponibles
+        - strong [ref=f1e48]: "443"
+        - link "Gestionar plan" [ref=f1e49] [cursor=pointer]:
+          - /url: /planes/
+    - main [ref=f1e50]:
+      - generic [ref=f1e51]:
+        - generic [ref=f1e52]:
+          - generic [ref=f1e53]:
+            - paragraph [ref=f1e54]: Hola, apoapio
+            - heading "Centro de estudio SIMA" [level=1] [ref=f1e55]:
+              - text: Centro de estudio
+              - generic [ref=f1e56]: SIMA
+            - paragraph [ref=f1e57]: Organiza cursos, programa clases, revisa tu progreso y ajusta tus preferencias desde un solo panel.
+          - generic "Resumen de progreso" [ref=f1e58]:
+            - article [ref=f1e59]:
+              - generic [ref=f1e60]: Racha
+              - strong [ref=f1e61]: "0"
+              - generic [ref=f1e62]: dias seguidos
+            - article [ref=f1e63]:
+              - generic [ref=f1e64]: Nivel
+              - strong [ref=f1e65]: "1"
+              - generic [ref=f1e66]: 57 XP
+            - article [ref=f1e67]:
+              - generic [ref=f1e68]: API
+              - strong [ref=f1e69]: "2"
+              - generic [ref=f1e70]: clases restantes
+            - article [ref=f1e71]:
+              - generic [ref=f1e72]: Listas
+              - strong [ref=f1e73]: "4"
+              - generic [ref=f1e74]: materiales
+        - region "Estado general" [ref=f1e75]:
+          - article [ref=f1e76]:
+            - generic [ref=f1e77]: Cursos activos
+            - strong [ref=f1e78]: "3"
+          - article [ref=f1e79]:
+            - generic [ref=f1e80]: Clases creadas
+            - strong [ref=f1e81]: "4"
+          - article [ref=f1e82]:
+            - generic [ref=f1e83]: En proceso
+            - strong [ref=f1e84]: "0"
+          - article [ref=f1e85]:
+            - generic [ref=f1e86]: Meta diaria
+            - strong [ref=f1e87]: "10"
+        - generic [ref=f1e88]:
+          - generic [ref=f1e89]:
+            - generic [ref=f1e90]:
+              - paragraph [ref=f1e91]: Mis cursos
+              - heading "Cursos y contexto academico" [level=2] [ref=f1e92]
+            - link "Nuevo curso" [ref=f1e93] [cursor=pointer]:
+              - /url: /cursos/nuevo/
+          - generic [ref=f1e94]:
+            - article [ref=f1e95]:
+              - generic [ref=f1e96]:
+                - generic [ref=f1e97]: YOUTUBE
+                - generic [ref=f1e98]: 1 clases
+              - heading "PRION MAS PELIGROSO" [level=3] [ref=f1e99]
+              - paragraph [ref=f1e100]: prion
+              - generic [ref=f1e102]: VIRUS
+              - link "Abrir curso" [ref=f1e103] [cursor=pointer]:
+                - /url: /cursos/1/
+            - article [ref=f1e104]:
+              - generic [ref=f1e105]:
+                - generic [ref=f1e106]: Personal
+                - generic [ref=f1e107]: 1 clases
+              - heading "proteccion" [level=3] [ref=f1e108]
+              - paragraph [ref=f1e109]: Introductorio
+              - link "Abrir curso" [ref=f1e110] [cursor=pointer]:
+                - /url: /cursos/6/
+            - article [ref=f1e111]:
+              - generic [ref=f1e112]:
+                - generic [ref=f1e113]: 2026-1
+                - generic [ref=f1e114]: 1 clases
+              - heading "Test IA" [level=3] [ref=f1e115]
+              - paragraph [ref=f1e116]: Introductorio
+              - link "Abrir curso" [ref=f1e117] [cursor=pointer]:
+                - /url: /cursos/24/

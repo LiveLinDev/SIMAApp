@@ -121,7 +121,8 @@ POST /api/nueva/ → LessonJob(QUEUED) → cola en memoria → process_lesson_jo
 python manage.py test learning
 ```
 
-Cinco tests, todos sobre el parser `.mini`. No hay cobertura del pipeline, las vistas ni CAT.
+Ocho tests: cinco sobre el parser `.mini` y tres sobre el reencolado de trabajos. No hay
+cobertura del pipeline completo, las vistas ni CAT.
 
 ## Problemas conocidos
 
@@ -143,10 +144,11 @@ Detalle y evidencia en `desarollo/VALIDACION_FLUJO_SIMA.md` e `INFORME_PRUEBA_SI
 
 ## Ramas
 
-- `fix-localmodel` — rama viva; base para retomar.
-- `main` — desactualizada (mayo 2026); arrastra logs y scripts de prueba.
-- `feature/ui-and-database` — un commit sin fusionar con cambios de plantillas y un pin a
-  Django 4.2 que **no** debe adoptarse.
+- `main` y `fix-localmodel` — apuntan al mismo commit desde septiembre de 2026; trabaja sobre `main`.
+- `feature/ui-and-database` — un commit sin fusionar (`e6aac1d`) que renombra el backend de nube a
+  `deepseek` en interfaz y servicios, rediseña el panel de subida de audio y fija Django 4.2.
+  Entra en conflicto con `job_queue.py`, `services.py`, `settings.py` y `lesson_form.html`; requiere
+  revisión manual antes de rescatar nada, y el pin a Django 4.2 **no** debe adoptarse.
 
 ## Licencia
 

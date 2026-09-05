@@ -28,7 +28,7 @@ from ..credits import (
     has_enough_credits,
 )
 from ..forms import ApiLessonForm, CourseForm, FreeLessonForm, ManualResultForm, PlanForm, RegisterForm, VerificationResultForm
-from ..job_queue import enqueue_lesson_job
+from ..job_queue import TooManyPendingJobs, assert_user_can_enqueue, enqueue_lesson_job
 from ..models import ClassSession, Course, Difficulty, Flashcard, LessonJob, UserPreference, get_plan_details
 from ..parse_mini import apply_corrections_with_trace, assessment_to_dict, filter_incoherent_items, normalize_mini_text, parse_mini, render_mini_html, validate_mini_parse
 from ..services import (
@@ -121,6 +121,11 @@ def api_lesson(request):
                     f"No tienes creditos suficientes. Esta clase requiere {estimate.amount} y tienes {profile.credits_label}.",
                 )
                 return redirect("plans")
+            try:
+                assert_user_can_enqueue(request.user)
+            except TooManyPendingJobs as exc:
+                messages.warning(request, str(exc))
+                return redirect("dashboard")
             job.save()
             class_session = _sync_class_session_for_job(job)
             try:

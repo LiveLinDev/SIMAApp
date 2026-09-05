@@ -21,6 +21,11 @@
     <div class="course-meta-row">
       <span class="course-level">{{ course.get_level_display }}</span>
       {% if course.instructor %}<span class="course-instructor">{{ course.instructor }}</span>{% endif %}
+      {% if overview.exam_days_left is not None %}
+        <span class="course-exam {% if overview.exam_days_left <= 3 %}course-exam--soon{% endif %}">
+          {% if overview.exam_days_left < 0 %}Examen pasado ({{ course.exam_date|date:"d M" }}){% elif overview.exam_days_left == 0 %}Examen hoy{% elif overview.exam_days_left == 1 %}Examen manana{% else %}Examen en {{ overview.exam_days_left }} dias ({{ course.exam_date|date:"d M" }}){% endif %}
+        </span>
+      {% endif %}
       <a class="course-tool" href="{% url 'course_edit' course.pk %}">Editar</a>
       <form method="post" action="{% url 'course_archive' course.pk %}" class="course-tool-form" onsubmit="return confirm('Archivar «{{ course.name|escapejs }}»? No se borra nada y puedes restaurarlo desde Inicio.');">
         {% csrf_token %}

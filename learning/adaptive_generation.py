@@ -74,6 +74,12 @@ def create_reinforcement_job(user, course, practice_session=None, topics=None, r
     if not _has_sources(course):
         raise ReinforcementUnavailable("El curso no tiene transcripciones ni texto de clase para generar refuerzo.")
 
+    from .job_queue import assert_user_can_enqueue, TooManyPendingJobs  # import perezoso
+
+    try:
+        assert_user_can_enqueue(user)
+    except TooManyPendingJobs as exc:
+        raise ReinforcementUnavailable(str(exc)) from exc
     credit_profile, _ = Profile.objects.get_or_create(user=user)
     estimate = estimate_reinforcement_cost("auto")
     if not has_enough_credits(credit_profile, estimate.amount):

@@ -288,6 +288,12 @@ def create_summary_job(user, course: Course, lesson: LessonJob | None = None, ba
     pending = pending_summary_job(course, lesson)
     if pending is not None:
         return pending
+    from .job_queue import TooManyPendingJobs, assert_user_can_enqueue  # import perezoso
+
+    try:
+        assert_user_can_enqueue(user)
+    except TooManyPendingJobs as exc:
+        raise SummaryUnavailable(str(exc)) from exc
     if lesson is not None:
         check_class_summary(lesson)
         session = _class_session_for(lesson, create=True)

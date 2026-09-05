@@ -28,7 +28,14 @@ from ..credits import (
     has_enough_credits,
 )
 from ..forms import ApiLessonForm, CourseForm, FreeLessonForm, ManualResultForm, PlanForm, RegisterForm, VerificationResultForm
-from ..job_queue import enqueue_lesson_job
+from ..job_queue import (
+    _compile_mini_for_render,
+    _job_content_for_generation,
+    _normalize_verification_mode,
+    _safe_trace_list,
+    _sync_class_session_status,
+    enqueue_lesson_job,
+)
 from ..models import ClassSession, Course, Difficulty, Flashcard, LessonJob, UserPreference, get_plan_details
 from ..parse_mini import apply_corrections_with_trace, assessment_to_dict, filter_incoherent_items, normalize_mini_text, parse_mini, render_mini_html, validate_mini_parse
 from ..services import (
@@ -84,10 +91,6 @@ def _normalize_ai_backend_choice(backend: str | None, backends: dict) -> str:
     return value
 
 
-def _normalize_verification_mode(mode: str) -> str:
-    return mode if mode in {"web", "eduqg", "hybrid"} else getattr(settings, "VERIFICATION_DEFAULT_MODE", "web")
-
-
 def _get_accessible_job(user, pk):
     return get_object_or_404(
         LessonJob.objects.select_related("user", "course"),
@@ -111,17 +114,6 @@ def _normalize_tags(tags: str) -> str:
 def re_split_tags(tags: str) -> list[str]:
     import re
     return re.split(r"[,#;\n]+", tags)
-
-
-def _job_content_for_generation(job: LessonJob) -> str:
-    parts = []
-    source_text = (job.source_text or "").strip()
-    transcript = (job.transcript or "").strip()
-    if source_text:
-        parts.append(source_text)
-    if transcript:
-        parts.append(f"TRANSCRIPCION:\n{transcript}")
-    return "\n\n".join(parts).strip()
 
 
 def _transcript_context(job: LessonJob) -> str:
@@ -174,10 +166,6 @@ def _reset_after_transcript_change(job: LessonJob, generation_backend: str) -> s
     return "prompt manual regenerado"
 
 
-def _safe_trace_list(value) -> list:
-    return value if isinstance(value, list) else []
-
-
 def _transcript_repair_entry(before: str, after: str, trace: dict, backend: str, downstream_action: str) -> dict:
     return {
         "created_at": timezone.localtime().strftime("%Y-%m-%d %H:%M:%S"),
@@ -204,18 +192,6 @@ def _append_view_log(current: str, stage: str, detail: str = "") -> str:
     return "\n".join(part for part in [current.strip(), line] if part)
 
 
-def _compile_mini_for_render(mini_text: str, stage: str) -> tuple[str, int, str]:
-    mini_block = extract_mini_lines(mini_text) or mini_text
-    filtered, dropped, incoherent_mini = filter_incoherent_items(mini_block)
-    if dropped:
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.info("[%s] Items incoherentes detectados: %s", stage, dropped)
-    normalized = normalize_mini_text(filtered, stage=stage)
-    assessment = validate_mini_parse(normalized, stage=stage)
-    return normalized, len(assessment.items), incoherent_mini
-
-
 def _collect_public_tags() -> list[str]:
     tags = []
     for value in LessonJob.objects.filter(visibility=LessonJob.Visibility.PUBLIC).values_list("tags", flat=True):
@@ -228,43 +204,12 @@ def _collect_public_tags() -> list[str]:
     return tags
 
 
-def _sync_class_session_for_job(job: LessonJob) -> ClassSession | None:
-    if not job.course_id:
-        return None
-    status_map = {
-        LessonJob.Status.DRAFT: ClassSession.ProcessingStatus.DRAFT,
-        LessonJob.Status.QUEUED: ClassSession.ProcessingStatus.QUEUED,
-        LessonJob.Status.PROCESSING: ClassSession.ProcessingStatus.PROCESSING,
-        LessonJob.Status.ERROR: ClassSession.ProcessingStatus.ERROR,
-    }
-    ready_statuses = {
-        LessonJob.Status.PROMPT_READY,
-        LessonJob.Status.TOON_READY,
-        LessonJob.Status.VERIFIED,
-        LessonJob.Status.CORRECTED,
-    }
-    status = ClassSession.ProcessingStatus.READY if job.status in ready_statuses else status_map.get(
-        job.status,
-        ClassSession.ProcessingStatus.DRAFT,
-    )
-    session, _created = ClassSession.objects.update_or_create(
-        legacy_lesson_job=job,
-        defaults={
-            "user": job.user,
-            "course": job.course,
-            "title": job.title,
-            "status": status,
-            "main_topic": job.tags.split(",")[0].strip() if job.tags else "",
-            "requested_outputs": ["transcript", "quiz"],
-            "processing_log": job.processing_log,
-            "error": job.error,
-        },
-    )
-    return session
-
-
 def _safe_class_session(job: LessonJob) -> ClassSession | None:
     try:
         return job.class_session
     except ClassSession.DoesNotExist:
         return None
+
+
+# Las vistas y el worker deben sincronizar ClassSession con la misma regla.
+_sync_class_session_for_job = _sync_class_session_status

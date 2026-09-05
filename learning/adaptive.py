@@ -36,6 +36,7 @@ from .segments import attach_sources, format_timestamp
 from .progress import progress_panel
 from .summaries import course_summary_for
 from .models import (
+    days_until,
     AdaptiveProfile,
     AnswerOption,
     BloomLevel,
@@ -82,6 +83,7 @@ HALF_LIFE_GROWTH = 2.0         # cada acierto consecutivo la duplica (regresion 
 HALF_LIFE_MAX_DAYS = 90.0
 RISK_THRESHOLD = WEAK_THRESHOLD  # dominio efectivo (dominio x retencion) bajo esto = en riesgo de olvido
 EXAM_DEFAULT_ITEMS = 15
+EXAM_COUNTDOWN_DAYS = 10       # con examen a <= N dias, el plan propone simulacro
 _rng = random.Random()
 
 DIFFICULTY_FROM_INT = {1: Difficulty.LOW, 2: Difficulty.LOW, 3: Difficulty.MEDIUM, 4: Difficulty.HIGH, 5: Difficulty.HIGH}
@@ -816,6 +818,7 @@ def course_overview(user, course: Course) -> dict:
         "reinforcement_cost": estimate_reinforcement_cost("auto").amount,
         "course_summary": course_summary_for(course),
         "at_risk_topics": at_risk_topics(profile),
+        "exam_days_left": days_until(course.exam_date),
         "exam_items": min(EXAM_DEFAULT_ITEMS, bank_size) if bank_size else 0,
         "class_summary_count": Summary.objects.filter(course=course, kind=Summary.Kind.STRUCTURED).count(),
         "progress": progress_panel(user, course),
@@ -970,6 +973,13 @@ def daily_plan(user, course: Course) -> list[dict]:
         actions.append(_post_action("practice", "Práctica inicial", "5 preguntas para estimar tu nivel en este curso",
                                     practice_url, {"target_count": 5, "focus": "balanced"}, 2))
         return actions[:PLAN_MAX_ACTIONS]
+
+    days_left = days_until(course.exam_date)
+    if days_left is not None and 0 <= days_left <= EXAM_COUNTDOWN_DAYS and bank:
+        bank_size = Question.objects.filter(quiz__course=course, quiz__quiz_type__in=PRACTICE_QUIZ_TYPES, quality_flag="").count()
+        when = "hoy" if days_left == 0 else ("manana" if days_left == 1 else f"en {days_left} dias")
+        actions.append(_post_action("exam", f"Simulacro: examen {when}", "longitud fija, todos los temas, nota sobre 20",
+                                    practice_url, {"target_count": min(EXAM_DEFAULT_ITEMS, bank_size), "focus": "exam"}, 1))
 
     last_session = PracticeSession.objects.filter(user=user, course=course, completed_at__isnull=False).first()
 

@@ -107,18 +107,28 @@ calidad) y usa `start-everything.bat`, que levanta Postgres, Ollama (:8001), el 
 
 ```
 learning/
-  views.py        vistas: registro, dashboard, cursos, subida, detalle, quiz, flashcards, mapa, ejercicios
+  views/          paquete de vistas por dominio: core (inicio, panel, salud), courses (curso, banco, CSV),
+                  lessons (clases y pipeline), study (flashcards, repaso, ejercicios, mapa), pipeline (trazas),
+                  practice (práctica, recomendaciones, refuerzo), summaries_views, _common (ayudantes)
   services.py     prompts, llamadas a IA (nube compatible OpenAI / Anthropic / local), chunking, verificación web y EduQG, Whisper
-  job_queue.py    cola en memoria + worker; orquestación del pipeline por etapas; trazas
+  job_queue.py    cola (hilos o BD) + worker; orquestación del pipeline por etapas; reclamo de trabajos; límite por usuario
   parse_mini.py   parser/serializador .mini, filtros de coherencia, aplicación de correcciones
-  cat.py          IRT 3PL: probabilidad, información de Fisher y estimación de habilidad (theta)
-  adaptive.py     núcleo de acompañamiento: banco del curso, sesión de práctica CAT, perfil por tema, recomendaciones, racha/XP
-  adaptive_generation.py  refuerzo dirigido: ítems nuevos, explicaciones y flashcards a la medida del perfil (cobra créditos, reembolsa si falla)
+  cat.py          IRT 3PL: probabilidad, información de Fisher y nivel
+  psychometrics.py  EAP, randomesque, calibración Elo, Bayesian Knowledge Tracing, puerta de calidad
+  adaptive.py     núcleo de acompañamiento: banco del curso, práctica CAT (equilibrada/débiles/riesgo/simulacro), perfil,
+                  olvido por tema, plan de hoy, recomendaciones, racha/XP, informe del banco
+  adaptive_generation.py  refuerzo dirigido: ítems nuevos, explicaciones y flashcards a la medida del perfil
   spaced_repetition.py    SM-2 para flashcards y cola de repaso por curso
+  segments.py     segmentos de transcripción con tiempo y enlace pregunta ↔ fragmento de la clase
+  summaries.py    resúmenes por clase y del curso (SummaryJob en cola)
+  progress.py     serie de dos semanas y SVG de progreso
+  reminders.py    recordatorios por correo
   credits.py      planes y ledger de créditos
-  models.py       LessonJob (pipeline) · Course/ClassSession/Quiz/Question/StudentAnswer/AdaptiveProfile/PracticeSession
-  migrations/     19 migraciones
-templates/        20 plantillas server-side
+  models.py       LessonJob (pipeline) · Course/ClassSession/Transcript/Quiz/Question/StudentAnswer/AdaptiveProfile/
+                  PracticeSession/ReinforcementJob/SummaryJob/Flashcard/Summary/Recommendation/StudyActivity
+  management/commands/  requeue_jobs · sync_question_bank · send_study_reminders · run_worker
+  migrations/     23 migraciones
+templates/        24 plantillas server-side
 static/learning/  CSS
 PROMPT.md, coherence_prompt.md, correct_prompt.md   prompts que el pipeline lee en ejecución
 MINI_FORMAT_SPEC.md   especificación del formato .mini
@@ -194,7 +204,12 @@ guarda y reembolsa si falla. La página muestra el estado y se refresca sola. Le
 una vez al día.
 
 **Simulacro** (`focus=exam`): examen de longitud fija sobre todo el curso, con cobertura proporcional
-de temas y sin sesgo hacia lo débil ni parada anticipada; la retroalimentación da la nota sobre 20.
+de temas y sin sesgo hacia lo débil ni parada anticipada; la retroalimentación da la nota sobre 20. Si el
+curso tiene **fecha de examen**, la cabecera muestra la cuenta regresiva y, a 10 días o menos, el plan de
+hoy pone el simulacro en primer lugar.
+
+**Límite por usuario**: `SIMA_MAX_PENDING_JOBS` (3) trabajos en cola o procesando (clases, refuerzos,
+resúmenes); se comprueba antes de cobrar créditos.
 
 **Olvido por tema**: cada tema del perfil guarda una **vida media de retención** (regresión de vida
 media simplificada, Settles & Meeder 2016: 3 días tras un acierto, se duplica con cada acierto

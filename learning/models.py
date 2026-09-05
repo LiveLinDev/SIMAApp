@@ -176,6 +176,7 @@ class Course(models.Model):
     main_topics = models.JSONField(default=list, blank=True)
     level = models.CharField(max_length=20, choices=Level.choices, default=Level.INTRODUCTORY)
     student_goal = models.TextField(blank=True)
+    exam_date = models.DateField(null=True, blank=True, help_text="Proxima evaluacion: activa la cuenta regresiva y el simulacro en el plan.")
     is_archived = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -832,3 +833,12 @@ class SummaryJob(models.Model):
     @property
     def is_pending(self):
         return self.status in {self.Status.QUEUED, self.Status.PROCESSING}
+
+
+def days_until(date_value):
+    """Dias que faltan para una fecha (negativo si ya paso); None si no hay fecha."""
+    if not date_value:
+        return None
+    from django.utils import timezone as _tz
+
+    return (date_value - _tz.localdate()).days

@@ -202,6 +202,29 @@ def reset_stale_processing(minutes: int = 120) -> int:
     return total
 
 
+class TooManyPendingJobs(RuntimeError):
+    """El usuario ya tiene el maximo de trabajos en cola o procesando."""
+
+
+def pending_jobs_for_user(user) -> int:
+    total = 0
+    for _kind, model, status in _job_tables():
+        total += model.objects.filter(user=user, status__in=[status.QUEUED, status.PROCESSING]).count()
+    return total
+
+
+def assert_user_can_enqueue(user):
+    """Corta antes de cobrar: un clic repetido o un bucle no debe vaciar los creditos ni la cola."""
+    limit = int(getattr(settings, "SIMA_MAX_PENDING_JOBS", 3) or 0)
+    if limit <= 0:
+        return
+    pending = pending_jobs_for_user(user)
+    if pending >= limit:
+        raise TooManyPendingJobs(
+            f"Ya tienes {pending} trabajo{'s' if pending != 1 else ''} en proceso (maximo {limit}). Espera a que terminen antes de agregar otro."
+        )
+
+
 def queue_snapshot() -> dict:
     """Conteo de trabajos por tipo y estado, para /salud/ y para el panel."""
     out = {"mode": queue_mode()}

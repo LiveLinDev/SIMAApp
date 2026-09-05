@@ -47,6 +47,7 @@ class CourseForm(forms.ModelForm):
             "instructor",
             "level",
             "student_goal",
+            "exam_date",
         )
         labels = {
             "name": "Nombre del curso",
@@ -55,8 +56,10 @@ class CourseForm(forms.ModelForm):
             "instructor": "Docente",
             "level": "Nivel",
             "student_goal": "Objetivo de estudio",
+            "exam_date": "Fecha del proximo examen",
         }
         widgets = {
+            "exam_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
             "name": forms.TextInput(attrs={"placeholder": "Ej: Biologia General"}),
             "academic_period": forms.TextInput(attrs={"placeholder": "Ej: 2026-1"}),
             "description": forms.Textarea(attrs={"rows": 3, "placeholder": "Opcional: que cubre este curso"}),

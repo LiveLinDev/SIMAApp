@@ -68,6 +68,12 @@
           {{ form.academic_period.errors }}
         </p>
         <p>
+          {{ form.exam_date.label_tag }}
+          {{ form.exam_date }}
+          {{ form.exam_date.errors }}
+          <small class="muted">Opcional. Con fecha, el curso muestra la cuenta regresiva y el plan propone simulacros.</small>
+        </p>
+        <p>
           {{ form.instructor.label_tag }}
           {{ form.instructor }}
           {{ form.instructor.errors }}

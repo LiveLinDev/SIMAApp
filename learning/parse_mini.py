@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Parser, corrector y serializador del formato MINI.
 

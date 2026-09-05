@@ -1,0 +1,40 @@
+# --- secretos y configuración local ---
+.env
+.env.*
+!.env.example
+
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+
+# --- Django / datos locales ---
+db.sqlite3
+media/
+staticfiles/
+
+# --- Node ---
+node_modules/
+proxy-mini/node_modules/
+
+# --- logs y salidas de ejecución ---
+*.log
+output/
+pipeline_output.txt
+.codex/*.log
+.playwright-cli/
+.playwright-mcp/
+
+# --- artefactos pesados / demos ---
+*.mp3
+*.mp4
+*.m4a
+*.wav
+
+# --- editor ---
+.vscode/
+*.code-workspace

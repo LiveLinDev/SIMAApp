@@ -1,6 +1,0 @@
-[     377ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8010/favicon.ico:0
-[   40491ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8010/clase/3/quiz/5/resultado/:0
-[   62771ms] SyntaxError: Expected property name or '}' in JSON at position 2 (line 1 column 3)
-    at JSON.parse (<anonymous>)
-    at http://127.0.0.1:8010/clase/3/ejercicios/emparejar/:299:20
-    at http://127.0.0.1:8010/clase/3/ejercicios/emparejar/:358:3

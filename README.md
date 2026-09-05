@@ -125,8 +125,10 @@ Cinco tests, todos sobre el parser `.mini`. No hay cobertura del pipeline, las v
 
 ## Problemas conocidos
 
-- **Cola en memoria.** Si Django se reinicia, los trabajos en `QUEUED`/`PROCESSING` quedan
-  huérfanos: no hay reencolado al arrancar. Reintentar desde `/clase/<id>/reintentar/`.
+- **Cola en memoria.** El worker vive dentro del proceso de Django. Al arrancar con
+  `runserver`, la app reencola automáticamente los trabajos que quedaron en `QUEUED`/`PROCESSING`
+  (`learning/apps.py`); con otro servidor, exporta `SIMA_REQUEUE_ON_START=1`. Para hacerlo a
+  mano: `python manage.py requeue_jobs` (`--dry-run` solo lista).
 - **Modelo de datos duplicado.** El pipeline y el quiz operan sobre `LessonJob`; las tablas
   del modelo nuevo (`Quiz`, `Question`, `AnswerOption`, `StudentAnswer`) existen pero están
   vacías. `ClassSession.legacy_lesson_job` hace de puente.

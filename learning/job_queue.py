@@ -734,3 +734,35 @@ def _sync_transcript_record(job: LessonJob):
             "language": "es",
         },
     )
+
+
+def requeue_orphaned_jobs(reason: str = "reinicio del servidor") -> int:
+    """
+    Reencola los LessonJob que quedaron en QUEUED o PROCESSING sin worker.
+
+    La cola vive en memoria dentro del proceso de Django, asi que un reinicio
+    (o el autoreloader) deja esos trabajos huerfanos en la base de datos.
+    Devuelve cuantos se volvieron a encolar.
+    """
+    orphans = LessonJob.objects.filter(
+        status__in=[LessonJob.Status.QUEUED, LessonJob.Status.PROCESSING]
+    ).order_by("created_at")
+    requeued = 0
+    for job in orphans:
+        job.status = LessonJob.Status.QUEUED
+        job.processing_stage = "En cola"
+        job.processing_log = _append_log(
+            job.processing_log,
+            "Reencolado",
+            f"Trabajo pendiente detectado tras {reason}; se retoma automaticamente.",
+        )
+        job.save(update_fields=["status", "processing_stage", "processing_log", "updated_at"])
+        try:
+            enqueue_lesson_job(job.pk, job.ai_backend or "auto")
+        except RuntimeError as exc:
+            logger.warning("No se pudo reencolar LessonJob %s: %s", job.pk, exc)
+            continue
+        requeued += 1
+    if requeued:
+        logger.info("Reencolados %s trabajo(s) pendiente(s) tras %s.", requeued, reason)
+    return requeued

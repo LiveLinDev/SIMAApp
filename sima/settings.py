@@ -223,3 +223,15 @@ VERIFICATION_DYNAMIC_WEB_SEARCH = env_bool("VERIFICATION_DYNAMIC_WEB_SEARCH", Tr
 VERIFICATION_ACADEMIC_SEARCH = env_bool("VERIFICATION_ACADEMIC_SEARCH", True)
 VERIFICATION_SEARCH_QUERIES = env_int("VERIFICATION_SEARCH_QUERIES", 3)
 VERIFICATION_SEARCH_RESULTS = env_int("VERIFICATION_SEARCH_RESULTS", 3)
+
+# ── Correo (recordatorios de estudio) ────────────────────────────────────────
+# Por defecto imprime en consola; para SMTP real usa django.core.mail.backends.smtp.EmailBackend
+EMAIL_BACKEND = env_text("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
+EMAIL_HOST = env_text("EMAIL_HOST", "")
+EMAIL_PORT = env_int("EMAIL_PORT", 587)
+EMAIL_HOST_USER = env_text("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = env_text("EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
+DEFAULT_FROM_EMAIL = env_text("DEFAULT_FROM_EMAIL", "SIMA <no-reply@sima.local>")
+# URL publica para los enlaces de los correos (sin barra final), p. ej. https://sima.midominio.pe
+SIMA_SITE_URL = env_text("SIMA_SITE_URL", "")

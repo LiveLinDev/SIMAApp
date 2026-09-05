@@ -106,6 +106,15 @@
   {# CTA principal #}
   <div class="study-cta-card">
     <div class="study-actions-grid">
+      <a class="study-action-btn study-action-btn--summary" href="{% url 'class_summary' job.pk %}">
+        <span class="btn-icon" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+        </span>
+        <span>
+          <strong>Resumen</strong>
+          <small>{% if class_summary %}Leer el resumen de la clase{% else %}Generar el resumen de la clase{% endif %}</small>
+        </span>
+      </a>
       <a class="study-action-btn study-action-btn--review" href="{% url 'flashcards' job.pk %}">
         <span class="btn-icon" aria-hidden="true">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>

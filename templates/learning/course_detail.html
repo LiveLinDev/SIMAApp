@@ -171,6 +171,33 @@
       {% endif %}
     </div>
 
+    <div class="course-panel" id="progreso-semanal">
+      <h3>Ultimas dos semanas</h3>
+      {% if overview.progress.has_data %}
+        {{ overview.progress.svg }}
+        <p class="progress-label">
+          {{ overview.progress.stats.current.answered }} respuestas esta semana
+          {% if overview.progress.stats.current.accuracy is not None %}&middot; {{ overview.progress.stats.current.accuracy }}% de acierto{% endif %}
+          {% if overview.progress.stats.theta_delta is not None %}&middot; habilidad {% if overview.progress.stats.theta_delta >= 0 %}+{% endif %}{{ overview.progress.stats.theta_delta }} vs. semana anterior{% endif %}
+          &middot; {{ overview.progress.stats.current.active_days }} dia{{ overview.progress.stats.current.active_days|pluralize }} activo{{ overview.progress.stats.current.active_days|pluralize }}
+        </p>
+        <p class="progress-legend"><span class="lg lg--acid"></span> aciertos <span class="lg lg--line"></span> respuestas <span class="lg lg--ink"></span> habilidad estimada</p>
+      {% else %}
+        <p class="progress-label">Cuando practiques, aqui veras tus respuestas por dia y como evoluciona tu habilidad.</p>
+      {% endif %}
+    </div>
+
+    <div class="course-panel" id="resumen-curso">
+      <h3>Resumen del curso</h3>
+      {% if overview.course_summary %}
+        <p class="progress-label"><strong>{{ overview.course_summary.title }}</strong><br>{{ overview.course_summary.content|truncatechars:220 }}</p>
+        <a class="secondary-button" href="{% url 'course_summary' course.pk %}">Leer resumen completo</a>
+      {% else %}
+        <p class="progress-label">{% if overview.class_summary_count %}{{ overview.class_summary_count }} resumen{{ overview.class_summary_count|pluralize:"es" }} de clase listos para integrar.{% else %}Integra tus clases en un documento por temas que senala que repasar primero.{% endif %}</p>
+        <a class="secondary-button" href="{% url 'course_summary' course.pk %}">Generar resumen del curso</a>
+      {% endif %}
+    </div>
+
     {% if overview.plan %}
     <div class="course-panel" id="plan-de-hoy">
       <h3>Plan de hoy</h3>

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Resumen - {{ course.name }}{% endblock %}
+{% block content %}
+<section class="ld-header">
+  <div>
+    <a href="{% url 'course_detail' course.pk %}" class="back-link">&larr; {{ course.name }}</a>
+    <h1>Resumen acumulado del curso</h1>
+    <p class="muted">Integra {{ class_summary_count }} resumen{{ class_summary_count|pluralize:"es" }} de clase{% if weak_topics %} &middot; prioriza: {{ weak_topics|join:", " }}{% endif %}</p>
+  </div>
+</section>
+
+<div class="sm-shell">
+  {% if summary %}
+    {% include "learning/_summary_body.html" with summary=summary %}
+  {% else %}
+  <section class="sm-card sm-card--empty">
+    <h2>Todavia no hay resumen del curso</h2>
+    <p class="muted">SIMA integra los resumenes de tus clases (o sus transcripciones) en un unico documento por temas, y senala que repasar primero segun tus temas debiles.</p>
+  </section>
+  {% endif %}
+
+  {% if class_summaries %}
+  <section class="sm-card">
+    <h3>Resumenes por clase</h3>
+    <ul class="rec-list">
+      {% for s in class_summaries %}
+      <li>
+        <strong>{% if s.class_session and s.class_session.legacy_lesson_job_id %}<a href="{% url 'class_summary' s.class_session.legacy_lesson_job_id %}">{{ s.title }}</a>{% else %}{{ s.title }}{% endif %}</strong>
+        <span>{{ s.content|truncatechars:180 }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  <div class="sm-actions">
+    {% if can_generate %}
+    <form method="post">
+      {% csrf_token %}
+      <button class="{% if summary %}secondary-button{% else %}primary-button{% endif %}" type="submit">
+        {% if summary %}Regenerar resumen{% else %}Generar resumen del curso{% endif %} ({{ summary_cost }} creditos)
+      </button>
+    </form>
+    {% else %}
+    <p class="muted">El curso aun no tiene clases con contenido para resumir.</p>
+    {% endif %}
+    {% if summary %}
+    <form method="post" action="{% url 'practice_start' course.pk %}">
+      {% csrf_token %}
+      <input type="hidden" name="target_count" value="8">
+      <button class="primary-button" type="submit">Practicar el curso</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+  .sm-shell { max-width: 820px; margin: 0 auto; display: grid; gap: 18px; }
+  .sm-card { border: 1px solid var(--line); border-radius: 16px; background: var(--surface); padding: 26px 28px; }
+  .sm-card--empty { text-align: center; }
+  .sm-card h3 { margin: 0 0 10px; }
+  .sm-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  .sm-head h2 { margin: 0; font-size: 1.35rem; }
+  .sm-concepts { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+  .sm-body { line-height: 1.65; color: var(--ink); }
+  .sm-body p { margin: 0 0 12px; }
+  .sm-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .sm-actions form { margin: 0; }
+</style>
+{% endblock %}

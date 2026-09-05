@@ -14,7 +14,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 
-from . import adaptive, adaptive_generation
+from . import adaptive, adaptive_generation, progress, summaries
 from . import spaced_repetition
 from .cat import BLOOM_LABELS, build_bank, choose_next_item, estimate_theta, option_index, parse_cat_params, theta_to_level
 from .credits import (
@@ -108,7 +108,8 @@ def dashboard(request):
         except (TypeError, ValueError):
             daily_goal = preferences.daily_goal
         preferences.daily_goal = max(1, min(daily_goal, 200))
-        preferences.save(update_fields=["daily_goal", "updated_at"])
+        preferences.email_reminders = bool(request.POST.get("email_reminders"))
+        preferences.save(update_fields=["daily_goal", "email_reminders", "updated_at"])
         messages.success(request, "Preferencias actualizadas.")
         return redirect(f"{request.path}?tab=preferencias")
 
@@ -158,6 +159,7 @@ def dashboard(request):
         "explore_tag": tag,
         "plans": get_plan_details(),
         "today": adaptive.dashboard_today(request.user),
+        "progress": progress.progress_panel(request.user),
     })
 
 
@@ -371,6 +373,7 @@ def lesson_detail(request, pk):
         "bloom_stats": bloom_stats,
         "key_topics": sorted(key_topics),
         "practice_sessions": adaptive.PracticeSession.objects.filter(user=request.user, lesson=job)[:8],
+        "class_summary": summaries.class_summary_for(job),
         "pipeline_step": pipeline_step,
         "pipeline_total": pipeline_total,
         "is_owner": job.user_id == request.user.id,
@@ -1837,3 +1840,69 @@ def course_review_card(request, pk):
         raise Http404()
     course = get_object_or_404(Course, pk=pk, user=request.user, is_archived=False)
     return _rate_flashcard(request, course=course, redirect_to=("course_review", course.pk))
+
+
+# ══════════════════════════════════════════════════════════════════
+# RESUMENES (US-050)
+# ══════════════════════════════════════════════════════════════════
+
+def _register_summary_review(user, course, class_session=None):
+    """Una revision de resumen por dia y por objeto suma XP sin inflar la racha."""
+    from .models import StudyActivity
+
+    today_start = timezone.localtime().replace(hour=0, minute=0, second=0, microsecond=0)
+    already = StudyActivity.objects.filter(
+        user=user, course=course, class_session=class_session,
+        activity_type=StudyActivity.ActivityType.SUMMARY_REVIEWED, occurred_at__gte=today_start,
+    ).exists()
+    if not already:
+        adaptive.register_activity(user, course, StudyActivity.ActivityType.SUMMARY_REVIEWED, xp=5)
+
+
+@login_required
+def class_summary(request, pk):
+    job = get_object_or_404(LessonJob, pk=pk, user=request.user)
+    if request.method == "POST":
+        try:
+            summaries.generate_class_summary(request.user, job, backend=request.POST.get("backend", "auto"))
+            messages.success(request, "Resumen de la clase listo.")
+        except summaries.SummaryUnavailable as exc:
+            messages.warning(request, str(exc))
+        return redirect("class_summary", pk=job.pk)
+    summary = summaries.class_summary_for(job)
+    if summary is not None and job.course_id:
+        _register_summary_review(request.user, job.course, summary.class_session)
+    return render(request, "learning/class_summary.html", {
+        "job": job,
+        "summary": summary,
+        "can_generate": bool(job.course_id) and len((job.transcript or job.source_text or "").strip()) >= 200,
+        "summary_cost": summaries.estimate_summary_cost("auto").amount,
+    })
+
+
+@login_required
+def course_summary(request, pk):
+    course = get_object_or_404(Course, pk=pk, user=request.user, is_archived=False)
+    if request.method == "POST":
+        try:
+            summaries.generate_course_summary(request.user, course, backend=request.POST.get("backend", "auto"))
+            messages.success(request, "Resumen del curso listo.")
+        except summaries.SummaryUnavailable as exc:
+            messages.warning(request, str(exc))
+        return redirect("course_summary", pk=course.pk)
+    summary = summaries.course_summary_for(course)
+    if summary is not None:
+        _register_summary_review(request.user, course)
+    class_summaries = list(
+        adaptive.Summary.objects.filter(course=course, kind=adaptive.Summary.Kind.STRUCTURED).select_related("class_session")
+    )
+    profile = adaptive.get_profile(request.user, course)
+    return render(request, "learning/course_summary.html", {
+        "course": course,
+        "summary": summary,
+        "class_summaries": class_summaries,
+        "class_summary_count": len(class_summaries),
+        "weak_topics": list(profile.weak_topics) if profile else [],
+        "can_generate": bool(class_summaries) or LessonJob.objects.filter(course=course).exclude(transcript="", source_text="").exists(),
+        "summary_cost": summaries.estimate_summary_cost("auto").amount,
+    })

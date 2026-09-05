@@ -20,6 +20,7 @@ AUDIO_TRANSCRIPTION_COST = 35
 VERIFICATION_COST = 7
 REGENERATION_COST = 12
 REINFORCEMENT_COST = 10
+SUMMARY_COST = 8
 CLOUD_BACKEND_SURCHARGE = 15
 
 
@@ -140,6 +141,21 @@ def estimate_reinforcement_cost(backend: str | None = "auto") -> CreditEstimate:
             amount += surcharge
             details.append(f"nube {surcharge}")
     return CreditEstimate(action=CreditLedgerEntry.Action.QUIZ_GENERATION, amount=amount, details=tuple(details))
+
+
+def estimate_summary_cost(backend: str | None = "auto") -> CreditEstimate:
+    """Costo de un resumen (clase o curso): base fija mas el recargo de nube si aplica."""
+    from .services import resolve_backend  # import perezoso
+
+    resolved = resolve_backend(backend or "auto")
+    amount = SUMMARY_COST
+    details = [f"resumen {SUMMARY_COST}"]
+    if resolved == "cloud":
+        surcharge = max(0, int(getattr(settings, "CLOUD_BACKEND_SURCHARGE", CLOUD_BACKEND_SURCHARGE)))
+        if surcharge:
+            amount += surcharge
+            details.append(f"nube {surcharge}")
+    return CreditEstimate(action=CreditLedgerEntry.Action.SUMMARY_GENERATION, amount=amount, details=tuple(details))
 
 
 @transaction.atomic

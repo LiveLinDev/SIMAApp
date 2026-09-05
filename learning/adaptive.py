@@ -33,6 +33,8 @@ from django.utils import timezone
 from .cat import BLOOM_LABELS, item_information, theta_to_level
 from .psychometrics import bkt_trace, calibrate_difficulty, eap_estimate, quality_flag, randomesque
 from .segments import attach_sources, format_timestamp
+from .progress import progress_panel
+from .summaries import course_summary_for
 from .models import (
     AdaptiveProfile,
     AnswerOption,
@@ -726,6 +728,9 @@ def course_overview(user, course: Course) -> dict:
         "calibrated_count": Question.objects.filter(quiz__course=course, calibration_count__gte=CALIBRATION_MIN).count(),
         "concepts": list(Summary.objects.filter(course=course, kind=Summary.Kind.CONCEPT)[:5]),
         "reinforcement_cost": estimate_reinforcement_cost("auto").amount,
+        "course_summary": course_summary_for(course),
+        "class_summary_count": Summary.objects.filter(course=course, kind=Summary.Kind.STRUCTURED).count(),
+        "progress": progress_panel(user, course),
     }
 
 

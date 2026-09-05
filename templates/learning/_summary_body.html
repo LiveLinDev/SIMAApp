@@ -1,0 +1,13 @@
+{# Cuerpo compartido de un resumen (clase o curso). Espera: summary #}
+<article class="sm-card">
+  <header class="sm-head">
+    <h2>{{ summary.title }}</h2>
+    <small class="muted">Actualizado {{ summary.updated_at|date:"d M Y H:i" }}</small>
+  </header>
+  {% if summary.key_concepts %}
+  <div class="sm-concepts">
+    {% for c in summary.key_concepts %}<span class="topic-chip">{{ c }}</span>{% endfor %}
+  </div>
+  {% endif %}
+  <div class="sm-body">{{ summary.content|linebreaks }}</div>
+</article>

@@ -2986,3 +2986,12 @@ input[type="file"]::file-selector-button:hover {
   border-color: var(--acid);
 }
 }
+
+/* Progreso semanal (SVG del servidor) */
+.progress-svg { display: block; width: 100%; height: auto; margin: 6px 0 4px; }
+.progress-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; font-size: .8rem; color: var(--muted); margin: 4px 0 0; }
+.progress-legend .lg { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 4px; vertical-align: -2px; }
+.lg--acid { background: var(--acid); } .lg--line { background: var(--line); } .lg--ink { background: var(--ink); height: 3px !important; border-radius: 2px; }
+.today-progress { margin: 6px 0 10px; }
+.check-row { display: flex; gap: 10px; align-items: flex-start; margin-top: 12px; font-size: .92rem; color: var(--ink); cursor: pointer; }
+.check-row input { margin-top: 3px; }

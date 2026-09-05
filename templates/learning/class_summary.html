@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Resumen - {{ job.title }}{% endblock %}
+{% block content %}
+<section class="ld-header">
+  <div>
+    <a href="{% url 'lesson_detail' job.pk %}" class="back-link">&larr; {{ job.title }}</a>
+    <h1>Resumen de la clase</h1>
+    <p class="muted">{% if job.course %}{{ job.course.name }} &middot; {% endif %}{{ job.created_at|date:"d M Y" }}</p>
+  </div>
+</section>
+
+<div class="sm-shell">
+  {% if summary %}
+    {% include "learning/_summary_body.html" with summary=summary %}
+  {% else %}
+  <section class="sm-card sm-card--empty">
+    <h2>Todavia no hay resumen de esta clase</h2>
+    <p class="muted">SIMA lo redacta a partir de la transcripcion y de las preguntas que ya se evaluan sobre esta clase: conceptos clave, parrafos por idea y que repasar primero.</p>
+  </section>
+  {% endif %}
+
+  <div class="sm-actions">
+    {% if can_generate %}
+    <form method="post">
+      {% csrf_token %}
+      <button class="{% if summary %}secondary-button{% else %}primary-button{% endif %}" type="submit">
+        {% if summary %}Regenerar resumen{% else %}Generar resumen{% endif %} ({{ summary_cost }} creditos)
+      </button>
+    </form>
+    {% else %}
+    <p class="muted">La clase aun no tiene transcripcion suficiente para resumir.</p>
+    {% endif %}
+    {% if summary and job.course %}
+      <a class="secondary-button" href="{% url 'course_summary' job.course.pk %}">Ver resumen del curso</a>
+      <form method="post" action="{% url 'practice_start' job.course.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="lesson" value="{{ job.pk }}">
+        <input type="hidden" name="target_count" value="8">
+        <button class="primary-button" type="submit">Practicar esta clase</button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+  .sm-shell { max-width: 820px; margin: 0 auto; display: grid; gap: 18px; }
+  .sm-card { border: 1px solid var(--line); border-radius: 16px; background: var(--surface); padding: 26px 28px; }
+  .sm-card--empty { text-align: center; }
+  .sm-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  .sm-head h2 { margin: 0; font-size: 1.35rem; }
+  .sm-concepts { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+  .sm-body { line-height: 1.65; color: var(--ink); }
+  .sm-body p { margin: 0 0 12px; }
+  .sm-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .sm-actions form { margin: 0; }
+</style>
+{% endblock %}

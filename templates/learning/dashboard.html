@@ -74,6 +74,12 @@
             <small>{{ today.progress.answered }} preguntas · {{ today.progress.reviewed }} tarjetas{% if today.due_cards_total %} · {{ today.due_cards_total }} por repasar{% endif %}</small>
           </div>
         </div>
+        {% if progress.has_data %}
+        <div class="today-progress">
+          {{ progress.svg }}
+          <small class="muted">Ultimas dos semanas: {{ progress.stats.current.answered }} respuestas{% if progress.stats.current.accuracy is not None %} &middot; {{ progress.stats.current.accuracy }}% de acierto{% endif %} &middot; {{ progress.stats.current.active_days }} dia{{ progress.stats.current.active_days|pluralize }} activo{{ progress.stats.current.active_days|pluralize }}</small>
+        </div>
+        {% endif %}
         <ul class="today-list">
           {% for row in today.courses %}
           <li>
@@ -331,6 +337,10 @@
             <button class="primary-button" type="submit">Guardar</button>
           </div>
           <p>Usa esta meta para medir tus bloques de estudio y tu ritmo diario.</p>
+          <label class="check-row">
+            <input type="checkbox" name="email_reminders" {% if preferences.email_reminders %}checked{% endif %}>
+            <span>Recordatorio por correo los dias que no estudie{% if not user.email %} (agrega un correo a tu cuenta){% endif %}</span>
+          </label>
         </form>
 
         <div class="settings-list">

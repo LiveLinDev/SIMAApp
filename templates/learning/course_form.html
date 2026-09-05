@@ -1,13 +1,19 @@
 {% extends "base.html" %}
-{% block title %}Nuevo curso - SIMA{% endblock %}
+{% block title %}{% if course %}Editar {{ course.name }}{% else %}Nuevo curso{% endif %} - SIMA{% endblock %}
 {% block content %}
 
 <section class="course-create-shell">
   <div class="course-create-hero">
     <div class="course-hero-copy">
+      {% if course %}
+      <a class="back-link" href="{% url 'course_detail' course.pk %}">Volver a {{ course.name }}</a>
+      <p class="eyebrow">Editar curso</p>
+      <h1>{{ course.name }}</h1>
+      {% else %}
       <a class="back-link" href="{% url 'dashboard' %}">Volver al dashboard</a>
       <p class="eyebrow">Nuevo espacio academico</p>
       <h1>Curso <span>inteligente</span></h1>
+      {% endif %}
       <p class="muted">SIMA usa este contexto para clasificar clases, generar materiales, medir progreso y recomendar el siguiente bloque de estudio.</p>
       <div class="course-hero-actions">
         <a class="primary-button" href="#course-form">Configurar curso</a>

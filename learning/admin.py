@@ -9,6 +9,9 @@ from .models import (
     Flashcard,
     LessonJob,
     PlanCatalog,
+    PracticeSession,
+    ReinforcementJob,
+    SummaryJob,
     Profile,
     Question,
     Quiz,
@@ -154,3 +157,27 @@ class RecommendationAdmin(admin.ModelAdmin):
     list_display = ("title", "user", "course", "status", "priority", "due_at", "updated_at")
     list_filter = ("status", "priority", "due_at")
     search_fields = ("title", "message", "reason", "user__username", "course__name")
+
+
+@admin.register(PracticeSession)
+class PracticeSessionAdmin(admin.ModelAdmin):
+    list_display = ("pk", "user", "course", "focus", "target_count", "correct_count", "theta", "standard_error", "completed_at", "created_at")
+    list_filter = ("focus", "course")
+    search_fields = ("user__username", "course__name")
+    readonly_fields = ("feedback", "served_question_ids")
+
+
+@admin.register(ReinforcementJob)
+class ReinforcementJobAdmin(admin.ModelAdmin):
+    list_display = ("pk", "user", "course", "status", "topics", "credits_charged", "credits_refunded", "created_at", "completed_at")
+    list_filter = ("status", "course")
+    search_fields = ("user__username", "course__name")
+    readonly_fields = ("processing_log", "error")
+
+
+@admin.register(SummaryJob)
+class SummaryJobAdmin(admin.ModelAdmin):
+    list_display = ("pk", "user", "course", "lesson", "kind", "status", "backend", "credits_charged", "credits_refunded", "created_at", "completed_at")
+    list_filter = ("status", "kind", "backend")
+    search_fields = ("user__username", "course__name", "lesson__title")
+    readonly_fields = ("processing_log", "error")

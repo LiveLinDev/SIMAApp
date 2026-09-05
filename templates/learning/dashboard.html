@@ -149,6 +149,7 @@
           </article>
           {% endfor %}
         </div>
+
       {% else %}
         <div class="empty-dashboard">
           <div>
@@ -164,6 +165,23 @@
           </ol>
         </div>
       {% endif %}
+      {% if archived_courses %}
+        <details class="archived-courses">
+          <summary>Cursos archivados ({{ archived_courses|length }})</summary>
+          <ul>
+            {% for c in archived_courses %}
+            <li>
+              <span>{{ c.name }}{% if c.academic_period %} &middot; {{ c.academic_period }}{% endif %}</span>
+              <form method="post" action="{% url 'course_archive' c.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="restore">
+                <button type="submit" class="rec-dismiss">Restaurar</button>
+              </form>
+            </li>
+            {% endfor %}
+          </ul>
+        </details>
+        {% endif %}
     </section>
 
     <section class="dashboard-panel" id="panel-mis-clases" {% if active_tab != 'mis-clases' %}hidden{% endif %}>

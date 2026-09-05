@@ -237,3 +237,46 @@ EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
 DEFAULT_FROM_EMAIL = env_text("DEFAULT_FROM_EMAIL", "SIMA <no-reply@sima.local>")
 # URL publica para los enlaces de los correos (sin barra final), p. ej. https://sima.midominio.pe
 SIMA_SITE_URL = env_text("SIMA_SITE_URL", "")
+
+# ── Seguridad en produccion (DJANGO_DEBUG=0) ─────────────────────────────────
+if not DEBUG and SECRET_KEY == "dev-only-change-me":
+    from django.core.exceptions import ImproperlyConfigured
+
+    raise ImproperlyConfigured("Define DJANGO_SECRET_KEY en .env antes de correr con DJANGO_DEBUG=0.")
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in env_text("CSRF_TRUSTED_ORIGINS", "").split(",") if o.strip()]
+X_FRAME_OPTIONS = "DENY"
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = "same-origin"
+SESSION_COOKIE_HTTPONLY = True
+if not DEBUG:
+    SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", False)
+    SESSION_COOKIE_SECURE = env_bool("SESSION_COOKIE_SECURE", SECURE_SSL_REDIRECT)
+    CSRF_COOKIE_SECURE = env_bool("CSRF_COOKIE_SECURE", SECURE_SSL_REDIRECT)
+    SECURE_HSTS_SECONDS = env_int("SECURE_HSTS_SECONDS", 0)
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = SECURE_HSTS_SECONDS > 0
+    if env_bool("BEHIND_PROXY", False):
+        SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# ── Logging: consola + archivo rotativo logs/sima.log ────────────────────────
+LOG_DIR = BASE_DIR / "logs"
+LOG_DIR.mkdir(exist_ok=True)
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {"std": {"format": "%(asctime)s %(levelname)s %(name)s: %(message)s"}},
+    "handlers": {
+        "console": {"class": "logging.StreamHandler", "formatter": "std"},
+        "file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": str(LOG_DIR / "sima.log"),
+            "maxBytes": 5 * 1024 * 1024,
+            "backupCount": 3,
+            "encoding": "utf-8",
+            "formatter": "std",
+        },
+    },
+    "loggers": {
+        "learning": {"handlers": ["console", "file"], "level": env_text("SIMA_LOG_LEVEL", "INFO"), "propagate": False},
+        "django.request": {"handlers": ["console", "file"], "level": "WARNING", "propagate": False},
+    },
+}

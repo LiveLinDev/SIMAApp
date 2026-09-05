@@ -783,54 +783,6 @@ class LessonJob(models.Model):
         return [tag.strip() for tag in self.tags.split(",") if tag.strip()]
 
 
-class QuizAttempt(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    lesson = models.ForeignKey(LessonJob, on_delete=models.CASCADE, related_name="quiz_attempts")
-    target_count = models.PositiveIntegerField(default=10)
-    theta = models.FloatField(default=0.0)
-    standard_error = models.FloatField(default=9.99)
-    current_item_id = models.CharField(max_length=20, blank=True)
-    selected_item_ids = models.JSONField(default=list, blank=True)
-    correct_count = models.PositiveIntegerField(default=0)
-    completed_at = models.DateTimeField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        ordering = ["-created_at"]
-
-    @property
-    def answered_count(self):
-        return self.responses.count()
-
-    @property
-    def is_complete(self):
-        return self.completed_at is not None
-
-    @property
-    def accuracy(self):
-        total = self.answered_count
-        return round((self.correct_count / total) * 100) if total else 0
-
-
-class QuizResponse(models.Model):
-    attempt = models.ForeignKey(QuizAttempt, on_delete=models.CASCADE, related_name="responses")
-    item_id = models.CharField(max_length=20)
-    item_bloom = models.CharField(max_length=4)
-    item_topic = models.CharField(max_length=160)
-    item_area = models.CharField(max_length=160, blank=True)
-    item_demand = models.CharField(max_length=20, blank=True)
-    theta_before = models.FloatField(default=0.0)
-    theta_after = models.FloatField(default=0.0)
-    selected_index = models.IntegerField()
-    correct_index = models.IntegerField()
-    is_correct = models.BooleanField(default=False)
-    answered_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ["answered_at"]
-
-
 @receiver(post_save, sender=User)
 def create_profile(sender, instance, created, **kwargs):
     if created:

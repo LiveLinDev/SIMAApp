@@ -15,7 +15,7 @@
 <div class="quiz-shell">
 
   {% if last %}
-  <section class="fb-strip {% if last.is_correct %}fb-strip--ok{% else %}fb-strip--bad{% endif %}">
+  <section class="fb-strip {% if last.is_correct %}fb-strip--ok{% else %}fb-strip--bad{% endif %}" role="status" aria-live="polite">
     <div class="fb-head">
       <strong>{% if last.is_correct %}Correcto{% else %}Incorrecto{% endif %}</strong>
       <span class="muted">{{ last.topic }}</span>
@@ -137,6 +137,7 @@
         {% endfor %}
       </div>
       <button class="primary-button full" type="submit">Responder y continuar</button>
+      <p class="pr-hotkeys muted" data-hotkeys>Teclas <kbd>1</kbd>–<kbd>4</kbd> eligen una opcion y <kbd>Enter</kbd> responde.</p>
     </form>
     <script>
       (function () {
@@ -147,6 +148,20 @@
           container.appendChild(labels[j]);
           var tmp = labels[i]; labels[i] = labels[j]; labels[j] = tmp;
         }
+        var form = document.getElementById("practice-form");
+        document.addEventListener("keydown", function (event) {
+          if (event.target && /input|textarea|select/i.test(event.target.tagName) && event.target.type !== "radio") { return; }
+          var current = Array.from(container.querySelectorAll(".answer-option input"));
+          var index = parseInt(event.key, 10);
+          if (index >= 1 && index <= current.length) {
+            current[index - 1].checked = true;
+            current[index - 1].focus();
+            event.preventDefault();
+          } else if (event.key === "Enter" && current.some(function (r) { return r.checked; })) {
+            event.preventDefault();
+            form.requestSubmit ? form.requestSubmit() : form.submit();
+          }
+        });
       })();
     </script>
   </section>
@@ -189,6 +204,8 @@
   .pr-recs li { border-left: 3px solid var(--acid); padding: 6px 12px; display: grid; gap: 2px; }
   .pr-recs span { color: var(--muted); font-size: .92rem; }
   .pr-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; align-items: center; }
+  .pr-hotkeys { font-size: .8rem; margin: 10px 0 0; text-align: center; }
+  .pr-hotkeys kbd { border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; font-family: var(--font-mono); font-size: .75rem; }
   .fb-strip { border: 1px solid var(--line); border-left-width: 4px; border-radius: 14px; background: var(--surface); padding: 16px 20px; display: grid; gap: 6px; }
   .fb-strip--ok { border-left-color: #6fd69a; } .fb-strip--bad { border-left-color: #ff8b8b; }
   .fb-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }

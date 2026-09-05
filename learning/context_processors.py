@@ -33,7 +33,6 @@ def sidebar_data(request):
         "course_detail": "cursos",
         "course_create": "cursos",
         "lesson_detail": "mis-clases",
-        "quiz_attempt": "mis-clases",
         "api_lesson": "mis-clases",
         "free_lesson": "mis-clases",
         "flashcards": "mis-clases",

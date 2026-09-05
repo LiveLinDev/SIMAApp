@@ -38,3 +38,5 @@ pipeline_output.txt
 # --- editor ---
 .vscode/
 *.code-workspace
+# logs de la app
+logs/

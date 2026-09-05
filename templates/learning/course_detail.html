@@ -21,6 +21,11 @@
     <div class="course-meta-row">
       <span class="course-level">{{ course.get_level_display }}</span>
       {% if course.instructor %}<span class="course-instructor">{{ course.instructor }}</span>{% endif %}
+      <a class="course-tool" href="{% url 'course_edit' course.pk %}">Editar</a>
+      <form method="post" action="{% url 'course_archive' course.pk %}" class="course-tool-form" onsubmit="return confirm('Archivar «{{ course.name|escapejs }}»? No se borra nada y puedes restaurarlo desde Inicio.');">
+        {% csrf_token %}
+        <button class="course-tool" type="submit">Archivar</button>
+      </form>
     </div>
   </div>
   <div class="course-hero-actions">

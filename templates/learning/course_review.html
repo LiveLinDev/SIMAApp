@@ -1,0 +1,348 @@
+{% extends "base.html" %}
+{% block title %}Repasos de hoy - {{ course.name }} - SIMA{% endblock %}
+{% block content %}
+
+<section class="ld-header">
+  <div class="ld-title-group">
+    <a href="{% url 'course_detail' course.pk %}" class="back-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Volver al curso
+    </a>
+    <h1>Repasos de hoy: {{ course.name }}</h1>
+    <p class="ld-meta">{{ card_count }} en esta tanda · {{ due_count }} pendientes en total · Voltear para ver la respuesta</p>
+  </div>
+</section>
+
+{% if cards %}
+<div class="flashcard-stage">
+  <div class="flashcard-counter">
+    <span id="current-index">1</span> / {{ card_count }}
+  </div>
+
+  <div class="flashcard-deck" id="flashcard-deck">
+    {% for card in cards %}
+    <div class="flashcard {% if not forloop.first %}flashcard--behind{% endif %}" data-index="{{ forloop.counter0 }}" data-id="{{ card.pk }}">
+      <div class="flashcard-inner" onclick="flipCard(this)">
+        <div class="flashcard-face flashcard-front">
+          <span class="flashcard-badge">Pregunta</span>
+          <p class="flashcard-text">{{ card.question }}</p>
+          <span class="flashcard-hint">Toca para voltear</span>
+        </div>
+        <div class="flashcard-face flashcard-back">
+          <span class="flashcard-badge flashcard-badge--answer">Respuesta</span>
+          <p class="flashcard-text">{{ card.answer }}</p>
+          {% if card.topic %}<span class="flashcard-topic">{{ card.topic }}</span>{% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="flashcard-controls" id="flashcard-controls" style="opacity:0;pointer-events:none;">
+    <input type="hidden" id="rating-card-id">
+    <div class="flashcard-rating" id="flashcard-rating">
+      <button type="button" data-difficulty="again" class="rating-btn rating-btn--again" onclick="rateCard('again')">
+        <strong>De nuevo</strong>
+        <small>&lt; 10 min</small>
+      </button>
+      <button type="button" data-difficulty="hard" class="rating-btn rating-btn--hard" onclick="rateCard('hard')">
+        <strong>Difícil</strong>
+        <small>4 h</small>
+      </button>
+      <button type="button" data-difficulty="medium" class="rating-btn rating-btn--medium" onclick="rateCard('medium')">
+        <strong>Bien</strong>
+        <small>1 d</small>
+      </button>
+      <button type="button" data-difficulty="easy" class="rating-btn rating-btn--easy" onclick="rateCard('easy')">
+        <strong>Fácil</strong>
+        <small>3 d</small>
+      </button>
+    </div>
+    <div id="rating-loading" class="rating-loading" hidden>Guardando…</div>
+  </div>
+
+  <div class="flashcard-nav">
+    <button type="button" class="secondary-button" onclick="prevCard()" id="btn-prev" disabled>Anterior</button>
+    <button type="button" class="primary-button" onclick="nextCard()" id="btn-next">Siguiente</button>
+  </div>
+</div>
+
+<script>
+(function() {
+  var cards = document.querySelectorAll('.flashcard');
+  var current = 0;
+  var total = cards.length;
+  var controls = document.getElementById('flashcard-controls');
+  var ratingId = document.getElementById('rating-card-id');
+  var currentIndexEl = document.getElementById('current-index');
+  var btnPrev = document.getElementById('btn-prev');
+  var btnNext = document.getElementById('btn-next');
+
+  function updateControls() {
+    currentIndexEl.textContent = current + 1;
+    document.getElementById('btn-prev').disabled = current === 0;
+    var card = cards[current];
+    var isFlipped = card.querySelector('.flashcard-inner').classList.contains('is-flipped');
+    if (isFlipped) {
+      controls.style.opacity = '1';
+      controls.style.pointerEvents = 'auto';
+      ratingId.value = card.dataset.id;
+    } else {
+      controls.style.opacity = '0';
+      controls.style.pointerEvents = 'none';
+    }
+    if (current === total - 1) {
+      btnNext.textContent = 'Finalizar';
+    } else {
+      btnNext.textContent = 'Siguiente';
+    }
+  }
+
+  window.flipCard = function(inner) {
+    inner.classList.toggle('is-flipped');
+    updateControls();
+  };
+
+  function advanceCard() {
+    var inner = cards[current].querySelector('.flashcard-inner');
+    if (inner.classList.contains('is-flipped')) {
+      inner.classList.remove('is-flipped');
+    }
+    if (current < total - 1) {
+      cards[current].classList.add('flashcard--exit');
+      setTimeout(function() {
+        cards[current].style.display = 'none';
+        current++;
+        cards[current].classList.remove('flashcard--behind');
+        updateControls();
+      }, 250);
+    } else {
+      // finished
+      window.location.href = '{% url "course_detail" course.pk %}';
+    }
+  }
+
+  window.nextCard = advanceCard;
+
+  window.rateCard = function(difficulty) {
+    var card = cards[current];
+    var cardId = card.dataset.id;
+    var ratingDiv = document.getElementById('flashcard-rating');
+    var loadingDiv = document.getElementById('rating-loading');
+    ratingDiv.hidden = true;
+    loadingDiv.hidden = false;
+
+    fetch('{% url "course_review_card" course.pk %}', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: 'flashcard_id=' + encodeURIComponent(cardId) + '&difficulty=' + encodeURIComponent(difficulty)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      ratingDiv.hidden = false;
+      loadingDiv.hidden = true;
+      if (data.ok) {
+        advanceCard();
+      } else {
+        alert(data.error || 'No se pudo guardar la calificación');
+      }
+    })
+    .catch(function(err) {
+      ratingDiv.hidden = false;
+      loadingDiv.hidden = true;
+      console.error(err);
+      // fallback: avanzar de todos modos para no bloquear al usuario
+      advanceCard();
+    });
+  };
+
+  window.prevCard = function() {
+    if (current > 0) {
+      cards[current].classList.add('flashcard--behind');
+      current--;
+      cards[current].style.display = '';
+      cards[current].classList.remove('flashcard--exit');
+      var inner = cards[current].querySelector('.flashcard-inner');
+      inner.classList.remove('is-flipped');
+      updateControls();
+    }
+  };
+
+  updateControls();
+})();
+</script>
+
+<style>
+  .flashcard-stage {
+    max-width: 640px;
+    margin: 0 auto;
+    display: grid;
+    gap: 20px;
+  }
+  .flashcard-counter {
+    text-align: center;
+    color: var(--muted);
+    font-size: .9rem;
+    font-weight: 700;
+  }
+  .flashcard-deck {
+    position: relative;
+    min-height: 320px;
+    perspective: 1200px;
+  }
+  .flashcard {
+    position: absolute;
+    inset: 0;
+    transition: transform .35s ease, opacity .35s ease;
+  }
+  .flashcard--behind {
+    transform: scale(0.96) translateY(8px);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .flashcard--exit {
+    transform: translateX(-120%) rotate(-6deg);
+    opacity: 0;
+  }
+  .flashcard-inner {
+    width: 100%;
+    height: 100%;
+    min-height: 320px;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform .5s ease;
+    cursor: pointer;
+  }
+  .flashcard-inner.is-flipped {
+    transform: rotateY(180deg);
+  }
+  .flashcard-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: var(--surface);
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 14px;
+    box-shadow: 0 24px 60px var(--shadow), 0 0 0 1px rgba(255,255,255,.04) inset;
+  }
+  .flashcard-back {
+    transform: rotateY(180deg);
+    background: linear-gradient(145deg, rgba(240,252,232,.06), rgba(240,252,232,.02));
+    border-color: var(--green);
+  }
+  .flashcard-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--soft);
+    padding: 5px 14px;
+    font-size: .72rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: var(--muted);
+    letter-spacing: .06em;
+  }
+  .flashcard-badge::before {
+    content: "";
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--muted);
+    display: inline-block;
+  }
+  .flashcard-badge--answer::before { background: var(--green); }
+  .flashcard-badge--answer {
+    border-color: var(--green);
+    color: var(--green-dark);
+    background: #f0fce8;
+  }
+  .flashcard-text {
+    margin: 0;
+    font-size: 1.25rem;
+    line-height: 1.5;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .flashcard-hint {
+    font-size: .78rem;
+    color: var(--quiet);
+  }
+  .flashcard-topic {
+    font-size: .82rem;
+    color: var(--acid);
+    font-weight: 800;
+  }
+  .flashcard-controls {
+    transition: opacity .3s ease;
+  }
+  .flashcard-rating {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .rating-btn {
+    display: grid;
+    gap: 2px;
+    align-content: center;
+    border: 2px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+    padding: 12px;
+    cursor: pointer;
+    text-align: center;
+    transition: all .2s;
+    min-height: 72px;
+  }
+  .rating-btn strong {
+    font-size: .9rem;
+    color: var(--ink);
+  }
+  .rating-btn small {
+    font-size: .72rem;
+    color: var(--muted);
+  }
+  .rating-btn:hover {
+    border-color: var(--green);
+    background: #f0fce8;
+  }
+  .rating-btn--again { border-color: var(--red); }
+  .rating-btn--again:hover { background: rgba(200,77,77,.1); }
+  .rating-btn--hard { border-color: var(--yellow); }
+  .rating-btn--hard:hover { background: rgba(255,193,7,.1); }
+  .rating-btn--medium { border-color: var(--green); }
+  .rating-btn--medium:hover { background: #f0fce8; }
+  .rating-btn--easy { border-color: var(--blue); }
+  .rating-btn--easy:hover { background: rgba(66,133,244,.1); }
+  .flashcard-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .rating-loading {
+    text-align: center;
+    padding: 12px;
+    color: var(--muted);
+    font-size: .9rem;
+  }
+</style>
+
+{% else %}
+<div class="empty-state">
+  <h3>Nada pendiente por hoy</h3>
+  <p>No hay tarjetas vencidas ni nuevas en este curso. Vuelve manana o practica para generar mas.</p>
+  <a class="primary-button" href="{% url 'course_detail' course.pk %}">Volver al curso</a>
+</div>
+{% endif %}
+
+{% endblock %}

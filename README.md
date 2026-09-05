@@ -114,9 +114,10 @@ learning/
   cat.py          IRT 3PL: probabilidad, información de Fisher y estimación de habilidad (theta)
   adaptive.py     núcleo de acompañamiento: banco del curso, sesión de práctica CAT, perfil por tema, recomendaciones, racha/XP
   adaptive_generation.py  refuerzo dirigido: ítems nuevos, explicaciones y flashcards a la medida del perfil (cobra créditos, reembolsa si falla)
+  spaced_repetition.py    SM-2 para flashcards y cola de repaso por curso
   credits.py      planes y ledger de créditos
   models.py       LessonJob (pipeline) · Course/ClassSession/Quiz/Question/StudentAnswer/AdaptiveProfile/PracticeSession
-  migrations/     18 migraciones
+  migrations/     19 migraciones
 templates/        20 plantillas server-side
 static/learning/  CSS
 PROMPT.md, coherence_prompt.md, correct_prompt.md   prompts que el pipeline lee en ejecución
@@ -168,15 +169,25 @@ y reembolsa si la generación falla. Corre en la misma cola que las clases.
 El **quiz por clase** (`/clase/<id>/quiz/iniciar/`) ahora abre una práctica del curso limitada al banco
 de esa clase, con la memoria del perfil; `QuizAttempt` queda solo como historial.
 
+**Ritmo** (`learning/spaced_repetition.py` + `adaptive.daily_plan`): las flashcards siguen SM-2
+(factor de facilidad, intervalos 1 → 6 → ×EF, reinicio con "again"); `/cursos/<id>/repasar/` sirve la
+cola del curso (vencidas primero, luego nuevas) y cada calificación cuenta para la racha y la meta
+diaria. El **plan de hoy** convierte la ruta de estudio en reglas sobre el perfil: repasar lo vencido
+→ reforzar el tema débil (o practicar el refuerzo ya generado) → revisar los fallos de la última sesión
+→ sesión de práctica (si el nivel es impreciso o llevas días sin practicar) → practicar la clase que aún
+no has trabajado → subir una clase nueva. Aparece en el curso y en "Hoy en SIMA", junto con el progreso
+de la meta diaria (`UserPreference.daily_goal`, en preguntas + tarjetas).
+
 ## Tests
 
 ```bash
 python manage.py test learning
 ```
 
-Treinta y cinco tests: parser `.mini`, reencolado, resolución de backends, renderizado del selector,
-motor adaptativo (banco, sesión completa, perfil, recomendaciones, vistas) y refuerzo (cobro, generación
-con IA simulada, reembolso, reemplazo del quiz por clase). No hay cobertura del pipeline con IA real.
+Cuarenta y cinco tests: parser `.mini`, reencolado, resolución de backends, renderizado del selector,
+motor adaptativo (banco, sesión completa, perfil, recomendaciones, vistas), refuerzo (cobro, generación
+con IA simulada, reembolso, reemplazo del quiz por clase) y ritmo (SM-2, cola de repaso, plan diario,
+meta). No hay cobertura del pipeline con IA real.
 
 ## Problemas conocidos
 

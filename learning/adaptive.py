@@ -26,6 +26,7 @@ from datetime import timedelta
 
 from django.db import transaction
 from django.db.models import Q
+from django.urls import reverse
 from django.utils import timezone
 
 from .cat import BLOOM_LABELS, estimate_theta, item_information, theta_to_level
@@ -46,8 +47,10 @@ from .models import (
     StudyActivity,
     StudyStreak,
     Summary,
+    UserPreference,
 )
 from .credits import estimate_reinforcement_cost
+from .spaced_repetition import due_count
 from .parse_mini import check_option_uniformity, parse_header, parse_mini
 
 THETA_MIN, THETA_MAX = -3.0, 3.0
@@ -674,6 +677,8 @@ def course_overview(user, course: Course) -> dict:
             Recommendation.objects.filter(user=user, course=course, status=Recommendation.Status.PENDING)[:4]
         ),
         "reinforcements": list(ReinforcementJob.objects.filter(user=user, course=course)[:3]),
+        "plan": daily_plan(user, course),
+        "due_cards": due_count(course),
         "concepts": list(Summary.objects.filter(course=course, kind=Summary.Kind.CONCEPT)[:5]),
         "reinforcement_cost": estimate_reinforcement_cost("auto").amount,
     }
@@ -695,19 +700,24 @@ def dashboard_today(user) -> dict:
             next_action = "Practica adaptativa" if not known else "Sigue practicando"
         else:
             next_action = "Sube una clase para empezar"
+        plan = daily_plan(user, course)
         rows.append({
             "course": course,
             "level_label": theta_to_level(adaptive.theta)[1] if known else "Sin evaluar",
             "weak_topics": adaptive.weak_topics[:2] if adaptive else [],
             "recommendations": recs,
             "can_practice": bool(bank or ready_classes),
-            "next_action": next_action,
+            "next_action": plan[0]["title"] if plan else next_action,
+            "plan": plan[:3],
+            "due_cards": due_count(course),
         })
     studied_today = profile.last_study_date == timezone.localdate()
     return {
         "streak": profile.current_streak,
         "studied_today": studied_today,
         "pending_recommendations": Recommendation.objects.filter(user=user, status=Recommendation.Status.PENDING).count(),
+        "due_cards_total": sum(row["due_cards"] for row in rows),
+        "progress": today_progress(user),
         "courses": rows,
     }
 
@@ -735,3 +745,112 @@ def session_context(session: PracticeSession) -> dict:
         "reinforcement_cost": estimate_reinforcement_cost("auto").amount,
         "lesson": session.lesson,
     }
+
+
+# ---------------------------------------------------------------------------
+# 6. Ritmo: plan diario y progreso de la meta
+# ---------------------------------------------------------------------------
+PLAN_MAX_ACTIONS = 4
+MAINTENANCE_DAYS = 2           # sin practicar N dias -> sesion de mantenimiento
+REINFORCEMENT_FRESH_DAYS = 7   # un refuerzo generado hace menos de N dias se considera vigente
+
+
+def _post_action(kind, title, detail, url, fields, priority, **extra):
+    return {"kind": kind, "title": title, "detail": detail, "post": url, "fields": fields, "priority": priority, **extra}
+
+
+def _link_action(kind, title, detail, href, priority, **extra):
+    return {"kind": kind, "title": title, "detail": detail, "href": href, "priority": priority, **extra}
+
+
+def daily_plan(user, course: Course) -> list[dict]:
+    """
+    La ruta de estudio del documento de vision convertida en reglas sobre el
+    perfil: repasar lo vencido -> reforzar lo debil -> revisar fallos -> practicar
+    -> avanzar. Devuelve como maximo PLAN_MAX_ACTIONS acciones ordenadas.
+    """
+    from .spaced_repetition import due_count as _due
+
+    now = timezone.now()
+    actions: list[dict] = []
+    profile = AdaptiveProfile.objects.filter(user=user, course=course).first()
+    known = bool(profile and profile_is_known(profile))
+    bank = Question.objects.filter(quiz__course=course, quiz__quiz_type__in=PRACTICE_QUIZ_TYPES).exists()
+    ready_jobs = list(LessonJob.objects.filter(course=course).exclude(corrected_output="", toon_output=""))
+    practice_url = reverse("practice_start", args=[course.pk])
+
+    due = _due(course, now)
+    if due:
+        actions.append(_link_action(
+            "review", f"Repasa {due} tarjeta{'s' if due != 1 else ''}", "vencidas o nuevas en tu cola de repaso",
+            reverse("course_review", args=[course.pk]), 1, count=due,
+        ))
+
+    if not (bank or ready_jobs):
+        actions.append(_link_action("upload", "Sube tu primera clase", "el banco de preguntas se llena con cada clase lista",
+                                    reverse("api_lesson") + f"?course={course.pk}", 5))
+        return actions[:PLAN_MAX_ACTIONS]
+
+    if not known:
+        actions.append(_post_action("practice", "Práctica inicial", "5 preguntas para estimar tu nivel en este curso",
+                                    practice_url, {"target_count": 5, "focus": "balanced"}, 2))
+        return actions[:PLAN_MAX_ACTIONS]
+
+    last_session = PracticeSession.objects.filter(user=user, course=course, completed_at__isnull=False).first()
+
+    if profile.weak_topics:
+        topic = profile.weak_topics[0]
+        fresh_reinforcement = ReinforcementJob.objects.filter(
+            user=user, course=course, status=ReinforcementJob.Status.DONE,
+            completed_at__gte=now - timedelta(days=REINFORCEMENT_FRESH_DAYS),
+        ).first()
+        if fresh_reinforcement:
+            actions.append(_post_action("weak", f"Practica el refuerzo de «{topic}»", "preguntas nuevas generadas para tu tema debil",
+                                        practice_url, {"target_count": 8, "focus": "weak"}, 2))
+        else:
+            actions.append(_post_action("weak", f"Refuerza «{topic}»", "practica solo tus temas debiles",
+                                        practice_url, {"target_count": 8, "focus": "weak"}, 2))
+            actions.append(_post_action("generate", f"Genera refuerzo de «{topic}»",
+                                        f"material nuevo a tu medida · {estimate_reinforcement_cost('auto').amount} creditos",
+                                        reverse("reinforcement_start", args=[course.pk]), {}, 4))
+
+    if last_session and last_session.feedback.get("failed") and last_session.completed_at >= now - timedelta(days=2):
+        n = len(last_session.feedback["failed"])
+        actions.append(_link_action("failures", f"Revisa tus {n} fallo{'s' if n != 1 else ''}",
+                                    "las respuestas correctas de tu ultima sesion",
+                                    reverse("practice_session", args=[course.pk, last_session.pk]), 3, count=n))
+
+    if profile.standard_error > 0.6:
+        actions.append(_post_action("practice", "Otra sesion de practica", "tu nivel aun se estima con poca precision",
+                                    practice_url, {"target_count": 10, "focus": "balanced"}, 3))
+    elif not last_session or last_session.completed_at < now - timedelta(days=MAINTENANCE_DAYS):
+        actions.append(_post_action("practice", "Sesion de mantenimiento", "llevas dias sin practicar este curso",
+                                    practice_url, {"target_count": 10, "focus": "balanced"}, 3))
+
+    for job in ready_jobs:
+        practiced = StudentAnswer.objects.filter(
+            user=user, question__quiz__class_session__legacy_lesson_job=job
+        ).exists()
+        if not practiced:
+            actions.append(_post_action("class", f"Practica «{job.title}»", "una clase lista que aun no has trabajado",
+                                        reverse("start_quiz", args=[job.pk]), {"target_count": 8}, 4))
+            break
+
+    if not actions:
+        actions.append(_link_action("advance", "Al dia: sube una clase nueva", "no tienes pendientes en este curso",
+                                    reverse("api_lesson") + f"?course={course.pk}", 5))
+    actions.sort(key=lambda a: a["priority"])
+    return actions[:PLAN_MAX_ACTIONS]
+
+
+def today_progress(user) -> dict:
+    """Preguntas respondidas + tarjetas repasadas hoy frente a la meta diaria."""
+    start = timezone.localtime().replace(hour=0, minute=0, second=0, microsecond=0)
+    answered = StudentAnswer.objects.filter(user=user, answered_at__gte=start).count()
+    reviewed = StudyActivity.objects.filter(
+        user=user, activity_type=StudyActivity.ActivityType.FLASHCARDS_REVIEWED, occurred_at__gte=start
+    ).count()
+    prefs = UserPreference.objects.filter(user=user).first()
+    goal = max(1, prefs.daily_goal if prefs else 10)
+    done = answered + reviewed
+    return {"done": done, "answered": answered, "reviewed": reviewed, "goal": goal, "pct": min(100, round(100 * done / goal))}

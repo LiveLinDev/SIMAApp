@@ -68,7 +68,11 @@
             <p class="eyebrow">Hoy en SIMA</p>
             <h3>{% if today.studied_today %}Ya estudiaste hoy: racha de {{ today.streak }} dias{% elif today.streak %}Manten tu racha de {{ today.streak }} dias{% else %}Empieza tu racha hoy{% endif %}</h3>
           </div>
-          {% if today.pending_recommendations %}<span class="study-badge">{{ today.pending_recommendations }} recomendaciones pendientes</span>{% endif %}
+          <div class="today-goal">
+            <span>Meta de hoy: {{ today.progress.done }} de {{ today.progress.goal }}</span>
+            <div class="progress-track"><div class="progress-fill" style="width:{{ today.progress.pct }}%"></div></div>
+            <small>{{ today.progress.answered }} preguntas · {{ today.progress.reviewed }} tarjetas{% if today.due_cards_total %} · {{ today.due_cards_total }} por repasar{% endif %}</small>
+          </div>
         </div>
         <ul class="today-list">
           {% for row in today.courses %}
@@ -77,16 +81,21 @@
               <strong>{{ row.course.name }}</strong>
               <span>{{ row.level_label }}{% if row.weak_topics %} &middot; refuerza {{ row.weak_topics|join:", " }}{% endif %}</span>
             </div>
-            {% if row.can_practice %}
-            <form method="post" action="{% url 'practice_start' row.course.pk %}">
-              {% csrf_token %}
-              <input type="hidden" name="target_count" value="10">
-              <input type="hidden" name="focus" value="{% if row.weak_topics %}weak{% else %}balanced{% endif %}">
-              <button class="lesson-cta" type="submit">{{ row.next_action }}</button>
-            </form>
-            {% else %}
-            <a class="lesson-cta lesson-cta--secondary" href="{% url 'course_detail' row.course.pk %}">{{ row.next_action }}</a>
-            {% endif %}
+            <div class="today-actions">
+              {% for a in row.plan %}
+                {% if a.post %}
+                <form method="post" action="{{ a.post }}">
+                  {% csrf_token %}
+                  {% for k, v in a.fields.items %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
+                  <button class="lesson-cta {% if not forloop.first %}lesson-cta--secondary{% endif %}" type="submit">{{ a.title }}</button>
+                </form>
+                {% else %}
+                <a class="lesson-cta {% if not forloop.first %}lesson-cta--secondary{% endif %}" href="{{ a.href }}">{{ a.title }}</a>
+                {% endif %}
+              {% empty %}
+                <a class="lesson-cta lesson-cta--secondary" href="{% url 'course_detail' row.course.pk %}">{{ row.next_action }}</a>
+              {% endfor %}
+            </div>
           </li>
           {% endfor %}
         </ul>
@@ -100,6 +109,10 @@
         .today-course { display: grid; gap: 2px; }
         .today-course span { color: var(--muted); font-size: .9rem; }
         .today-list form { margin: 0; }
+        .today-goal { min-width: 220px; display: grid; gap: 4px; }
+        .today-goal span { font-weight: 700; }
+        .today-goal small { color: var(--muted); }
+        .today-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
       </style>
       {% endif %}
 

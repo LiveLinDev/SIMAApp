@@ -15,6 +15,7 @@ from django.utils import timezone
 from django.utils.safestring import mark_safe
 
 from . import adaptive, adaptive_generation
+from . import spaced_repetition
 from .cat import BLOOM_LABELS, build_bank, choose_next_item, estimate_theta, option_index, parse_cat_params, theta_to_level
 from .credits import (
     REGENERATION_COST,
@@ -1110,31 +1111,31 @@ def review_flashcard(request, pk):
     if request.method != "POST":
         raise Http404()
     job = _get_accessible_job(request.user, pk)
-    flashcard_id = int(request.POST.get("flashcard_id", 0))
-    difficulty = request.POST.get("difficulty", "medium")  # again / hard / medium / easy
-    flashcard = get_object_or_404(Flashcard, pk=flashcard_id)
-    # spaced repetition básico
-    if difficulty == "again":
-        flashcard.mastery_level = max(0, flashcard.mastery_level - 1)
-        flashcard.next_review_at = timezone.now() + timezone.timedelta(minutes=10)
-    elif difficulty == "hard":
-        flashcard.mastery_level = max(0, flashcard.mastery_level)
-        flashcard.next_review_at = timezone.now() + timezone.timedelta(hours=4)
-    elif difficulty == "easy":
-        flashcard.mastery_level = min(5, flashcard.mastery_level + 1)
-        flashcard.next_review_at = timezone.now() + timezone.timedelta(days=3)
-    else:  # medium
-        flashcard.mastery_level = min(5, flashcard.mastery_level + 1)
-        flashcard.next_review_at = timezone.now() + timezone.timedelta(days=1)
-    flashcard.save(update_fields=["mastery_level", "next_review_at"])
-    # award XP
-    profile = _get_or_create_profile(request.user)
-    profile.total_xp += 2
-    profile.save()
-    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-        return JsonResponse({"ok": True, "mastery": flashcard.mastery_level, "next_review": flashcard.next_review_at.isoformat()})
-    return redirect("flashcards", pk=job.pk)
+    return _rate_flashcard(request, course=job.course, redirect_to=("flashcards", job.pk))
 
+
+def _rate_flashcard(request, course, redirect_to):
+    """Aplica SM-2 a una tarjeta del curso del usuario y registra la actividad."""
+    try:
+        flashcard_id = int(request.POST.get("flashcard_id", 0))
+    except (TypeError, ValueError):
+        raise Http404()
+    flashcard = get_object_or_404(Flashcard, pk=flashcard_id, course__user=request.user)
+    grade = request.POST.get("difficulty", "medium")
+    spaced_repetition.sm2_update(flashcard, grade)
+    adaptive.register_activity(
+        request.user, flashcard.course, adaptive.StudyActivity.ActivityType.FLASHCARDS_REVIEWED,
+        xp=2, metadata={"flashcard": flashcard.pk, "grade": grade, "interval_days": flashcard.interval_days},
+    )
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return JsonResponse({
+            "ok": True,
+            "mastery": flashcard.mastery_level,
+            "interval_days": flashcard.interval_days,
+            "next_review": flashcard.next_review_at.isoformat() if flashcard.next_review_at else None,
+        })
+    name, arg = redirect_to
+    return redirect(name, arg)
 
 # ══════════════════════════════════════════════════════════════════
 # EJERCICIOS DE RELACIÓN Y COMPLETAR
@@ -1934,3 +1935,27 @@ def reinforcement_detail(request, pk, job_id):
         "question_count": job.quiz.questions.count() if job.quiz_id else 0,
         "flashcards_url": flashcards_url,
     })
+
+
+# ══════════════════════════════════════════════════════════════════
+# REPASOS POR CURSO (repeticion espaciada)
+# ══════════════════════════════════════════════════════════════════
+
+@login_required
+def course_review(request, pk):
+    course = get_object_or_404(Course, pk=pk, user=request.user, is_archived=False)
+    cards = spaced_repetition.review_queue(course)
+    return render(request, "learning/course_review.html", {
+        "course": course,
+        "cards": cards,
+        "card_count": len(cards),
+        "due_count": spaced_repetition.due_count(course),
+    })
+
+
+@login_required
+def course_review_card(request, pk):
+    if request.method != "POST":
+        raise Http404()
+    course = get_object_or_404(Course, pk=pk, user=request.user, is_archived=False)
+    return _rate_flashcard(request, course=course, redirect_to=("course_review", course.pk))

@@ -335,6 +335,11 @@ class Flashcard(models.Model):
     source_excerpt = models.TextField(blank=True)
     mastery_level = models.PositiveSmallIntegerField(default=0)
     next_review_at = models.DateTimeField(null=True, blank=True)
+    # SM-2
+    ease_factor = models.FloatField(default=2.5)
+    interval_days = models.PositiveIntegerField(default=0)
+    repetitions = models.PositiveIntegerField(default=0)
+    last_reviewed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

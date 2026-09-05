@@ -171,6 +171,29 @@
       {% endif %}
     </div>
 
+    {% if overview.plan %}
+    <div class="course-panel" id="plan-de-hoy">
+      <h3>Plan de hoy</h3>
+      <ul class="plan-list">
+        {% for a in overview.plan %}
+        <li>
+          <div class="plan-copy"><strong>{{ a.title }}</strong><span>{{ a.detail }}</span></div>
+          {% if a.post %}
+          <form method="post" action="{{ a.post }}">
+            {% csrf_token %}
+            {% for k, v in a.fields.items %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
+            <button class="plan-go" type="submit">Ir</button>
+          </form>
+          {% else %}
+          <a class="plan-go" href="{{ a.href }}">Ir</a>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% if overview.due_cards %}<p class="progress-label"><a href="{% url 'course_review' course.pk %}">{{ overview.due_cards }} tarjetas en la cola de repaso</a></p>{% endif %}
+    </div>
+    {% endif %}
+
     {% if overview.reinforcements or overview.concepts %}
     <div class="course-panel">
       <h3>Refuerzos</h3>
@@ -231,6 +254,12 @@
 
 <style>
   .topic-chip--weak { border-color: #ff8b8b; color: #ff8b8b; }
+  .plan-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+  .plan-list li { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .plan-copy { display: grid; gap: 2px; }
+  .plan-copy span { color: var(--muted); font-size: .85rem; }
+  .plan-list form { margin: 0; }
+  .plan-go { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--acid); background: transparent; color: var(--acid); cursor: pointer; font-size: .85rem; text-decoration: none; }
   .practice-form { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
   .practice-form label { display: flex; align-items: center; gap: 6px; font-size: .9rem; color: var(--muted); }
   .practice-form select { padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }

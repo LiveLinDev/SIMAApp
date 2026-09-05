@@ -61,6 +61,48 @@
         <a class="primary-button" href="{% url 'course_create' %}">Nuevo curso</a>
       </div>
 
+      {% if today.courses %}
+      <div class="today-panel">
+        <div class="today-head">
+          <div>
+            <p class="eyebrow">Hoy en SIMA</p>
+            <h3>{% if today.studied_today %}Ya estudiaste hoy: racha de {{ today.streak }} dias{% elif today.streak %}Manten tu racha de {{ today.streak }} dias{% else %}Empieza tu racha hoy{% endif %}</h3>
+          </div>
+          {% if today.pending_recommendations %}<span class="study-badge">{{ today.pending_recommendations }} recomendaciones pendientes</span>{% endif %}
+        </div>
+        <ul class="today-list">
+          {% for row in today.courses %}
+          <li>
+            <div class="today-course">
+              <strong>{{ row.course.name }}</strong>
+              <span>{{ row.level_label }}{% if row.weak_topics %} &middot; refuerza {{ row.weak_topics|join:", " }}{% endif %}</span>
+            </div>
+            {% if row.can_practice %}
+            <form method="post" action="{% url 'practice_start' row.course.pk %}">
+              {% csrf_token %}
+              <input type="hidden" name="target_count" value="10">
+              <input type="hidden" name="focus" value="{% if row.weak_topics %}weak{% else %}balanced{% endif %}">
+              <button class="lesson-cta" type="submit">{{ row.next_action }}</button>
+            </form>
+            {% else %}
+            <a class="lesson-cta lesson-cta--secondary" href="{% url 'course_detail' row.course.pk %}">{{ row.next_action }}</a>
+            {% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      <style>
+        .today-panel { border: 1px solid var(--line); border-radius: 18px; padding: 18px 20px; margin-bottom: 18px; background: var(--surface); }
+        .today-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+        .today-head h3 { margin: 4px 0 0; }
+        .today-list { list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 10px; }
+        .today-list li { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 0; border-top: 1px solid var(--line); }
+        .today-course { display: grid; gap: 2px; }
+        .today-course span { color: var(--muted); font-size: .9rem; }
+        .today-list form { margin: 0; }
+      </style>
+      {% endif %}
+
       {% if courses %}
         <div class="course-grid">
           {% for course in courses %}

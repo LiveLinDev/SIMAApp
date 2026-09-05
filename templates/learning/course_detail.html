@@ -125,6 +125,67 @@
     </div>
     {% endif %}
 
+    <div class="course-panel course-panel--accent" id="progreso-adaptativo">
+      <h3>Tu progreso en este curso</h3>
+      {% if overview.known %}
+        <p class="progress-label"><strong>Nivel {{ overview.level_value }} &middot; {{ overview.level_label }}</strong><br>{{ overview.answered_total }} respuestas en {{ overview.sessions_count }} sesiones</p>
+      {% else %}
+        <p class="progress-label">Aun no tienes nivel en este curso: una primera practica lo estima.</p>
+      {% endif %}
+      {% if overview.weak_topics %}
+        <p class="progress-label">Temas debiles</p>
+        <div class="topic-cloud">{% for t in overview.weak_topics %}<span class="topic-chip topic-chip--weak">{{ t }}</span>{% endfor %}</div>
+      {% endif %}
+      {% if overview.strong_topics %}
+        <p class="progress-label">Dominados</p>
+        <div class="topic-cloud">{% for t in overview.strong_topics %}<span class="topic-chip">{{ t }}</span>{% endfor %}</div>
+      {% endif %}
+      {% if overview.bank_size or overview.bank_pending_classes %}
+      <form method="post" action="{% url 'practice_start' course.pk %}" class="practice-form">
+        {% csrf_token %}
+        <label>Preguntas
+          <select name="target_count">
+            <option value="5">5</option>
+            <option value="10" selected>10</option>
+            <option value="15">15</option>
+          </select>
+        </label>
+        <input type="hidden" name="focus" value="balanced">
+        <button class="primary-button" type="submit">Practicar</button>
+      </form>
+      {% if overview.weak_topics %}
+      <form method="post" action="{% url 'practice_start' course.pk %}" class="practice-form">
+        {% csrf_token %}
+        <input type="hidden" name="target_count" value="8">
+        <input type="hidden" name="focus" value="weak">
+        <button class="secondary-button" type="submit">Reforzar temas debiles</button>
+      </form>
+      {% endif %}
+      {% if overview.bank_size %}<p class="progress-label">{{ overview.bank_size }} preguntas en el banco del curso</p>{% endif %}
+      {% else %}
+        <p class="progress-label">El banco de preguntas se llena con cada clase lista.</p>
+      {% endif %}
+    </div>
+
+    {% if overview.recommendations %}
+    <div class="course-panel">
+      <h3>Recomendaciones</h3>
+      <ul class="rec-list">
+        {% for rec in overview.recommendations %}
+        <li>
+          <strong>{{ rec.title }}</strong>
+          <span>{{ rec.message }}</span>
+          <form method="post" action="{% url 'recommendation_update' course.pk rec.pk %}" class="rec-actions">
+            {% csrf_token %}
+            <button name="status" value="completed" type="submit">Hecho</button>
+            <button name="status" value="dismissed" type="submit" class="rec-dismiss">Omitir</button>
+          </form>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
     <div class="course-panel">
       <h3>Acciones rapidas</h3>
       <div class="course-actions">
@@ -149,6 +210,16 @@
 </div>
 
 <style>
+  .topic-chip--weak { border-color: #ff8b8b; color: #ff8b8b; }
+  .practice-form { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+  .practice-form label { display: flex; align-items: center; gap: 6px; font-size: .9rem; color: var(--muted); }
+  .practice-form select { padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+  .rec-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+  .rec-list li { display: grid; gap: 4px; border-left: 3px solid var(--acid); padding: 4px 10px; }
+  .rec-list span { color: var(--muted); font-size: .9rem; }
+  .rec-actions { display: flex; gap: 8px; margin-top: 4px; }
+  .rec-actions button { padding: 4px 10px; border-radius: 8px; border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; font-size: .85rem; }
+  .rec-actions .rec-dismiss { color: var(--muted); }
   .course-hero {
     display: flex;
     justify-content: space-between;

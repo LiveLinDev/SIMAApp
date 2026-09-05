@@ -111,10 +111,11 @@ learning/
   services.py     prompts, llamadas a IA (nube compatible OpenAI / Anthropic / local), chunking, verificación web y EduQG, Whisper
   job_queue.py    cola en memoria + worker; orquestación del pipeline por etapas; trazas
   parse_mini.py   parser/serializador .mini, filtros de coherencia, aplicación de correcciones
-  cat.py          IRT 3PL: selección del siguiente ítem y estimación de habilidad (theta)
+  cat.py          IRT 3PL: probabilidad, información de Fisher y estimación de habilidad (theta)
+  adaptive.py     núcleo de acompañamiento: banco del curso, sesión de práctica CAT, perfil por tema, recomendaciones, racha/XP
   credits.py      planes y ledger de créditos
-  models.py       LessonJob (pipeline) · Course/ClassSession/Quiz/Question (modelo nuevo, parcial)
-  migrations/     16 migraciones
+  models.py       LessonJob (pipeline) · Course/ClassSession/Quiz/Question/StudentAnswer/AdaptiveProfile/PracticeSession
+  migrations/     17 migraciones
 templates/        20 plantillas server-side
 static/learning/  CSS
 PROMPT.md, coherence_prompt.md, correct_prompt.md   prompts que el pipeline lee en ejecución
@@ -133,7 +134,28 @@ POST /api/nueva/ → LessonJob(QUEUED) → cola en memoria → process_lesson_jo
   → relleno hasta el objetivo de ítems (IRT necesita banco grande)
   → verificación factual (web/eduqg/hybrid) → aplicación de correcciones con traza
   → status=corrected · processing_log + 4 trazas JSON en el LessonJob
+  → los ítems pasan al banco del curso (Question/AnswerOption)
 ```
+
+### Ciclo de acompañamiento (núcleo adaptativo)
+
+El valor de SIMA no está en generar preguntas sino en lo que pasa después. `learning/adaptive.py`
+cierra el ciclo a nivel de **curso**, no de clase:
+
+```
+banco del curso (todas las clases)
+  → /cursos/<id>/practicar/        sesión CAT (IRT 3PL) que arranca desde el nivel ya conocido,
+                                    no repite lo acertado hace <3 días y empuja hacia temas débiles
+  → cada respuesta                  StudentAnswer con theta antes/después
+  → al terminar                     retroalimentación (temas, Bloom, fallos con la respuesta correcta),
+                                    AdaptiveProfile recalculado desde todo el historial (peso reciente),
+                                    recomendaciones concretas, XP y racha
+  → curso y dashboard               nivel, temas débiles/dominados, "Hoy en SIMA" con la siguiente acción
+```
+
+Modo **refuerzo** (`focus=weak`): la sesión se limita a los temas con dominio < 60 %. El banco se
+sincroniza solo al terminar cada clase y al iniciar una práctica; también a mano con
+`python manage.py sync_question_bank`.
 
 ## Tests
 
@@ -141,8 +163,9 @@ POST /api/nueva/ → LessonJob(QUEUED) → cola en memoria → process_lesson_jo
 python manage.py test learning
 ```
 
-Dieciséis tests: parser `.mini`, reencolado de trabajos y resolución de backends. No hay
-cobertura del pipeline completo, las vistas ni CAT.
+Veintiocho tests: parser `.mini`, reencolado, resolución de backends, renderizado del selector y motor
+adaptativo (banco, sesión completa, perfil, recomendaciones, vistas). No hay cobertura del pipeline
+con IA ni del quiz por clase heredado.
 
 ## Problemas conocidos
 
@@ -150,9 +173,10 @@ cobertura del pipeline completo, las vistas ni CAT.
   `runserver`, la app reencola automáticamente los trabajos que quedaron en `QUEUED`/`PROCESSING`
   (`learning/apps.py`); con otro servidor, exporta `SIMA_REQUEUE_ON_START=1`. Para hacerlo a
   mano: `python manage.py requeue_jobs` (`--dry-run` solo lista).
-- **Modelo de datos duplicado.** El pipeline y el quiz operan sobre `LessonJob`; las tablas
-  del modelo nuevo (`Quiz`, `Question`, `AnswerOption`, `StudentAnswer`) existen pero están
-  vacías. `ClassSession.legacy_lesson_job` hace de puente.
+- **Dos capas de quiz.** El quiz por clase (`/clase/<id>/quiz/`, `QuizAttempt`) lee el `.mini`
+  crudo y no recuerda nada entre intentos; es la capa heredada. La práctica por curso
+  (`/cursos/<id>/practicar/`, `PracticeSession`) usa el banco persistido y el perfil. Conviven hasta
+  retirar la primera.
 - **Prompt de verificación demasiado largo** con clases extensas (`exceed_context_size_error`
   en modelos locales): reducir `VERIFICATION_SOURCE_CHARS` o `VERIFICATION_MAX_SOURCES`.
 - **URLs con caracteres no ASCII** pueden fallar al descargar fuentes; el pipeline continúa

@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}Practica - {{ course.name }}{% endblock %}
+{% block content %}
+
+<section class="ld-header">
+  <div>
+    <a href="{% url 'course_detail' course.pk %}" class="back-link">&larr; {{ course.name }}</a>
+    <h1>Practica adaptativa</h1>
+    <p class="muted">
+      {% if session.focus == 'weak' %}Modo refuerzo: preguntas de tus temas mas debiles.{% else %}Las preguntas se ajustan a tu nivel a medida que respondes.{% endif %}
+    </p>
+  </div>
+</section>
+
+<div class="quiz-shell">
+
+  {% if feedback %}
+  <section class="quiz-panel">
+    <div class="pr-summary">
+      <div class="pr-stat pr-stat--main">
+        <strong>{{ feedback.accuracy }}%</strong>
+        <span>{{ feedback.correct }} de {{ feedback.total }} correctas</span>
+      </div>
+      <div class="pr-stat">
+        <strong>Nivel {{ feedback.level_value }}</strong>
+        <span>{{ feedback.level_label }}
+          {% if feedback.level_delta > 0 %}<em class="pr-up">&uarr; subiste</em>{% elif feedback.level_delta < 0 %}<em class="pr-down">&darr; bajaste</em>{% else %}<em>se mantiene</em>{% endif %}
+        </span>
+      </div>
+      <div class="pr-stat">
+        <strong>+{{ feedback.xp }} XP</strong>
+        <span>racha activa</span>
+      </div>
+    </div>
+
+    {% if feedback.topics %}
+    <h3>Por tema</h3>
+    <div class="pr-topics">
+      {% for row in feedback.topics %}
+      <div class="pr-topic">
+        <div class="pr-topic-head">
+          <span>{{ row.topic }}</span>
+          <small>{{ row.correct }}/{{ row.total }}</small>
+        </div>
+        <div class="progress-track"><div class="progress-fill {% if row.pct < 60 %}progress-fill--weak{% endif %}" style="width:{{ row.pct }}%"></div></div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if feedback.failed %}
+    <h3>Lo que conviene revisar</h3>
+    <ol class="pr-failed">
+      {% for item in feedback.failed %}
+      <li>
+        <p class="pr-failed-q">{{ item.prompt }}</p>
+        <p class="pr-failed-a">Tu respuesta: <span class="pr-bad">{{ item.chosen }}</span> &middot; Correcta: <span class="pr-good">{{ item.correct }}</span></p>
+        <small>{{ item.topic }} &middot; {{ item.bloom_label }}</small>
+      </li>
+      {% endfor %}
+    </ol>
+    {% endif %}
+
+    {% if feedback.recommendations %}
+    <h3>Siguiente paso</h3>
+    <ul class="pr-recs">
+      {% for rec in feedback.recommendations %}
+      <li><strong>{{ rec.title }}</strong><span>{{ rec.message }}</span></li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    <div class="pr-actions">
+      <form method="post" action="{% url 'practice_start' course.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="target_count" value="{{ session.target_count }}">
+        <input type="hidden" name="focus" value="balanced">
+        <button class="primary-button" type="submit">Otra sesion</button>
+      </form>
+      {% if feedback.weak_topics %}
+      <form method="post" action="{% url 'practice_start' course.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="target_count" value="{{ session.target_count }}">
+        <input type="hidden" name="focus" value="weak">
+        <button class="secondary-button" type="submit">Reforzar temas debiles</button>
+      </form>
+      {% endif %}
+      <a class="secondary-button" href="{% url 'course_detail' course.pk %}">Volver al curso</a>
+    </div>
+  </section>
+
+  {% elif question %}
+  <div class="quiz-progress">
+    <div class="progress-track"><div class="progress-fill" style="width:{{ progress_pct }}%"></div></div>
+    <small class="muted">Pregunta {{ answered|add:1 }} de {{ session.target_count }} &middot; Nivel {{ level_value }} &middot; {{ level_label }}</small>
+  </div>
+  <section class="quiz-panel">
+    <div class="quiz-item-head">
+      <span class="study-badge">{{ question.bloom_level }} {{ bloom_label }}</span>
+      {% if question.topic %}<span class="study-badge">{{ question.topic }}</span>{% endif %}
+      <span class="study-badge">{{ question.get_difficulty_display }}</span>
+    </div>
+    <h2>{{ question.prompt }}</h2>
+    <form method="post" action="{% url 'practice_answer' course.pk session.pk %}" class="answer-form" id="practice-form">
+      {% csrf_token %}
+      <input type="hidden" name="question_id" value="{{ question.pk }}">
+      <div id="options-container">
+        {% for option in options %}
+        <label class="answer-option">
+          <input type="radio" name="option_id" value="{{ option.pk }}" required>
+          <span>{{ option.text }}</span>
+        </label>
+        {% endfor %}
+      </div>
+      <button class="primary-button full" type="submit">Responder y continuar</button>
+    </form>
+    <script>
+      (function () {
+        var container = document.getElementById("options-container");
+        var labels = Array.from(container.querySelectorAll(".answer-option"));
+        for (var i = labels.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          container.appendChild(labels[j]);
+          var tmp = labels[i]; labels[i] = labels[j]; labels[j] = tmp;
+        }
+      })();
+    </script>
+  </section>
+
+  {% else %}
+  <section class="quiz-panel">
+    <h2>No hay mas preguntas disponibles</h2>
+    <p class="muted">El banco del curso se agoto para esta sesion.</p>
+    <a class="primary-button" href="{% url 'course_detail' course.pk %}">Volver al curso</a>
+  </section>
+  {% endif %}
+</div>
+
+<style>
+  .quiz-shell { max-width: 900px; margin: 0 auto; display: grid; gap: 18px; }
+  .quiz-panel { border: 1px solid var(--line); border-radius: 18px; background: var(--surface); padding: 26px; box-shadow: 0 18px 50px var(--shadow); }
+  .quiz-panel h2 { margin: 12px 0 18px; color: var(--ink); line-height: 1.25; }
+  .quiz-panel h3 { margin: 22px 0 10px; font-size: 1rem; }
+  .quiz-item-head { display: flex; flex-wrap: wrap; gap: 8px; }
+  .answer-form { display: grid; gap: 10px; }
+  .answer-option { display: flex; align-items: flex-start; gap: 12px; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,.02); cursor: pointer; transition: transform .15s ease, border-color .2s ease; }
+  .answer-option:hover { border-color: var(--acid); transform: translateY(-1px); }
+  .answer-option input { width: 18px; min-width: 18px; margin-top: 3px; accent-color: var(--acid); }
+  .answer-option span { color: var(--ink); font-weight: 700; line-height: 1.45; }
+  .pr-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .pr-stat { border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 4px; }
+  .pr-stat strong { font-size: 1.6rem; line-height: 1; }
+  .pr-stat--main strong { font-size: 2.2rem; color: var(--acid); }
+  .pr-stat span { color: var(--muted); font-size: .9rem; }
+  .pr-stat em { font-style: normal; margin-left: 6px; }
+  .pr-up { color: #6fd69a; } .pr-down { color: #ff8b8b; }
+  .pr-topics { display: grid; gap: 10px; }
+  .pr-topic-head { display: flex; justify-content: space-between; margin-bottom: 4px; font-weight: 700; }
+  .progress-fill--weak { background: #ff8b8b; }
+  .pr-failed { display: grid; gap: 12px; padding-left: 20px; }
+  .pr-failed-q { font-weight: 700; margin: 0 0 4px; }
+  .pr-failed-a { margin: 0 0 2px; }
+  .pr-bad { color: #ff8b8b; } .pr-good { color: #6fd69a; font-weight: 700; }
+  .pr-recs { list-style: none; padding: 0; display: grid; gap: 10px; }
+  .pr-recs li { border-left: 3px solid var(--acid); padding: 6px 12px; display: grid; gap: 2px; }
+  .pr-recs span { color: var(--muted); font-size: .92rem; }
+  .pr-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; align-items: center; }
+</style>
+{% endblock %}

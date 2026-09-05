@@ -436,6 +436,13 @@ class StudentAnswer(models.Model):
         blank=True,
         related_name="student_answers",
     )
+    practice_session = models.ForeignKey(
+        "PracticeSession",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="answers",
+    )
     is_correct = models.BooleanField(default=False)
     theta_before = models.FloatField(null=True, blank=True)
     theta_after = models.FloatField(null=True, blank=True)
@@ -470,6 +477,51 @@ class AdaptiveProfile(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.course}"
+
+
+class PracticeSession(models.Model):
+    """Sesion de practica adaptativa (CAT) sobre el banco completo de un curso."""
+
+    class Focus(models.TextChoices):
+        BALANCED = "balanced", "Equilibrada"
+        WEAK = "weak", "Refuerzo de temas debiles"
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="practice_sessions")
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="practice_sessions")
+    focus = models.CharField(max_length=16, choices=Focus.choices, default=Focus.BALANCED)
+    target_count = models.PositiveIntegerField(default=10)
+    theta_start = models.FloatField(default=0.0)
+    theta = models.FloatField(default=0.0)
+    standard_error = models.FloatField(default=9.99)
+    current_question = models.ForeignKey(Question, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    served_question_ids = models.JSONField(default=list, blank=True)
+    correct_count = models.PositiveIntegerField(default=0)
+    feedback = models.JSONField(default=dict, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["user", "course", "completed_at"]),
+        ]
+
+    def __str__(self):
+        return f"Practica {self.pk} - {self.course}"
+
+    @property
+    def is_complete(self):
+        return self.completed_at is not None
+
+    @property
+    def answered_count(self):
+        return self.answers.count()
+
+    @property
+    def accuracy(self):
+        total = self.answered_count
+        return round((self.correct_count / total) * 100) if total else 0
 
 
 class CreditLedgerEntry(models.Model):

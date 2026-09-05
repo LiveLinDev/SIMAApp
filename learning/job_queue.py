@@ -238,6 +238,7 @@ def process_lesson_job(job_id: int, backend: str = "auto"):
         ])
         _sync_class_session_status(job)
         _sync_transcript_record(job)
+        _persist_question_bank(job)
     except Exception as exc:
         job.error = clean_ai_error(exc)
         job.status = LessonJob.Status.ERROR
@@ -766,3 +767,13 @@ def requeue_orphaned_jobs(reason: str = "reinicio del servidor") -> int:
     if requeued:
         logger.info("Reencolados %s trabajo(s) pendiente(s) tras %s.", requeued, reason)
     return requeued
+
+
+def _persist_question_bank(job: LessonJob):
+    """Lleva los items verificados al banco del curso (Question/AnswerOption)."""
+    try:
+        from .adaptive import sync_question_bank  # import perezoso: adaptive importa de este modulo
+
+        sync_question_bank(job)
+    except Exception:
+        logger.exception("No se pudo persistir el banco de preguntas del LessonJob %s", job.pk)

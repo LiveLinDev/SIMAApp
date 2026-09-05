@@ -13,6 +13,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 
+from . import adaptive
 from .cat import BLOOM_LABELS, build_bank, choose_next_item, estimate_theta, option_index, parse_cat_params, theta_to_level
 from .credits import (
     REGENERATION_COST,
@@ -154,6 +155,7 @@ def dashboard(request):
         "explore_query": query,
         "explore_tag": tag,
         "plans": get_plan_details(),
+        "today": adaptive.dashboard_today(request.user),
     })
 
 
@@ -194,6 +196,7 @@ def course_detail(request, pk):
         "progress_pct": progress_pct,
         "profile": profile,
         "can_use_api": can_use_api,
+        "overview": adaptive.course_overview(request.user, course),
     })
 
 
@@ -1832,3 +1835,59 @@ def _extract_pipeline_metrics(job):
         metrics["duration_seconds"] = int((job.updated_at - job.created_at).total_seconds())
 
     return metrics
+
+
+# ══════════════════════════════════════════════════════════════════
+# PRACTICA ADAPTATIVA POR CURSO
+# ══════════════════════════════════════════════════════════════════
+
+@login_required
+def practice_start(request, pk):
+    if request.method != "POST":
+        raise Http404()
+    course = get_object_or_404(Course, pk=pk, user=request.user, is_archived=False)
+    try:
+        session = adaptive.start_practice(
+            request.user,
+            course,
+            target_count=request.POST.get("target_count", 10),
+            focus=request.POST.get("focus", "balanced"),
+        )
+    except adaptive.NoItemsError:
+        messages.warning(request, "Este curso aun no tiene preguntas listas. Sube una clase y espera a que termine de procesarse.")
+        return redirect("course_detail", pk=course.pk)
+    return redirect("practice_session", pk=course.pk, session_id=session.pk)
+
+
+@login_required
+def practice_session(request, pk, session_id):
+    course = get_object_or_404(Course, pk=pk, user=request.user)
+    session = get_object_or_404(adaptive.PracticeSession, pk=session_id, course=course, user=request.user)
+    return render(request, "learning/practice_session.html", adaptive.session_context(session))
+
+
+@login_required
+def practice_answer(request, pk, session_id):
+    if request.method != "POST":
+        raise Http404()
+    course = get_object_or_404(Course, pk=pk, user=request.user)
+    session = get_object_or_404(adaptive.PracticeSession, pk=session_id, course=course, user=request.user)
+    if not session.is_complete:
+        try:
+            adaptive.answer_question(session, int(request.POST.get("question_id", 0)), request.POST.get("option_id"))
+        except (ValueError, adaptive.Question.DoesNotExist):
+            messages.info(request, "Esa pregunta ya no esta activa; continua con la siguiente.")
+    return redirect("practice_session", pk=course.pk, session_id=session.pk)
+
+
+@login_required
+def recommendation_update(request, pk, rec_id):
+    if request.method != "POST":
+        raise Http404()
+    course = get_object_or_404(Course, pk=pk, user=request.user)
+    rec = get_object_or_404(adaptive.Recommendation, pk=rec_id, course=course, user=request.user)
+    try:
+        adaptive.complete_recommendation(rec, request.POST.get("status", "completed"))
+    except ValueError:
+        raise Http404()
+    return redirect("course_detail", pk=course.pk)

@@ -1,20 +1,21 @@
-# Guía de revisión — SIMA, 5 de septiembre de 2026
+# Guía de revisión — SIMA, 5 de septiembre de 2026 (actualizada tras la reorganización)
 
 Este documento existe para que puedas revisar el avance sin leer el código: qué cambió, cómo
 probar cada pieza en tu máquina en pocos minutos, y qué decisiones quedan en tus manos.
 
 ## 1. Avance medible
 
-| Indicador | Antes (retomar, 9a0a15b) | Ahora (633a991) |
+| Indicador | Antes (retomar, 9a0a15b) | Ahora (b4868a1) |
 |---|---|---|
-| Pruebas automáticas | 5 (solo parser `.mini`) | **86** en 11 módulos, todas en verde |
+| Pruebas automáticas | 5 (solo parser `.mini`) | **93** en 13 módulos, todas en verde |
 | Cobertura funcional de pruebas | parser | parser, backends, reencolado, pipeline completo con IA simulada, motor adaptativo, motor v2, refuerzo, ritmo, ciclo de aprendizaje, resúmenes, progreso, recordatorios, cola en BD, simulacro, olvido, banco, salud |
-| Commits locales sobre `main` | — | 11 (57 archivos, +6 694 / −882 líneas) |
-| Migraciones aplicadas | 0015 | 0021 |
+| Commits locales sobre `main` | — | 14 (77 archivos, +9 226 / −2 592 líneas) |
+| Migraciones aplicadas | 0015 | 0023 (0022 elimina las tablas heredadas del quiz) |
 | Módulos nuevos del núcleo | 0 | 8 (`adaptive`, `psychometrics`, `adaptive_generation`, `spaced_repetition`, `segments`, `summaries`, `progress`, `reminders`; 3 319 líneas con `job_queue`) |
 | Tablas del modelo nuevo en uso | vacías | `Question`, `AnswerOption`, `StudentAnswer`, `AdaptiveProfile`, `Recommendation`, `StudyActivity`, `Summary`, `Flashcard` (SM-2), `Transcript`, `TranscriptSegment`, `PracticeSession`, `ReinforcementJob`, `SummaryJob` |
 | Comandos de operación | — | `requeue_jobs`, `sync_question_bank`, `send_study_reminders`, `run_worker` |
 | Modos de práctica | quiz por clase sin memoria | equilibrada, refuerzo de débiles, repaso de temas en riesgo, simulacro con nota |
+| Organización de vistas | `views.py` de 1 992 líneas con funciones duplicadas | paquete `learning/views/` por dominio (8 módulos), sin duplicados, ayudantes compartidos con el worker |
 
 ## 2. Qué hace SIMA ahora, de punta a punta
 
@@ -36,7 +37,10 @@ probar cada pieza en tu máquina en pocos minutos, y qué decisiones quedan en t
 9. **Progreso** de dos semanas (respuestas, aciertos, habilidad) en curso e inicio;
    **recordatorios** por correo; **banco del curso** con evidencia de calibración y CSV.
 10. **Operación**: cola en hilos (un proceso) o worker aparte en BD (`run_worker`), reencolado de
-    huérfanos, `/salud/` para monitoreo.
+    huérfanos, `/salud/` para monitoreo, límite de trabajos pendientes por usuario, cabeceras de
+    seguridad y logging rotativo para producción.
+11. **Curso como unidad de estudio**: editar, archivar y restaurar; fecha de examen con cuenta regresiva
+    que pone el simulacro al frente del plan cuando faltan 10 días o menos.
 
 ## 3. Cómo probarlo en 15 minutos
 
@@ -62,6 +66,9 @@ Luego, con tu usuario en http://127.0.0.1:8002 :
 | 8. Banco | Curso → enlace "N preguntas en el banco" | Dificultad generada vs calibrada, uso, banderas; CSV |
 | 9. Progreso | Curso e Inicio | Gráfico de dos semanas |
 | 10. Salud | http://127.0.0.1:8002/salud/ | JSON con BD, cola y backend |
+| 11. Editar curso | Curso → **Editar** | Pon una fecha de examen a 3 días: la cabecera muestra "Examen en 3 dias" y el plan propone el simulacro primero |
+| 12. Archivar | Curso → **Archivar** | Desaparece del panel; en Inicio → Cursos aparece "Cursos archivados" con **Restaurar** |
+| 13. Límite | Pide tres resúmenes seguidos de clases distintas | El cuarto avisa "trabajos en proceso" sin cobrar |
 
 Para el worker aparte (opcional): pon `SIMA_QUEUE_MODE=db` en `.env`, reinicia el web y en otra
 terminal `python manage.py run_worker`. Con `--once` sirve para el Programador de tareas.
@@ -75,12 +82,15 @@ Recordatorios por correo: marca la casilla en Inicio → Preferencias y ejecuta
 2. **Subir los commits**: `git push origin main fix-localmodel`; borrar `origin/dev-erick`.
 3. **Modo de cola en despliegue**: `thread` (un proceso, simple) o `db` + `run_worker` (recomendado
    si el web corre con gunicorn/varios procesos).
-4. **Tablas heredadas** `QuizAttempt`/`QuizResponse`: ya no tienen vistas; eliminarlas con una
-   migración cuando no haga falta el historial.
+4. **Producción**: con `DJANGO_DEBUG=0` hace falta `DJANGO_SECRET_KEY` (la app se niega a arrancar sin
+   ella) y conviene `CSRF_TRUSTED_ORIGINS`, `SECURE_SSL_REDIRECT`/`BEHIND_PROXY` según el proxy; ver
+   `.env.example`. Los logs quedan en `logs/sima.log`.
 5. **Parámetros del motor** (umbrales de BKT, vida media base, puerta de calidad): están como
    constantes al inicio de `learning/adaptive.py` y `learning/psychometrics.py`; conviene ajustarlos
    con datos reales de un ciclo.
 6. **Plan gratuito**: si incluye algún refuerzo o resumen al mes (hoy cobran créditos siempre).
+7. **`services.py`** (1 849 líneas) sigue siendo un solo módulo: prompts, proveedores, verificación web
+   y EduQG, Whisper. Partirlo es la siguiente reorganización razonable, sin urgencia.
 
 ## 5. Referencias del motor (para la sustentación)
 

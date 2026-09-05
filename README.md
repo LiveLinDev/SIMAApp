@@ -166,8 +166,40 @@ transcripción y una flashcard por concepto. Los ítems pasan los filtros determ
 entran al banco como `Quiz` de tipo `reinforcement`. Cobra `REINFORCEMENT_COST` (+ recargo de nube)
 y reembolsa si la generación falla. Corre en la misma cola que las clases.
 
-El **quiz por clase** (`/clase/<id>/quiz/iniciar/`) ahora abre una práctica del curso limitada al banco
-de esa clase, con la memoria del perfil; `QuizAttempt` queda solo como historial.
+El **quiz por clase** (`/clase/<id>/quiz/iniciar/`) abre una práctica del curso limitada al banco de esa
+clase, con la memoria del perfil. El quiz heredado (`QuizAttempt`) ya no tiene vistas ni rutas.
+
+**Motor psicométrico v2** (`learning/psychometrics.py`): la habilidad se estima por **EAP** (media a
+posteriori con prior normal, Bock & Mislevy 1982) en lugar de máxima verosimilitud, así el error estándar
+existe desde la primera respuesta y el prior del perfil se integra de forma natural; la selección es
+**randomesque** (Kingsbury & Zara 1989: elige al azar entre los 5 ítems más informativos) para no
+sobreexponer siempre el mismo ítem; la dificultad `b` de cada ítem se **recalibra en línea** con una
+regla tipo Elo de paso decreciente (Pelánek 2016) y se usa a partir de 3 observaciones; el dominio por
+tema y nivel Bloom se sigue con **Bayesian Knowledge Tracing** (Corbett & Anderson 1994; p_init .25,
+p_learn .12, p_slip .10, p_guess .25); y una **puerta de calidad** aparta ítems demasiado fáciles (≥ 97 %
+de acierto) o sospechosos (≤ 10 % tras 8 intentos) para que no vuelvan a servirse.
+
+**Ciclo de aprendizaje**: tras cada respuesta la práctica muestra al instante si fue correcta, la opción
+correcta, la explicación del concepto (si existe) y el **fragmento de la clase que la respalda**, con la
+marca de tiempo cuando la clase entró por audio (`learning/segments.py`: Whisper devuelve segmentos con
+tiempo que se guardan como `TranscriptSegment`; cada pregunta se enlaza con el segmento de mayor
+solapamiento de palabras clave). Los fallos de la retroalimentación final llevan el mismo extracto.
+
+**Resúmenes** (`learning/summaries.py`, US-050): `/clase/<id>/resumen/` genera el resumen estructurado
+de la clase (conceptos clave, párrafos, qué repasar primero) a partir de la transcripción y de las
+preguntas que ya se evalúan; `/cursos/<id>/resumen/` integra los resúmenes de clase (o las
+transcripciones, si no hay) en un documento por temas que prioriza los temas débiles del perfil. Cobra
+`SUMMARY_COST` (+ recargo de nube) y reembolsa si falla; leer un resumen suma XP una vez al día.
+
+**Progreso semanal** (`learning/progress.py`): serie diaria de respuestas, aciertos y θ de las últimas dos
+semanas, dibujada como SVG en el servidor (sin JavaScript) en el curso y en "Hoy en SIMA", con la
+comparativa contra la semana anterior.
+
+**Recordatorios por correo** (`learning/reminders.py`): `python manage.py send_study_reminders`
+(`--dry-run` para listar) escribe a quienes activaron la casilla en Preferencias y no han estudiado hoy,
+con las tarjetas vencidas y el primer paso del plan. Configura `EMAIL_*`, `DEFAULT_FROM_EMAIL` y
+`SIMA_SITE_URL` en `.env`; por defecto el backend imprime en consola. Prográmalo una vez al día con el
+Programador de tareas de Windows o cron.
 
 **Ritmo** (`learning/spaced_repetition.py` + `adaptive.daily_plan`): las flashcards siguen SM-2
 (factor de facilidad, intervalos 1 → 6 → ×EF, reinicio con "again"); `/cursos/<id>/repasar/` sirve la
@@ -184,10 +216,12 @@ de la meta diaria (`UserPreference.daily_goal`, en preguntas + tarjetas).
 python manage.py test learning
 ```
 
-Cuarenta y cinco tests: parser `.mini`, reencolado, resolución de backends, renderizado del selector,
-motor adaptativo (banco, sesión completa, perfil, recomendaciones, vistas), refuerzo (cobro, generación
-con IA simulada, reembolso, reemplazo del quiz por clase) y ritmo (SM-2, cola de repaso, plan diario,
-meta). No hay cobertura del pipeline con IA real.
+Setenta y dos tests: parser `.mini`, reencolado, resolución de backends, renderizado del selector,
+motor adaptativo (banco, sesión completa, perfil, recomendaciones, vistas), motor v2 (EAP, randomesque,
+BKT, calibración, puerta de calidad), refuerzo (cobro, generación con IA simulada, reembolso), ritmo
+(SM-2, cola de repaso, plan diario, meta), ciclo de aprendizaje (segmentos, retroalimentación inmediata,
+retiro del quiz heredado), resúmenes, progreso semanal y recordatorios. No hay cobertura del pipeline
+con IA real.
 
 ## Problemas conocidos
 
@@ -195,8 +229,10 @@ meta). No hay cobertura del pipeline con IA real.
   `runserver`, la app reencola automáticamente los trabajos que quedaron en `QUEUED`/`PROCESSING`
   (`learning/apps.py`); con otro servidor, exporta `SIMA_REQUEUE_ON_START=1`. Para hacerlo a
   mano: `python manage.py requeue_jobs` (`--dry-run` solo lista).
-- **`QuizAttempt` heredado.** Ya no se crean intentos por clase; las vistas `quiz_attempt` quedan
-  solo para consultar historial antiguo y pueden retirarse junto con el modelo.
+- **Modelos `QuizAttempt`/`QuizResponse` heredados.** Ya no tienen vistas ni rutas; quedan las tablas
+  con el historial antiguo. Pueden eliminarse con una migración cuando no haga falta consultarlo.
+- **Resúmenes síncronos.** La generación de un resumen llama al modelo dentro de la petición (unos
+  segundos con DeepSeek). Si molesta, pasarla a la cola de trabajos como el refuerzo.
 - **Prompt de verificación demasiado largo** con clases extensas (`exceed_context_size_error`
   en modelos locales): reducir `VERIFICATION_SOURCE_CHARS` o `VERIFICATION_MAX_SOURCES`.
 - **URLs con caracteres no ASCII** pueden fallar al descargar fuentes; el pipeline continúa

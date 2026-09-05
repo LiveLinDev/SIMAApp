@@ -188,8 +188,23 @@ solapamiento de palabras clave). Los fallos de la retroalimentación final lleva
 **Resúmenes** (`learning/summaries.py`, US-050): `/clase/<id>/resumen/` genera el resumen estructurado
 de la clase (conceptos clave, párrafos, qué repasar primero) a partir de la transcripción y de las
 preguntas que ya se evalúan; `/cursos/<id>/resumen/` integra los resúmenes de clase (o las
-transcripciones, si no hay) en un documento por temas que prioriza los temas débiles del perfil. Cobra
-`SUMMARY_COST` (+ recargo de nube) y reembolsa si falla; leer un resumen suma XP una vez al día.
+transcripciones, si no hay) en un documento por temas que prioriza los temas débiles del perfil. La
+vista cobra `SUMMARY_COST` (+ recargo de nube) y deja un `SummaryJob` en la cola; el worker genera,
+guarda y reembolsa si falla. La página muestra el estado y se refresca sola. Leer un resumen suma XP
+una vez al día.
+
+**Simulacro** (`focus=exam`): examen de longitud fija sobre todo el curso, con cobertura proporcional
+de temas y sin sesgo hacia lo débil ni parada anticipada; la retroalimentación da la nota sobre 20.
+
+**Olvido por tema**: cada tema del perfil guarda una **vida media de retención** (regresión de vida
+media simplificada, Settles & Meeder 2016: 3 días tras un acierto, se duplica con cada acierto
+consecutivo, tope 90) y la fecha de la última respuesta. Un tema dominado cuya retención estimada
+(`2^(-días/vida media)`) deja el dominio efectivo bajo 0,6 aparece **en riesgo** en el curso, entra al
+plan de hoy y tiene su propio modo de práctica (`focus=risk`).
+
+**Banco del curso** (`/cursos/<id>/banco/`): por pregunta, dificultad generada frente a la calibrada,
+intentos, acierto y bandera de calidad; descarga del banco y de las respuestas del estudiante en CSV
+(evidencia para la validación de la tesis).
 
 **Progreso semanal** (`learning/progress.py`): serie diaria de respuestas, aciertos y θ de las últimas dos
 semanas, dibujada como SVG en el servidor (sin JavaScript) en el curso y en "Hoy en SIMA", con la
@@ -210,29 +225,35 @@ diaria. El **plan de hoy** convierte la ruta de estudio en reglas sobre el perfi
 no has trabajado → subir una clase nueva. Aparece en el curso y en "Hoy en SIMA", junto con el progreso
 de la meta diaria (`UserPreference.daily_goal`, en preguntas + tarjetas).
 
+Guía de revisión paso a paso, métricas del avance y decisiones pendientes: `REVISION.md`.
+
 ## Tests
 
 ```bash
 python manage.py test learning
 ```
 
-Setenta y dos tests: parser `.mini`, reencolado, resolución de backends, renderizado del selector,
-motor adaptativo (banco, sesión completa, perfil, recomendaciones, vistas), motor v2 (EAP, randomesque,
-BKT, calibración, puerta de calidad), refuerzo (cobro, generación con IA simulada, reembolso), ritmo
-(SM-2, cola de repaso, plan diario, meta), ciclo de aprendizaje (segmentos, retroalimentación inmediata,
-retiro del quiz heredado), resúmenes, progreso semanal y recordatorios. No hay cobertura del pipeline
-con IA real.
+Ochenta y seis tests: parser `.mini`, reencolado, resolución de backends, renderizado del selector,
+**pipeline completo de una clase con el modelo simulado**, motor adaptativo (banco, sesión completa,
+perfil, recomendaciones, vistas), motor v2 (EAP, randomesque, BKT, calibración, puerta de calidad),
+refuerzo (cobro, generación con IA simulada, reembolso), ritmo (SM-2, cola de repaso, plan diario,
+meta), ciclo de aprendizaje (segmentos, retroalimentación inmediata, retiro del quiz heredado),
+resúmenes en cola, worker en BD, simulacro, olvido por tema, banco del curso, progreso, recordatorios
+y `/salud/`. No hay cobertura con IA real (requiere clave y cuesta créditos).
 
 ## Problemas conocidos
 
-- **Cola en memoria.** El worker vive dentro del proceso de Django. Al arrancar con
-  `runserver`, la app reencola automáticamente los trabajos que quedaron en `QUEUED`/`PROCESSING`
-  (`learning/apps.py`); con otro servidor, exporta `SIMA_REQUEUE_ON_START=1`. Para hacerlo a
-  mano: `python manage.py requeue_jobs` (`--dry-run` solo lista).
+- **Cola de trabajos.** Con `SIMA_QUEUE_MODE=thread` (por defecto) el worker vive en hilos dentro
+  del proceso de Django; al arrancar con `runserver` la app reencola sola los trabajos huérfanos
+  (`learning/apps.py`), con otro servidor exporta `SIMA_REQUEUE_ON_START=1`, y a mano
+  `python manage.py requeue_jobs`. Con `SIMA_QUEUE_MODE=db` el web solo deja los trabajos en
+  `QUEUED` y un proceso aparte los procesa: `python manage.py run_worker` (`--once` para el
+  Programador de tareas; `--stale-minutes` devuelve a la cola los atascados). Varios workers pueden
+  convivir (reclamo con `select_for_update(skip_locked=True)`). Recomendado `db` con gunicorn.
+- **Monitoreo.** `GET /salud/` devuelve el estado de la base, de la cola por tipo de trabajo y del
+  backend configurado (200 u 503).
 - **Modelos `QuizAttempt`/`QuizResponse` heredados.** Ya no tienen vistas ni rutas; quedan las tablas
   con el historial antiguo. Pueden eliminarse con una migración cuando no haga falta consultarlo.
-- **Resúmenes síncronos.** La generación de un resumen llama al modelo dentro de la petición (unos
-  segundos con DeepSeek). Si molesta, pasarla a la cola de trabajos como el refuerzo.
 - **Prompt de verificación demasiado largo** con clases extensas (`exceed_context_size_error`
   en modelos locales): reducir `VERIFICATION_SOURCE_CHARS` o `VERIFICATION_MAX_SOURCES`.
 - **URLs con caracteres no ASCII** pueden fallar al descargar fuentes; el pipeline continúa

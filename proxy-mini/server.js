@@ -42,16 +42,11 @@ function envBool(name, fallback = false) {
   return ["1", "true", "yes", "on"].includes(envText(name, String(fallback)).toLowerCase());
 }
 
-const SIMA_PC = envText("SIMA_PC", "adrian").toLowerCase();
-const REMOTE_DUCKDNS_HOST = envText("REMOTE_DUCKDNS_HOST", "bellamama.duckdns.org");
-
+// Destino del reenvio: por defecto el Django local. Para reenviar a otro host,
+// cambia PROXY_TARGET_HOST / PROXY_TARGET_PORT en .env.
 const PORT = envInt("PROXY_PORT", 25564);
-const LOCAL_TARGET_HOST = envText("PROXY_TARGET_HOST", "127.0.0.1");
-const LOCAL_TARGET_PORT = envInt("PROXY_TARGET_PORT", 8002);
-const REMOTE_TARGET_HOST = envText("REMOTE_PROXY_TARGET_HOST", REMOTE_DUCKDNS_HOST);
-const REMOTE_TARGET_PORT = envInt("REMOTE_PROXY_TARGET_PORT", 8000);
-const TARGET_HOST = SIMA_PC === "erick" ? REMOTE_TARGET_HOST : LOCAL_TARGET_HOST;
-const TARGET_PORT = SIMA_PC === "erick" ? REMOTE_TARGET_PORT : LOCAL_TARGET_PORT;
+const TARGET_HOST = envText("PROXY_TARGET_HOST", "127.0.0.1");
+const TARGET_PORT = envInt("PROXY_TARGET_PORT", 8002);
 const REWRITE_HOST = envBool("PROXY_REWRITE_HOST", false);
 
 const server = http.createServer((req, res) => {

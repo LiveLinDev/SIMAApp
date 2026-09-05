@@ -1,4 +1,5 @@
 @echo off
+if not defined SIMA_PUBLIC_HOST set "SIMA_PUBLIC_HOST=TU-HOST-PUBLICO"
 setlocal EnableExtensions
 
 set "ROOT=%~dp0"
@@ -65,7 +66,7 @@ echo.
 echo [4/4] SIMA esta arriba.
 echo Local : %DJANGO_URL%
 echo Proxy : %PROXY_URL%
-echo Publico esperado: http://bellamama.duckdns.org:%PROXY_PORT%/
+echo Publico esperado: http://%SIMA_PUBLIC_HOST%:%PROXY_PORT%/
 echo.
 echo Puedes cerrar esta ventana. Deja abiertas las ventanas de Django y Proxy.
 pause

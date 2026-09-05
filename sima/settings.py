@@ -88,18 +88,6 @@ def database_config():
     }
 
 
-SIMA_PC = env_text("SIMA_PC", "adrian").lower()
-REMOTE_DUCKDNS_HOST = env_text("REMOTE_DUCKDNS_HOST", "bellamama.duckdns.org")
-
-
-def resolve_local_api_base():
-    local_base = env_text("LOCAL_API_BASE", "http://localhost:1234/v1")
-    remote_base = env_text("REMOTE_LOCAL_API_BASE", f"http://{REMOTE_DUCKDNS_HOST}:8001/v1")
-    if SIMA_PC == "erick":
-        return remote_base
-    return local_base
-
-
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-only-change-me")
 DEBUG = env_bool("DJANGO_DEBUG", True)
 ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "0.0.0.0,127.0.0.1,localhost").split(",")
@@ -168,20 +156,43 @@ LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "dashboard"
 LOGOUT_REDIRECT_URL = "home"
 
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-3-5-sonnet-latest")
+# ── Backend de IA en la nube ──────────────────────────────────────────────────
+# Cualquier proveedor con API compatible con OpenAI Chat Completions (DeepSeek,
+# OpenAI, Gemini, Qwen, Groq, Mistral...) o Anthropic con su SDK nativo.
+# Las variables DEEPSEEK_* se siguen aceptando como alias heredado de CLOUD_*.
+ANTHROPIC_API_KEY = env_text("ANTHROPIC_API_KEY", "")
+ANTHROPIC_MODEL = env_text("ANTHROPIC_MODEL", "claude-opus-5")
 DEEPSEEK_API_KEY = env_text("DEEPSEEK_API_KEY", "")
-DEEPSEEK_MODEL = env_text("DEEPSEEK_MODEL", "deepseek-chat")
-DEEPSEEK_API_BASE = env_text("DEEPSEEK_API_BASE", "https://api.deepseek.com")
-DEEPSEEK_MAX_TOKENS = env_int("DEEPSEEK_MAX_TOKENS", 6000)
-DEEPSEEK_API_TIMEOUT = env_int("DEEPSEEK_API_TIMEOUT", 120)
-DEEPSEEK_GENERATION_TEMPERATURE = env_float("DEEPSEEK_GENERATION_TEMPERATURE", 0.3)
-DEEPSEEK_VERIFICATION_TEMPERATURE = env_float("DEEPSEEK_VERIFICATION_TEMPERATURE", 0.2)
-DEEPSEEK_DIRECT_MINI = env_bool("DEEPSEEK_DIRECT_MINI", True)
-REMOTE_LOCAL_API_BASE = env_text("REMOTE_LOCAL_API_BASE", f"http://{REMOTE_DUCKDNS_HOST}:8001/v1")
-LOCAL_API_BASE = resolve_local_api_base()
-LOCAL_API_KEY = os.getenv("LOCAL_API_KEY", "local")
-LOCAL_MODEL = os.getenv("LOCAL_MODEL", ANTHROPIC_MODEL)
+_PLACEHOLDER_KEYS = {"", "local", "none", "null", "false", "0", "change-me", "changeme", "sk-..."}
+CLOUD_PROVIDER = env_text("CLOUD_PROVIDER", "").lower()
+if not CLOUD_PROVIDER:
+    _has_generic = (env_text("CLOUD_API_KEY", "") or DEEPSEEK_API_KEY).lower() not in _PLACEHOLDER_KEYS
+    _has_anthropic = ANTHROPIC_API_KEY.lower() not in _PLACEHOLDER_KEYS
+    CLOUD_PROVIDER = "anthropic" if (_has_anthropic and not _has_generic) else "openai_compatible"
+if CLOUD_PROVIDER == "anthropic":
+    CLOUD_API_KEY = env_text("CLOUD_API_KEY", "") or ANTHROPIC_API_KEY
+    CLOUD_API_BASE = env_text("CLOUD_API_BASE", "")
+    CLOUD_MODEL = env_text("CLOUD_MODEL", "") or ANTHROPIC_MODEL
+else:
+    CLOUD_API_KEY = env_text("CLOUD_API_KEY", "") or DEEPSEEK_API_KEY
+    CLOUD_API_BASE = env_text("CLOUD_API_BASE", "") or env_text("DEEPSEEK_API_BASE", "https://api.deepseek.com")
+    CLOUD_MODEL = env_text("CLOUD_MODEL", "") or env_text("DEEPSEEK_MODEL", "deepseek-v4-flash")
+_CLOUD_LABELS = {
+    "deepseek": "DeepSeek", "openai": "OpenAI", "gemini": "Gemini", "qwen": "Qwen",
+    "groq": "Groq", "mistral": "Mistral", "anthropic": "Claude", "openai_compatible": "Nube",
+}
+CLOUD_LABEL = env_text("CLOUD_LABEL", "") or _CLOUD_LABELS.get(CLOUD_PROVIDER, CLOUD_PROVIDER.title() or "Nube")
+CLOUD_MAX_TOKENS = env_int("CLOUD_MAX_TOKENS", env_int("DEEPSEEK_MAX_TOKENS", 6000))
+CLOUD_API_TIMEOUT = env_int("CLOUD_API_TIMEOUT", env_int("DEEPSEEK_API_TIMEOUT", 120))
+CLOUD_GENERATION_TEMPERATURE = env_float("CLOUD_GENERATION_TEMPERATURE", env_float("DEEPSEEK_GENERATION_TEMPERATURE", 0.3))
+CLOUD_VERIFICATION_TEMPERATURE = env_float("CLOUD_VERIFICATION_TEMPERATURE", env_float("DEEPSEEK_VERIFICATION_TEMPERATURE", 0.2))
+# True: el proveedor cloud entrega el MINI final en una pasada y se OMITE la verificacion factual.
+CLOUD_DIRECT_MINI = env_bool("CLOUD_DIRECT_MINI", env_bool("DEEPSEEK_DIRECT_MINI", False))
+
+# ── Backend local (API compatible con OpenAI: Ollama, LM Studio, llama-server) ─
+LOCAL_API_BASE = env_text("LOCAL_API_BASE", "http://127.0.0.1:8003/v1")
+LOCAL_API_KEY = env_text("LOCAL_API_KEY", "local")
+LOCAL_MODEL = env_text("LOCAL_MODEL", "") or CLOUD_MODEL
 CLOUD_BACKEND_SURCHARGE = env_int("CLOUD_BACKEND_SURCHARGE", 15)
 LOCAL_ITEMS_REQUESTED = os.getenv("LOCAL_ITEMS_REQUESTED", "auto")
 LOCAL_MIN_ITEMS = env_int("LOCAL_MIN_ITEMS", 5)

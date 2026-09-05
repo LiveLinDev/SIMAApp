@@ -567,19 +567,19 @@
       <input type="hidden" name="verification_mode" value="{{ job.verification_mode|default:'web' }}">
       <div class="retry-backend-options" aria-label="Elegir motor de IA">
         <label class="retry-backend-option">
-          <input type="radio" name="backend" value="local" {% if job.ai_backend != 'anthropic' or not backends.anthropic %}checked{% endif %}>
+          <input type="radio" name="backend" value="local" {% if job.ai_backend != 'cloud' or not backends.cloud %}checked{% endif %}>
           <span class="retry-backend-card">
-            <strong>Local Qwen</strong>
+            <strong>Modelo local</strong>
             <small>{{ local_model }}</small>
           </span>
         </label>
-        <label class="retry-backend-option {% if not backends.anthropic %}retry-backend-option--disabled{% endif %}">
-          <input type="radio" name="backend" value="anthropic"
-            {% if job.ai_backend == 'anthropic' and backends.anthropic %}checked{% endif %}
-            {% if not backends.anthropic %}disabled{% endif %}>
+        <label class="retry-backend-option {% if not backends.cloud %}retry-backend-option--disabled{% endif %}">
+          <input type="radio" name="backend" value="cloud"
+            {% if job.ai_backend == 'cloud' and backends.cloud %}checked{% endif %}
+            {% if not backends.cloud %}disabled{% endif %}>
           <span class="retry-backend-card">
-            <strong>Nube Claude</strong>
-            {% if backends.anthropic %}
+            <strong>Nube · {{ backends.cloud_label }}</strong>
+            {% if backends.cloud %}
               <small>Usa mas creditos</small>
             {% else %}
               <small>No configurado</small>

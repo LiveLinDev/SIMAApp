@@ -75,11 +75,11 @@ def estimate_lesson_job_cost(
         details.append(f"quiz adaptativo {TEXT_QUIZ_COST}")
         amount += VERIFICATION_COST
         details.append(f"revision final {VERIFICATION_COST}")
-    if amount and backend == "anthropic":
+    if amount and backend in {"cloud", "anthropic", "deepseek"}:
         surcharge = max(0, int(getattr(settings, "CLOUD_BACKEND_SURCHARGE", CLOUD_BACKEND_SURCHARGE)))
         if surcharge:
             amount += surcharge
-            details.append(f"nube Claude {surcharge}")
+            details.append(f"nube {surcharge}")
 
     return CreditEstimate(
         action=CreditLedgerEntry.Action.CLASS_TRANSCRIPTION if audio else CreditLedgerEntry.Action.QUIZ_GENERATION,

@@ -17,19 +17,23 @@ set "UPL=%USERPROFILE%\AppData\Local"
 :: MODO CLIENTE REMOTO
 :: =============================================================================
 :: Conecta a PostgreSQL, Whisper (via API local remota) y Qwen expuestos por
-:: la PC host (bellamama.duckdns.org). No necesitas Postgres ni modelos IA
+:: la PC host definida en SIMA_REMOTE_HOST. No necesitas Postgres ni modelos IA
 :: locales; solo Python, Node y las credenciales del .env del proyecto.
 :: =============================================================================
 
 :: --- FORZAR conexion remota a PostgreSQL del host ---------------------------
-set "POSTGRES_HOST=bellamama.duckdns.org"
+if not defined SIMA_REMOTE_HOST (
+    echo [ERROR] Define la variable SIMA_REMOTE_HOST con el host publico de la PC anfitriona.
+    echo   Ejemplo: set SIMA_REMOTE_HOST=mi-host.ejemplo.org
+    pause
+    exit /b 1
+)
+set "POSTGRES_HOST=%SIMA_REMOTE_HOST%"
 set "POSTGRES_PORT=5432"
 
 :: --- FORZAR conexion a la API local (Qwen / llama-server) del host ----------
-set "LOCAL_API_BASE=http://bellamama.duckdns.org:8001/v1"
+set "LOCAL_API_BASE=http://%SIMA_REMOTE_HOST%:8001/v1"
 
-:: Asegurar que SIMA_PC no fuerce otra logica de red (opcional pero seguro)
-set "SIMA_PC=cliente"
 
 echo.
 echo SIMA Cliente Remoto
@@ -244,7 +248,7 @@ if errorlevel 1 (
 :: =============================================================================
 echo.
 echo [3/4] Iniciando proxy publico en 0.0.0.0:%PROXY_PORT%...
-start "SIMA Cliente Proxy :%PROXY_PORT%" /D "%ROOT%proxy-mini" cmd /c "echo [INFO] Iniciando proxy en http://0.0.0.0:%PROXY_PORT%/... ^&^& echo Publico esperado: http://bellamama.duckdns.org:%PROXY_PORT%/... ^&^& echo Reenvio local: 127.0.0.1:%DJANGO_PORT%... ^&^& "%NODE%" server.js ^&^& echo. ^&^& echo [INFO] Proxy se detuvo. ^&^& pause"
+start "SIMA Cliente Proxy :%PROXY_PORT%" /D "%ROOT%proxy-mini" cmd /c "echo [INFO] Iniciando proxy en http://0.0.0.0:%PROXY_PORT%/... ^&^& echo Publico esperado: http://%SIMA_REMOTE_HOST%:%PROXY_PORT%/... ^&^& echo Reenvio local: 127.0.0.1:%DJANGO_PORT%... ^&^& "%NODE%" server.js ^&^& echo. ^&^& echo [INFO] Proxy se detuvo. ^&^& pause"
 
 echo [INFO] Esperando a que el proxy responda en %PROXY_URL%...
 call :wait_url "%PROXY_URL%" 20 "Proxy"
@@ -267,7 +271,7 @@ echo.
 echo [4/4] SIMA Cliente esta arriba.
 echo Local : %DJANGO_URL%
 echo Proxy : %PROXY_URL%
-echo Publico esperado: http://bellamama.duckdns.org:%PROXY_PORT%/
+echo Publico esperado: http://%SIMA_REMOTE_HOST%:%PROXY_PORT%/
 echo.
 echo Asegurate de que tu .env local tenga las credenciales correctas de PostgreSQL.
 echo Puedes cerrar esta ventana. Deja abiertas las ventanas de Django y Proxy.

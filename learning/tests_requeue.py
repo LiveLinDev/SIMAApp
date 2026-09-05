@@ -23,7 +23,7 @@ class RequeueOrphanedJobsTests(TestCase):
     @mock.patch("learning.job_queue.enqueue_lesson_job")
     def test_requeues_only_queued_and_processing(self, enqueue):
         queued = self._job(LessonJob.Status.QUEUED)
-        processing = self._job(LessonJob.Status.PROCESSING, backend="anthropic")
+        processing = self._job(LessonJob.Status.PROCESSING, backend="cloud")
         done = self._job(LessonJob.Status.CORRECTED)
         failed = self._job(LessonJob.Status.ERROR)
 
@@ -31,7 +31,7 @@ class RequeueOrphanedJobsTests(TestCase):
 
         self.assertEqual(count, 2)
         enqueue.assert_has_calls(
-            [mock.call(queued.pk, "auto"), mock.call(processing.pk, "anthropic")],
+            [mock.call(queued.pk, "auto"), mock.call(processing.pk, "cloud")],
             any_order=True,
         )
         self.assertEqual(enqueue.call_count, 2)

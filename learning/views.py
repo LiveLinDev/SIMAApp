@@ -31,6 +31,7 @@ from .services import (
     clean_ai_error,
     extract_mini_lines,
     get_available_backends,
+    normalize_backend,
     repair_mini_coherence,
     repair_transcript_text,
     text_change_summary,
@@ -248,8 +249,8 @@ def api_lesson(request):
     if request.method == "POST":
         form = ApiLessonForm(request.POST, request.FILES, user=request.user)
         backend = _normalize_ai_backend_choice(request.POST.get("backend"), backends)
-        if request.POST.get("backend") == "anthropic" and backend != "anthropic":
-            messages.info(request, "Claude en nube no esta configurado; se usara Qwen local.")
+        if normalize_backend(request.POST.get("backend")) == "cloud" and backend != "cloud":
+            messages.info(request, "La nube no esta configurada; se usara el modelo local.")
         verification_mode = request.POST.get("verification_mode") or getattr(settings, "VERIFICATION_DEFAULT_MODE", "web")
         if form.is_valid():
             job = form.save(commit=False)
@@ -302,11 +303,11 @@ def api_lesson(request):
         form = ApiLessonForm(user=request.user, initial={"course": request.GET.get("course")})
     return render(request, "learning/lesson_form.html", {
         "form": form, "mode": "api", "profile": profile, "backends": backends,
-        "local_model": getattr(settings, "LOCAL_MODEL", None) or getattr(settings, "ANTHROPIC_MODEL", "local"),
+        "local_model": getattr(settings, "LOCAL_MODEL", None) or getattr(settings, "CLOUD_MODEL", "local"),
         "verification_default_mode": getattr(settings, "VERIFICATION_DEFAULT_MODE", "web"),
         "credit_estimate": estimate_lesson_job_cost(has_audio=True, has_text=True, backend=backends["default"]),
         "local_credit_estimate": estimate_lesson_job_cost(has_audio=True, has_text=True, backend="local"),
-        "cloud_credit_estimate": estimate_lesson_job_cost(has_audio=True, has_text=True, backend="anthropic"),
+        "cloud_credit_estimate": estimate_lesson_job_cost(has_audio=True, has_text=True, backend="cloud"),
     })
 
 
@@ -370,7 +371,7 @@ def lesson_detail(request, pk):
         "is_owner": job.user_id == request.user.id,
         "profile": profile,
         "backends": get_available_backends(),
-        "local_model": getattr(settings, "LOCAL_MODEL", None) or getattr(settings, "ANTHROPIC_MODEL", "local"),
+        "local_model": getattr(settings, "LOCAL_MODEL", None) or getattr(settings, "CLOUD_MODEL", "local"),
     })
 
 
@@ -559,8 +560,8 @@ def retry_api_lesson(request, pk):
 
     backends = get_available_backends()
     backend = _normalize_ai_backend_choice(request.POST.get("backend"), backends)
-    if request.POST.get("backend") == "anthropic" and backend != "anthropic":
-        messages.info(request, "Claude en nube no esta configurado; se reintentara con Qwen local.")
+    if normalize_backend(request.POST.get("backend")) == "cloud" and backend != "cloud":
+        messages.info(request, "La nube no esta configurada; se reintentara con el modelo local.")
     verification_mode = request.POST.get("verification_mode") or job.verification_mode
     if not has_enough_credits(profile, REGENERATION_COST):
         messages.warning(request, f"Necesitas {REGENERATION_COST} creditos para regenerar esta clase.")
@@ -886,20 +887,12 @@ def download_json(request, pk):
 
 
 def _normalize_ai_backend_choice(backend: str | None, backends: dict) -> str:
-    value = (backend or "auto").strip().lower()
-    aliases = {
-        "cloud": "anthropic",
-        "claude": "anthropic",
-        "nube": "anthropic",
-        "qwen": "local",
-        "local_qwen": "local",
-    }
-    value = aliases.get(value, value)
+    value = normalize_backend(backend)
     if value == "auto":
         return backends["default"]
-    if value == "anthropic" and not backends.get("anthropic"):
+    if value == "cloud" and not backends.get("cloud"):
         return "local"
-    if value not in {"local", "anthropic"}:
+    if value not in {"local", "cloud"}:
         return backends["default"]
     return value
 
@@ -1545,7 +1538,7 @@ def _build_stage_details(job, stages):
     for index, trace in enumerate(job.transcript_repair_trace or []):
         details[f"transcript_repair_{index}"] = _stage_detail(
             "Correccion de transcripcion",
-            "Qwen revisa errores probables de audio antes de crear items.",
+            "El modelo revisa errores probables de audio antes de crear items.",
             [
                 _text_section("Prompt de reparacion", job.transcript_repair_prompt, kind="prompt"),
                 _diff_section("Antes / despues", trace.get("before", ""), trace.get("after", ""), trace.get("changes", [])),

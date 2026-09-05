@@ -187,10 +187,10 @@ def process_lesson_job(job_id: int, backend: str = "auto"):
             _set_stage(
                 job,
                 "Validando MINI cloud",
-                "DeepSeek genera MINI directo; se aplican filtros deterministas finales.",
+                f"{getattr(settings, 'CLOUD_LABEL', 'La nube')} genera MINI directo; se aplican filtros deterministas finales.",
             )
             job.verification_prompt = ""
-            job.verification_trace = {"backend": resolved_backend, "mode": "deepseek_direct_mini"}
+            job.verification_trace = {"backend": resolved_backend, "mode": "cloud_direct_mini"}
             job.corrected_output, corrected_count = _finalize_mini_quality(job, job.toon_output, "MINI cloud final")
             job.verification_output = (
                 f"v|d={timezone.localdate().strftime('%Y%m%d')}|n={corrected_count}|e=0|s=VERIFICADO"
@@ -362,7 +362,7 @@ def _auto_repair_transcript(job: LessonJob):
         _set_stage(
             job,
             "Corrigiendo transcripcion con IA local",
-            "Qwen revisa errores tipo palabras mal oidas antes de generar items.",
+            "El modelo revisa errores tipo palabras mal oidas antes de generar items.",
         )
     else:
         _set_stage(
@@ -471,7 +471,7 @@ def _auto_repair_mini_coherence(job: LessonJob):
     _set_stage(
         job,
         "Revisando coherencia de items con IA local",
-        "Qwen revisa si cada pregunta tiene sentido antes de verificar y guardar.",
+        "El modelo revisa si cada pregunta tiene sentido antes de verificar y guardar.",
     )
     try:
         prompt, repaired, backend, trace = repair_mini_coherence(

@@ -42,7 +42,7 @@
 
   <fieldset class="backend-selector backend-selector--primary">
     <legend class="backend-label">Donde quieres generar?</legend>
-    <p class="backend-note">Qwen local usa tu equipo. Nube Claude consume mas creditos y solo se activa con una API cloud configurada.</p>
+    <p class="backend-note">Local usa un modelo en este equipo. La nube ({{ backends.cloud_label }}) consume mas creditos y solo se activa con CLOUD_API_KEY configurada.</p>
     <div class="backend-options">
       <label class="backend-option" id="lbl-local">
         <input type="radio" name="backend" value="local"
@@ -53,27 +53,27 @@
             <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/>
           </svg>
           <span>
-            <strong>Local Qwen</strong>
+            <strong>Modelo local</strong>
             <small>{{ local_model }} · {{ local_credit_estimate.amount }} creditos aprox.</small>
           </span>
         </span>
       </label>
 
-      <label class="backend-option {% if not backends.anthropic %}backend-option--disabled{% endif %}" id="lbl-anthropic">
-        <input type="radio" name="backend" value="anthropic"
-          {% if backends.default == 'anthropic' %}checked{% endif %}
-          {% if not backends.anthropic %}disabled{% endif %}
+      <label class="backend-option {% if not backends.cloud %}backend-option--disabled{% endif %}" id="lbl-cloud">
+        <input type="radio" name="backend" value="cloud"
+          {% if backends.default == 'cloud' %}checked{% endif %}
+          {% if not backends.cloud %}disabled{% endif %}
           onchange="updateBackendUI()">
         <span class="backend-card">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
           </svg>
           <span>
-            <strong>Nube Claude</strong>
-            {% if backends.anthropic %}
-              <small>{{ cloud_credit_estimate.amount }} creditos aprox.; usa mas creditos.</small>
+            <strong>Nube · {{ backends.cloud_label }}</strong>
+            {% if backends.cloud %}
+              <small>{{ backends.cloud_model }} · {{ cloud_credit_estimate.amount }} creditos aprox.</small>
             {% else %}
-              <small class="disabled-note">Deshabilitado: falta configurar Claude</small>
+              <small class="disabled-note">Deshabilitado: falta CLOUD_API_KEY en .env</small>
             {% endif %}
           </span>
         </span>
@@ -718,7 +718,7 @@
   }
 
   function updateBackendUI() {
-    ['anthropic', 'local'].forEach(function(val) {
+    ['cloud', 'local'].forEach(function(val) {
       var radio = document.querySelector('input[name="backend"][value="' + val + '"]');
       var lbl = document.getElementById('lbl-' + val);
       if (!radio || !lbl) return;

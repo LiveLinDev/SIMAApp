@@ -1,4 +1,5 @@
 @echo off
+if not defined SIMA_PUBLIC_HOST set "SIMA_PUBLIC_HOST=TU-HOST-PUBLICO"
 setlocal EnableExtensions EnableDelayedExpansion
 
 set "ROOT=%~dp0"
@@ -10,7 +11,7 @@ set "MODEL_URL=http://127.0.0.1:%MODEL_PORT%/v1/models"
 set "PROXY_IA_URL=http://127.0.0.1:%PROXY_IA_PORT%/_proxy/health"
 set "DJANGO_URL=http://127.0.0.1:%DJANGO_PORT%/"
 set "PROXY_URL=http://127.0.0.1:%PROXY_PORT%/"
-set "PUBLIC_URL=http://bellamama.duckdns.org:%PROXY_PORT%/"
+set "PUBLIC_URL=http://%SIMA_PUBLIC_HOST%:%PROXY_PORT%/"
 
 echo.
 echo SIMA + IA full launcher

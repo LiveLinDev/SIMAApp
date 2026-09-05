@@ -279,7 +279,7 @@ def generation_chunk_plan(content: str, backend: str, items_requested=None) -> t
 
     # Chunks mas pequenos para el backend local: menos tokens por llamada,
     # menor probabilidad de timeout en textos largos.
-    if backend == "anthropic":
+    if backend == "cloud":
         chunk_words = max(500, int(getattr(settings, "CLOUD_CHUNK_WORDS", 3000)))
         per_chunk_max = max(5, int(getattr(settings, "CLOUD_ITEMS_PER_CHUNK_MAX", 32)))
     else:
@@ -288,7 +288,7 @@ def generation_chunk_plan(content: str, backend: str, items_requested=None) -> t
 
     # Para textos muy largos con modelos locales, forzar chunks mas pequenos
     # y menos items por llamada, evitando timeouts por prompt excesivo.
-    if backend != "anthropic" and word_count > 10000:
+    if backend != "cloud" and word_count > 10000:
         chunk_words = min(chunk_words, 1500)
         per_chunk_max = min(per_chunk_max, 15)
 
@@ -401,7 +401,7 @@ def _generate_chunk_safe(
         language=language,
         items_requested=chunk_items,
         chunk_info=chunk_info,
-        cloud_optimized=(backend == "anthropic"),
+        cloud_optimized=(backend == "cloud"),
     )
     try:
         mini = call_generation_prompt(prompt, backend=backend)
@@ -448,7 +448,7 @@ def generate_items(
             content,
             language=language,
             items_requested=budgets[0],
-            cloud_optimized=(backend == "anthropic"),
+            cloud_optimized=(backend == "cloud"),
         )
         result = call_generation_prompt(prompt, backend=backend)
         prompt, result = _retry_if_few_items(prompt, result, budgets[0], backend=backend)
@@ -482,21 +482,46 @@ def generate_items(
     return combined_prompt, merged, backend
 
 
+BACKEND_ALIASES = {
+    "cloud": "cloud", "nube": "cloud", "anthropic": "cloud", "claude": "cloud", "deepseek": "cloud",
+    "local": "local", "qwen": "local", "local_qwen": "local", "ollama": "local",
+}
+
+
+def normalize_backend(value) -> str:
+    """Normaliza nombres de backend, incluidos los heredados ("anthropic", "deepseek", "qwen")."""
+    key = (value or "auto").strip().lower()
+    if key == "auto":
+        return "auto"
+    return BACKEND_ALIASES.get(key, key)
+
+
+def cloud_backend_available() -> bool:
+    provider = getattr(settings, "CLOUD_PROVIDER", "openai_compatible")
+    if provider == "anthropic":
+        return is_real_cloud_key(getattr(settings, "ANTHROPIC_API_KEY", "")) or is_real_cloud_key(
+            getattr(settings, "CLOUD_API_KEY", "")
+        )
+    return is_real_cloud_key(getattr(settings, "CLOUD_API_KEY", ""))
+
+
 def get_available_backends() -> dict:
     """
-    Devuelve que backends de IA estan disponibles.
-    - anthropic: True si hay una API cloud configurada.
-      El nombre se conserva porque la UI muestra "Claude" y el modelo usa ese valor.
-    - local:     True siempre, asumiendo API compatible con OpenAI en LOCAL_API_BASE
+    Backends de IA disponibles.
+    - cloud: proveedor externo configurado con CLOUD_* (o el alias heredado DEEPSEEK_*).
+    - local: siempre se ofrece; asume una API compatible con OpenAI en LOCAL_API_BASE.
     """
-    anthropic_real = is_real_cloud_key(getattr(settings, "ANTHROPIC_API_KEY", ""))
-    deepseek_real = is_real_cloud_key(getattr(settings, "DEEPSEEK_API_KEY", ""))
-    cloud_provider = "deepseek" if deepseek_real else ("anthropic" if anthropic_real else "")
+    cloud_ok = cloud_backend_available()
+    provider = getattr(settings, "CLOUD_PROVIDER", "openai_compatible")
     return {
-        "anthropic": bool(cloud_provider),
+        "cloud": cloud_ok,
         "local": True,
-        "default": "anthropic" if cloud_provider else "local",
-        "cloud_provider": cloud_provider,
+        "default": "cloud" if cloud_ok else "local",
+        "cloud_provider": provider if cloud_ok else "",
+        "cloud_label": getattr(settings, "CLOUD_LABEL", "Nube"),
+        "cloud_model": getattr(settings, "CLOUD_MODEL", ""),
+        # nombre antiguo, por si alguna plantilla o script externo aun lo consulta
+        "anthropic": cloud_ok,
     }
 
 
@@ -511,27 +536,25 @@ def is_real_cloud_key(key: str | None) -> bool:
     lowered = value.lower()
     if lowered in {"local", "none", "null", "false", "0", "change-me", "changeme"}:
         return False
-    placeholder_markers = ("tu_clave", "your_", "example", "placeholder")
+    placeholder_markers = ("tu_clave", "your_", "example", "placeholder", "sk-...")
     return not any(marker in lowered for marker in placeholder_markers)
 
 
 def resolve_backend(backend: str = "auto") -> str:
-    backends = get_available_backends()
+    backend = normalize_backend(backend)
     if backend == "auto":
-        return backends["default"]
+        return get_available_backends()["default"]
     return backend
 
 
 def use_direct_cloud_mini(backend: str) -> bool:
     """
-    DeepSeek usa el backend historico "anthropic" en la UI, pero puede generar
-    MINI final en una pasada y dejar solo filtros deterministas posteriores.
+    Con CLOUD_DIRECT_MINI el proveedor cloud entrega el MINI final en una sola
+    pasada y el pipeline solo aplica filtros deterministas (sin verificacion).
     """
-    if backend != "anthropic":
+    if normalize_backend(backend) != "cloud":
         return False
-    if not getattr(settings, "DEEPSEEK_DIRECT_MINI", True):
-        return False
-    return get_available_backends().get("cloud_provider") == "deepseek"
+    return bool(getattr(settings, "CLOUD_DIRECT_MINI", False))
 
 
 def verify_items(mini_content: str, backend: str = "auto", verification_mode: str = "web") -> tuple[str, str, str, dict]:
@@ -1519,11 +1542,11 @@ def fetch_source_document(url: str, timeout: int = 8, max_chars: int = 2200) -> 
 
 def call_ai(prompt: str, backend: str = "auto", role: str = "generation") -> str:
     backend = resolve_backend(backend)
-    backends = get_available_backends()
-
-    if backend == "anthropic":
-        if not backends["anthropic"]:
-            raise RuntimeError("Anthropic API no esta configurada. Usa el backend local.")
+    if backend == "cloud":
+        if not cloud_backend_available():
+            raise RuntimeError(
+                "No hay un proveedor de IA en la nube configurado (CLOUD_API_KEY en .env). Usa el backend local."
+            )
         return _call_cloud_model(prompt, role=role)
     if backend == "local":
         return _call_local(prompt, role=role)
@@ -1537,77 +1560,114 @@ def clean_ai_error(exc) -> str:
     return err_str
 
 
+def _cloud_temperature(role: str) -> float:
+    if role in {"verification", "coherence", "transcript"}:
+        return getattr(settings, "CLOUD_VERIFICATION_TEMPERATURE", 0.2)
+    return getattr(settings, "CLOUD_GENERATION_TEMPERATURE", 0.3)
+
+
 def _call_cloud_model(prompt: str, role: str = "generation") -> str:
-    """
-    Mantiene el backend historico "anthropic" para la UI, pero permite usar
-    DeepSeek cloud como proveedor real cuando DEEPSEEK_API_KEY esta configurada.
-    """
-    if is_real_cloud_key(getattr(settings, "DEEPSEEK_API_KEY", "")):
-        return _call_deepseek(prompt, role=role)
-    return _call_anthropic(prompt)
+    """Enruta al proveedor cloud configurado en CLOUD_PROVIDER."""
+    if getattr(settings, "CLOUD_PROVIDER", "openai_compatible") == "anthropic":
+        return _call_anthropic(prompt, role=role)
+    return _call_openai_compatible(prompt, role=role)
 
 
-def _call_anthropic(prompt: str) -> str:
+def _call_anthropic(prompt: str, role: str = "generation") -> str:
     try:
-        from anthropic import Anthropic
+        from anthropic import (
+            Anthropic,
+            APIConnectionError,
+            APIStatusError,
+            AuthenticationError,
+            RateLimitError,
+        )
     except ImportError as exc:
         raise RuntimeError("Instala el paquete anthropic: pip install anthropic") from exc
 
-    client = Anthropic(api_key=settings.ANTHROPIC_API_KEY)
-    message = client.messages.create(
-        model=settings.ANTHROPIC_MODEL,
-        max_tokens=6000,
-        temperature=0.2,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    return "\n".join(block.text for block in message.content if getattr(block, "type", "") == "text")
+    model = getattr(settings, "CLOUD_MODEL", "") or getattr(settings, "ANTHROPIC_MODEL", "claude-opus-5")
+    api_key = getattr(settings, "ANTHROPIC_API_KEY", "") or getattr(settings, "CLOUD_API_KEY", "")
+    timeout = getattr(settings, "CLOUD_API_TIMEOUT", 120)
+    client = Anthropic(api_key=api_key, timeout=timeout, max_retries=0)
+    try:
+        # Sin temperature: los modelos Claude 4.6+ rechazan parametros de muestreo.
+        message = client.messages.create(
+            model=model,
+            max_tokens=getattr(settings, "CLOUD_MAX_TOKENS", 6000),
+            messages=[{"role": "user", "content": prompt}],
+        )
+    except AuthenticationError as exc:
+        raise RuntimeError(
+            "Anthropic rechazo la API key configurada. Revisa ANTHROPIC_API_KEY / CLOUD_API_KEY en .env."
+        ) from exc
+    except RateLimitError as exc:
+        raise RuntimeError("Anthropic devolvio limite de tasa (429). Reintenta en unos segundos.") from exc
+    except APIConnectionError as exc:
+        raise RuntimeError(f"No se pudo conectar a Anthropic (timeout {timeout}s): {exc}") from exc
+    except APIStatusError as exc:
+        raise RuntimeError(f"Error de Anthropic ({exc.status_code}): {exc.message}") from exc
+
+    if message.stop_reason == "refusal":
+        raise RuntimeError("Claude rechazo la solicitud (stop_reason=refusal).")
+    text = "\n".join(block.text for block in message.content if getattr(block, "type", "") == "text").strip()
+    if not text:
+        raise RuntimeError(f"Claude devolvio una respuesta vacia (stop_reason={message.stop_reason}).")
+    return text.replace("\x00", "")
 
 
-def _call_deepseek(prompt: str, role: str = "generation") -> str:
+def _call_openai_compatible(prompt: str, role: str = "generation") -> str:
+    """Proveedor cloud con API compatible con OpenAI Chat Completions (DeepSeek, OpenAI, Gemini, Qwen, Groq...)."""
     try:
         from openai import OpenAI
     except ImportError as exc:
-        raise RuntimeError("Instala openai para usar DeepSeek: pip install openai") from exc
+        raise RuntimeError("Instala openai para usar el backend cloud: pip install openai") from exc
 
-    base_url = (getattr(settings, "DEEPSEEK_API_BASE", "https://api.deepseek.com") or "").strip().rstrip("/")
-    if not base_url:
-        base_url = "https://api.deepseek.com"
-    temperature = (
-        getattr(settings, "DEEPSEEK_VERIFICATION_TEMPERATURE", 0.2)
-        if role in {"verification", "coherence", "transcript"}
-        else getattr(settings, "DEEPSEEK_GENERATION_TEMPERATURE", 0.3)
-    )
+    label = getattr(settings, "CLOUD_LABEL", "Nube")
+    base_url = normalize_openai_base_url(getattr(settings, "CLOUD_API_BASE", "") or "https://api.deepseek.com")
+    model = getattr(settings, "CLOUD_MODEL", "")
+    timeout = getattr(settings, "CLOUD_API_TIMEOUT", 120)
+    if not model:
+        raise RuntimeError("CLOUD_MODEL no esta configurado en .env.")
 
     client = OpenAI(
-        api_key=getattr(settings, "DEEPSEEK_API_KEY", ""),
+        api_key=getattr(settings, "CLOUD_API_KEY", ""),
         base_url=base_url,
         max_retries=0,
-        timeout=getattr(settings, "DEEPSEEK_API_TIMEOUT", 120),
+        timeout=timeout,
     )
+    request = dict(
+        model=model,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=_cloud_temperature(role),
+        stream=False,
+        timeout=timeout,
+    )
+    # Algunos endpoints compatibles (Gemini) no aceptan max_tokens: CLOUD_MAX_TOKENS=0 lo omite.
+    max_tokens = int(getattr(settings, "CLOUD_MAX_TOKENS", 6000) or 0)
+    if max_tokens > 0:
+        request["max_tokens"] = max_tokens
     try:
-        response = client.chat.completions.create(
-            model=getattr(settings, "DEEPSEEK_MODEL", "deepseek-chat"),
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=getattr(settings, "DEEPSEEK_MAX_TOKENS", 6000),
-            temperature=temperature,
-            stream=False,
-            timeout=getattr(settings, "DEEPSEEK_API_TIMEOUT", 120),
-        )
+        response = client.chat.completions.create(**request)
     except Exception as exc:
-        from openai import APIConnectionError, APITimeoutError, AuthenticationError
+        from openai import APIConnectionError, APITimeoutError, AuthenticationError, NotFoundError
         if isinstance(exc, AuthenticationError):
-            raise RuntimeError("DeepSeek rechazo la API key configurada. Revisa DEEPSEEK_API_KEY en .env.") from exc
+            raise RuntimeError(f"{label} rechazo la API key configurada. Revisa CLOUD_API_KEY en .env.") from exc
+        if isinstance(exc, NotFoundError):
+            raise RuntimeError(
+                f"{label} no reconoce el modelo '{model}'. Revisa CLOUD_MODEL en .env "
+                "(por ejemplo, DeepSeek retiro deepseek-chat en julio de 2026)."
+            ) from exc
         if isinstance(exc, APITimeoutError):
-            raise RuntimeError(
-                f"DeepSeek no respondio dentro del timeout de {getattr(settings, 'DEEPSEEK_API_TIMEOUT', 120)} segundos."
-            ) from exc
+            raise RuntimeError(f"{label} no respondio dentro del timeout de {timeout} segundos.") from exc
         if isinstance(exc, APIConnectionError):
-            raise RuntimeError(
-                f"No se pudo conectar a DeepSeek en {base_url}. Revisa DEEPSEEK_API_BASE en .env."
-            ) from exc
-        raise RuntimeError(f"Error llamando a DeepSeek cloud: {exc}") from exc
+            raise RuntimeError(f"No se pudo conectar a {label} en {base_url}. Revisa CLOUD_API_BASE en .env.") from exc
+        raise RuntimeError(f"Error llamando a {label}: {exc}") from exc
 
-    return _extract_chat_completion_text(response, "DeepSeek")
+    return _extract_chat_completion_text(response, label)
+
+
+# alias heredado
+_call_deepseek = _call_openai_compatible
 
 
 def _extract_chat_completion_text(response, model_label: str) -> str:
@@ -1632,7 +1692,7 @@ def _call_local(prompt: str, role: str = "generation") -> str:
     y el texto real está en reasoning_content o en el primer choice.
     """
     local_base = normalize_openai_base_url(getattr(settings, "LOCAL_API_BASE", "http://localhost:1234/v1"))
-    model = getattr(settings, "LOCAL_MODEL", None) or settings.ANTHROPIC_MODEL
+    model = getattr(settings, "LOCAL_MODEL", None) or settings.CLOUD_MODEL
     temperature = (
         getattr(settings, "LOCAL_VERIFICATION_TEMPERATURE", 0.3)
         if role in {"verification", "coherence", "transcript"}

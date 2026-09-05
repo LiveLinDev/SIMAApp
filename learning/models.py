@@ -403,6 +403,12 @@ class Question(models.Model):
     source_timestamp_seconds = models.FloatField(null=True, blank=True)
     source_excerpt = models.TextField(blank=True)
     order = models.PositiveIntegerField(default=0)
+    # estadisticas en linea (motor v2)
+    attempts = models.PositiveIntegerField(default=0)
+    correct_count = models.PositiveIntegerField(default=0)
+    b_calibrated = models.FloatField(null=True, blank=True, help_text="Dificultad corregida con respuestas reales (Elo).")
+    calibration_count = models.PositiveIntegerField(default=0)
+    quality_flag = models.CharField(max_length=16, blank=True, help_text="'' | too_easy | suspect")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -506,6 +512,7 @@ class PracticeSession(models.Model):
     focus = models.CharField(max_length=16, choices=Focus.choices, default=Focus.BALANCED)
     target_count = models.PositiveIntegerField(default=10)
     theta_start = models.FloatField(default=0.0)
+    prior_sd = models.FloatField(default=1.0, help_text="Desviacion del prior N(theta_start, prior_sd) usado por EAP.")
     theta = models.FloatField(default=0.0)
     standard_error = models.FloatField(default=9.99)
     current_question = models.ForeignKey(Question, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")

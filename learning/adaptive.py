@@ -20,6 +20,7 @@ Cierra el ciclo que convierte a SIMA en acompanante de estudio:
 from __future__ import annotations
 
 import math
+import random
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from datetime import timedelta
@@ -29,7 +30,8 @@ from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
 
-from .cat import BLOOM_LABELS, estimate_theta, item_information, theta_to_level
+from .cat import BLOOM_LABELS, item_information, theta_to_level
+from .psychometrics import bkt_trace, calibrate_difficulty, eap_estimate, quality_flag, randomesque
 from .models import (
     AdaptiveProfile,
     AnswerOption,
@@ -68,6 +70,11 @@ PRIOR_WEIGHT_UNKNOWN = 1.0
 XP_SESSION_BASE = 10
 XP_PER_CORRECT = 2
 XP_RECOMMENDATION = 3
+CALIBRATION_MIN = 3            # observaciones antes de usar la dificultad calibrada
+RANDOMESQUE_K = 5              # candidatos entre los que se sortea el siguiente item
+PRIOR_SD_UNKNOWN = 1.0         # prior N(0,1) cuando el curso aun no conoce al estudiante
+PRIOR_SD_MIN = 0.5             # el prior nunca se vuelve mas estrecho que esto
+_rng = random.Random()
 
 DIFFICULTY_FROM_INT = {1: Difficulty.LOW, 2: Difficulty.LOW, 3: Difficulty.MEDIUM, 4: Difficulty.HIGH, 5: Difficulty.HIGH}
 VALID_BLOOM = {choice for choice, _ in BloomLevel.choices}
@@ -191,6 +198,8 @@ class BankItem:
     prompt: str
     demand: str = "medium"
     exposure_cap: float = 0.2
+    attempts: int = 0
+    calibrated: bool = False
     options: list = field(default_factory=list)
 
     @property
@@ -214,6 +223,9 @@ def load_bank(course: Course, lesson: LessonJob | None = None) -> list[BankItem]
         options = list(question.options.all())
         if len(options) < 2 or not any(opt.is_correct for opt in options):
             continue
+        if question.quality_flag:
+            continue  # puerta de calidad: clave dudosa o item trivial
+        calibrated = question.b_calibrated is not None and question.calibration_count >= CALIBRATION_MIN
         bank.append(
             BankItem(
                 id=str(question.pk),
@@ -221,10 +233,12 @@ def load_bank(course: Course, lesson: LessonJob | None = None) -> list[BankItem]
                 bloom=question.bloom_level,
                 topic=question.topic,
                 irt_a=question.irt_a,
-                irt_b=question.irt_b,
+                irt_b=question.b_calibrated if calibrated else question.irt_b,
                 irt_c=question.irt_c,
                 prompt=question.prompt,
                 demand={"low": "low", "high": "high"}.get(question.difficulty, "medium"),
+                attempts=question.attempts,
+                calibrated=calibrated,
                 options=options,
             )
         )
@@ -250,33 +264,49 @@ def _recency_weight(answered_at) -> float:
 
 def update_profile(user, course: Course, session: PracticeSession | None = None) -> AdaptiveProfile:
     """
-    Recalcula el perfil del curso desde el historial completo de respuestas,
-    ponderando lo reciente. theta/SE se toman de la ultima sesion completada,
-    suavizados con el valor anterior del perfil.
+    Recalcula el perfil del curso desde el historial completo.
+
+    - Dominio por tema y por nivel Bloom: Bayesian Knowledge Tracing sobre la
+      secuencia cronologica de respuestas (probabilidad de dominio), mas la
+      precision reciente como dato de apoyo.
+    - theta / error estandar: la media y desviacion posterior (EAP) de la
+      ultima sesion completada, que ya integra el prior del perfil.
     """
     profile = get_profile(user, course)
-    answers = (
+    answers = list(
         StudentAnswer.objects.filter(user=user, course=course)
         .select_related("question")
-        .order_by("-answered_at")[:400]
+        .order_by("answered_at")[:600]
     )
-    topic_acc: dict[str, list[float]] = defaultdict(lambda: [0.0, 0.0, 0])   # peso correcto, peso total, n
-    bloom_acc: dict[str, list[float]] = defaultdict(lambda: [0.0, 0.0, 0])
+    topic_seq: dict[str, list[bool]] = defaultdict(list)
+    bloom_seq: dict[str, list[bool]] = defaultdict(list)
+    topic_acc: dict[str, list[float]] = defaultdict(lambda: [0.0, 0.0])
+    bloom_acc: dict[str, list[float]] = defaultdict(lambda: [0.0, 0.0])
     for answer in answers:
+        topic = answer.question.topic or "General"
+        level = answer.question.bloom_level
+        topic_seq[topic].append(answer.is_correct)
+        bloom_seq[level].append(answer.is_correct)
         weight = _recency_weight(answer.answered_at)
-        for bucket, key in ((topic_acc, answer.question.topic or "General"), (bloom_acc, answer.question.bloom_level)):
+        for bucket, key in ((topic_acc, topic), (bloom_acc, level)):
             bucket[key][0] += weight * (1.0 if answer.is_correct else 0.0)
             bucket[key][1] += weight
-            bucket[key][2] += 1
 
-    mastery_by_topic = {
-        topic: {"mastery": round(acc[0] / acc[1], 3), "answers": acc[2]}
-        for topic, acc in topic_acc.items() if acc[1] > 0
-    }
-    bloom_mastery = {
-        level: {"mastery": round(acc[0] / acc[1], 3), "answers": acc[2], "label": BLOOM_LABELS.get(level, level)}
-        for level, acc in bloom_acc.items() if acc[1] > 0
-    }
+    def _summary(seq: dict, acc: dict, labels: bool = False) -> dict:
+        out = {}
+        for key, outcomes in seq.items():
+            entry = {
+                "mastery": bkt_trace(outcomes),
+                "accuracy": round(acc[key][0] / acc[key][1], 3) if acc[key][1] > 0 else 0.0,
+                "answers": len(outcomes),
+            }
+            if labels:
+                entry["label"] = BLOOM_LABELS.get(key, key)
+            out[key] = entry
+        return out
+
+    mastery_by_topic = _summary(topic_seq, topic_acc)
+    bloom_mastery = _summary(bloom_seq, bloom_acc, labels=True)
     weak = sorted(
         (t for t, v in mastery_by_topic.items() if v["answers"] >= MIN_ANSWERS_FOR_TOPIC and v["mastery"] < WEAK_THRESHOLD),
         key=lambda t: mastery_by_topic[t]["mastery"],
@@ -287,12 +317,8 @@ def update_profile(user, course: Course, session: PracticeSession | None = None)
     )
 
     if session is not None and session.is_complete:
-        answered = session.answers.count()
-        prior_known = profile_is_known(profile)
-        prior_weight = PRIOR_WEIGHT_KNOWN if prior_known else PRIOR_WEIGHT_UNKNOWN
-        prior_theta = profile.theta if prior_known else 0.0
-        profile.theta = round((session.theta * answered + prior_theta * prior_weight) / (answered + prior_weight), 3)
-        profile.standard_error = round(min(session.standard_error, profile.standard_error), 3)
+        profile.theta = round(session.theta, 3)
+        profile.standard_error = round(session.standard_error, 3)
 
     profile.mastery_by_topic = mastery_by_topic
     profile.bloom_mastery = bloom_mastery
@@ -374,7 +400,9 @@ def select_next_item(session: PracticeSession, bank: list[BankItem], responses: 
             topic_bonus = 0.0
         return information + bloom_bonus + topic_bonus
 
-    return max(candidates, key=score)
+    # Kingsbury-Zara: sortear entre los k mas informativos evita sobreexponer
+    # siempre el mismo item a estudiantes con el mismo nivel.
+    return randomesque(candidates, score, k=RANDOMESQUE_K, rng=_rng)
 
 
 def start_practice(
@@ -389,6 +417,7 @@ def start_practice(
     profile = get_profile(user, course)
     known = profile_is_known(profile)
     theta_start = profile.theta if known else 0.0
+    prior_sd = max(PRIOR_SD_MIN, min(profile.standard_error, PRIOR_SD_UNKNOWN)) if known else PRIOR_SD_UNKNOWN
     focus = focus if focus in PracticeSession.Focus.values else PracticeSession.Focus.BALANCED
     if focus == PracticeSession.Focus.WEAK and not profile.weak_topics:
         focus = PracticeSession.Focus.BALANCED
@@ -405,18 +434,15 @@ def start_practice(
         focus=focus,
         target_count=target,
         theta_start=theta_start,
+        prior_sd=prior_sd,
         theta=theta_start,
-        standard_error=profile.standard_error if known else 9.99,
+        standard_error=prior_sd,
     )
     first = select_next_item(session, bank, [], profile)
     session.current_question_id = first.question_id
     session.served_question_ids = [first.question_id]
     session.save(update_fields=["current_question", "served_question_ids", "updated_at"])
     return session
-
-
-def _shrunk_theta(mle: float, n: int, prior: float, prior_weight: float) -> float:
-    return (mle * n + prior * prior_weight) / (n + prior_weight)
 
 
 def answer_question(session: PracticeSession, question_id: int, option_id) -> StudentAnswer:
@@ -445,11 +471,10 @@ def answer_question(session: PracticeSession, question_id: int, option_id) -> St
     bank = load_bank(session.course, session.lesson)
     by_id = {item.id: item for item in bank}
     responses = _session_responses(session)
-    mle, se = estimate_theta(by_id, responses, THETA_MIN, THETA_MAX)
-    prior_weight = PRIOR_WEIGHT_KNOWN if session.standard_error < KNOWN_SE or session.theta_start != 0.0 else PRIOR_WEIGHT_UNKNOWN
-    theta = round(_shrunk_theta(mle, len(responses), session.theta_start, prior_weight), 3)
+    theta, se = eap_estimate(by_id, responses, prior_mean=session.theta_start, prior_sd=session.prior_sd)
     answer.theta_after = theta
     answer.save(update_fields=["theta_after"])
+    _update_item_statistics(question, theta_before=session.theta, is_correct=is_correct)
 
     session.theta = theta
     session.standard_error = se
@@ -470,6 +495,19 @@ def answer_question(session: PracticeSession, question_id: int, option_id) -> St
     session.served_question_ids = [*session.served_question_ids, nxt.question_id]
     session.save(update_fields=["theta", "standard_error", "correct_count", "current_question", "served_question_ids", "updated_at"])
     return answer
+
+
+def _update_item_statistics(question: Question, theta_before: float, is_correct: bool):
+    """Exposicion, calibracion Elo de la dificultad y puerta de calidad del item."""
+    question.attempts += 1
+    question.correct_count += 1 if is_correct else 0
+    b_now = question.b_calibrated if question.b_calibrated is not None else question.irt_b
+    question.b_calibrated = calibrate_difficulty(
+        b_now, question.calibration_count, theta_before, question.irt_a, question.irt_c, is_correct
+    )
+    question.calibration_count += 1
+    question.quality_flag = quality_flag(question.attempts, question.correct_count)
+    question.save(update_fields=["attempts", "correct_count", "b_calibrated", "calibration_count", "quality_flag"])
 
 
 # ---------------------------------------------------------------------------
@@ -679,6 +717,8 @@ def course_overview(user, course: Course) -> dict:
         "reinforcements": list(ReinforcementJob.objects.filter(user=user, course=course)[:3]),
         "plan": daily_plan(user, course),
         "due_cards": due_count(course),
+        "suspect_questions": list(Question.objects.filter(quiz__course=course, quality_flag="suspect")[:5]),
+        "calibrated_count": Question.objects.filter(quiz__course=course, calibration_count__gte=CALIBRATION_MIN).count(),
         "concepts": list(Summary.objects.filter(course=course, kind=Summary.Kind.CONCEPT)[:5]),
         "reinforcement_cost": estimate_reinforcement_cost("auto").amount,
     }

@@ -498,6 +498,8 @@ class PracticeSession(models.Model):
     class Focus(models.TextChoices):
         BALANCED = "balanced", "Equilibrada"
         WEAK = "weak", "Refuerzo de temas debiles"
+        RISK = "risk", "Repaso de temas en riesgo de olvido"
+        EXAM = "exam", "Simulacro"
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="practice_sessions")
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="practice_sessions")
@@ -838,3 +840,43 @@ def create_profile(sender, instance, created, **kwargs):
         # garantiza que usuarios existentes siempre tengan datos base
         Profile.objects.get_or_create(user=instance)
         UserPreference.objects.get_or_create(user=instance)
+
+
+class SummaryJob(models.Model):
+    """Generacion de un resumen (de clase o acumulado del curso) en la cola de trabajos."""
+
+    class Kind(models.TextChoices):
+        CLASS = "class", "Resumen de clase"
+        COURSE = "course", "Resumen del curso"
+
+    class Status(models.TextChoices):
+        QUEUED = "queued", "En cola"
+        PROCESSING = "processing", "Procesando"
+        DONE = "done", "Listo"
+        ERROR = "error", "Error"
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="summary_jobs")
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="summary_jobs")
+    lesson = models.ForeignKey(LessonJob, on_delete=models.CASCADE, null=True, blank=True, related_name="summary_jobs")
+    kind = models.CharField(max_length=12, choices=Kind.choices, default=Kind.CLASS)
+    backend = models.CharField(max_length=16, default="auto")
+    status = models.CharField(max_length=16, choices=Status.choices, default=Status.QUEUED)
+    processing_log = models.TextField(blank=True)
+    error = models.TextField(blank=True)
+    summary = models.ForeignKey(Summary, on_delete=models.SET_NULL, null=True, blank=True, related_name="jobs")
+    credits_charged = models.IntegerField(default=0)
+    credits_refunded = models.BooleanField(default=False)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [models.Index(fields=["user", "course", "status"])]
+
+    def __str__(self):
+        return f"Resumen {self.get_kind_display()} {self.pk} - {self.course}"
+
+    @property
+    def is_pending(self):
+        return self.status in {self.Status.QUEUED, self.Status.PROCESSING}

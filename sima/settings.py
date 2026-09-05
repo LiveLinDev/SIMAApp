@@ -208,6 +208,8 @@ LOCAL_CHUNK_WORDS = env_int("LOCAL_CHUNK_WORDS", 2000)
 WHISPER_MODEL = os.getenv("WHISPER_MODEL", "base")
 LOCAL_TASK_QUEUE_MAXSIZE = env_int("LOCAL_TASK_QUEUE_MAXSIZE", 20)
 LOCAL_TASK_WORKERS = env_int("LOCAL_TASK_WORKERS", 1)
+# thread: worker en hilos dentro del proceso web (por defecto). db: proceso aparte `manage.py run_worker`.
+SIMA_QUEUE_MODE = env_text("SIMA_QUEUE_MODE", "thread")
 LOCAL_COHERENCE_MAX_ITEMS = env_int("LOCAL_COHERENCE_MAX_ITEMS", 60)
 VERIFICATION_FETCH_SOURCES = env_bool("VERIFICATION_FETCH_SOURCES", True)
 VERIFICATION_SOURCE_URLS = os.getenv("VERIFICATION_SOURCE_URLS", "")

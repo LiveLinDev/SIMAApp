@@ -153,6 +153,24 @@
         <input type="hidden" name="focus" value="balanced">
         <button class="primary-button" type="submit">Practicar</button>
       </form>
+      {% if overview.exam_items >= 5 %}
+      <form method="post" action="{% url 'practice_start' course.pk %}" class="practice-form">
+        {% csrf_token %}
+        <input type="hidden" name="target_count" value="{{ overview.exam_items }}">
+        <input type="hidden" name="focus" value="exam">
+        <button class="secondary-button" type="submit">Simulacro ({{ overview.exam_items }} preguntas, nota sobre 20)</button>
+      </form>
+      {% endif %}
+      {% if overview.at_risk_topics %}
+      <p class="progress-label">En riesgo de olvido</p>
+      <div class="topic-cloud">{% for r in overview.at_risk_topics %}<span class="topic-chip topic-chip--risk" title="retencion estimada {{ r.retention|floatformat:2 }}">{{ r.topic }}</span>{% endfor %}</div>
+      <form method="post" action="{% url 'practice_start' course.pk %}" class="practice-form">
+        {% csrf_token %}
+        <input type="hidden" name="target_count" value="6">
+        <input type="hidden" name="focus" value="risk">
+        <button class="secondary-button" type="submit">Repasar antes de olvidar</button>
+      </form>
+      {% endif %}
       {% if overview.weak_topics %}
       <form method="post" action="{% url 'practice_start' course.pk %}" class="practice-form">
         {% csrf_token %}
@@ -165,7 +183,7 @@
         <button class="secondary-button" type="submit">Generar refuerzo ({{ overview.reinforcement_cost }} creditos)</button>
       </form>
       {% endif %}
-      {% if overview.bank_size %}<p class="progress-label">{{ overview.bank_size }} preguntas en el banco del curso</p>{% endif %}
+      {% if overview.bank_size %}<p class="progress-label"><a href="{% url 'course_bank' course.pk %}">{{ overview.bank_size }} preguntas en el banco del curso</a>{% if overview.calibrated_count %} &middot; {{ overview.calibrated_count }} calibradas{% endif %}</p>{% endif %}
       {% else %}
         <p class="progress-label">El banco de preguntas se llena con cada clase lista.</p>
       {% endif %}

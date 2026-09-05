@@ -5,7 +5,8 @@ import threading
 from queue import Full, Queue
 
 from django.conf import settings
-from django.db import close_old_connections
+from django.db import close_old_connections, transaction
+from datetime import timedelta
 from django.utils import timezone
 
 from .models import ClassSession, LessonJob, Profile, Transcript
@@ -48,7 +49,15 @@ _queued_ids = set()
 _workers_started = 0
 
 
+def queue_mode() -> str:
+    """'thread': worker en hilos dentro del proceso web. 'db': un proceso aparte (manage.py run_worker) reclama en la BD."""
+    mode = str(getattr(settings, "SIMA_QUEUE_MODE", "thread") or "thread").strip().lower()
+    return "db" if mode == "db" else "thread"
+
+
 def _enqueue(kind: str, job_id: int, backend: str = "auto"):
+    if queue_mode() == "db":
+        return  # el trabajo ya esta en la BD como QUEUED; lo reclama run_worker
     ensure_worker()
     key = (kind, job_id)
     with _lock:
@@ -67,6 +76,10 @@ def enqueue_lesson_job(job_id: int, backend: str = "auto"):
 
 def enqueue_reinforcement_job(job_id: int):
     _enqueue("reinforcement", job_id)
+
+
+def enqueue_summary_job(job_id: int):
+    _enqueue("summary", job_id)
 
 
 def ensure_worker():
@@ -88,10 +101,7 @@ def _worker_loop():
         kind, job_id, backend = _queue.get()
         try:
             close_old_connections()
-            if kind == "reinforcement":
-                _process_reinforcement_job(job_id)
-            else:
-                process_lesson_job(job_id, backend)
+            _dispatch(kind, job_id, backend)
         except Exception:
             logger.exception("Error procesando trabajo %s %s", kind, job_id)
         finally:
@@ -101,12 +111,106 @@ def _worker_loop():
             _queue.task_done()
 
 
+def _dispatch(kind: str, job_id: int, backend: str = "auto"):
+    if kind == "reinforcement":
+        _process_reinforcement_job(job_id)
+    elif kind == "summary":
+        _process_summary_job(job_id)
+    else:
+        process_lesson_job(job_id, backend)
+
+
 def _process_reinforcement_job(job_id: int):
     from .adaptive_generation import run_reinforcement  # import perezoso
     from .models import ReinforcementJob
 
     job = ReinforcementJob.objects.select_related("user", "course", "practice_session").get(pk=job_id)
     run_reinforcement(job)
+
+
+def _process_summary_job(job_id: int):
+    from .models import SummaryJob
+    from .summaries import run_summary_job  # import perezoso
+
+    job = SummaryJob.objects.select_related("user", "course", "lesson").get(pk=job_id)
+    run_summary_job(job)
+
+
+# ---------------------------------------------------------------------------
+# Modo BD: el worker corre en otro proceso y reclama trabajos en la base
+# ---------------------------------------------------------------------------
+def _job_tables():
+    from .models import ReinforcementJob, SummaryJob
+
+    return (
+        ("lesson", LessonJob, LessonJob.Status),
+        ("reinforcement", ReinforcementJob, ReinforcementJob.Status),
+        ("summary", SummaryJob, SummaryJob.Status),
+    )
+
+
+def claim_next_job():
+    """
+    Reclama el trabajo QUEUED mas antiguo entre las tres tablas y lo marca
+    PROCESSING en la misma transaccion (select_for_update con skip_locked,
+    asi varios workers no se pisan). Devuelve (kind, id, backend) o None.
+    """
+    with transaction.atomic():
+        best = None
+        for kind, model, status in _job_tables():
+            row = model.objects.select_for_update(skip_locked=True).filter(status=status.QUEUED).order_by("created_at").first()
+            if row is not None and (best is None or row.created_at < best[1].created_at):
+                best = (kind, row, status)
+        if best is None:
+            return None
+        kind, row, status = best
+        row.status = status.PROCESSING
+        fields = ["status", "updated_at"]
+        if kind == "lesson":
+            row.processing_stage = "Reclamado por el worker"
+            row.processing_log = _append_log(row.processing_log, "Worker", "Trabajo reclamado por el proceso worker.")
+            fields += ["processing_stage", "processing_log"]
+        row.save(update_fields=fields)
+        backend = getattr(row, "ai_backend", None) or getattr(row, "backend", None) or "auto"
+        return kind, row.pk, backend
+
+
+def process_claimed(kind: str, job_id: int, backend: str = "auto"):
+    try:
+        close_old_connections()
+        _dispatch(kind, job_id, backend)
+    except Exception:
+        logger.exception("Error procesando trabajo %s %s", kind, job_id)
+    finally:
+        close_old_connections()
+
+
+def reset_stale_processing(minutes: int = 120) -> int:
+    """Trabajos PROCESSING sin actividad reciente (worker caido) vuelven a QUEUED."""
+    cutoff = timezone.now() - timedelta(minutes=max(1, int(minutes)))
+    total = 0
+    for kind, model, status in _job_tables():
+        for row in model.objects.filter(status=status.PROCESSING, updated_at__lt=cutoff):
+            row.status = status.QUEUED
+            fields = ["status", "updated_at"]
+            if kind == "lesson":
+                row.processing_stage = "En cola"
+                row.processing_log = _append_log(row.processing_log, "Reencolado", "Sin actividad del worker; se retoma.")
+                fields += ["processing_stage", "processing_log"]
+            row.save(update_fields=fields)
+            total += 1
+    return total
+
+
+def queue_snapshot() -> dict:
+    """Conteo de trabajos por tipo y estado, para /salud/ y para el panel."""
+    out = {"mode": queue_mode()}
+    for kind, model, status in _job_tables():
+        out[kind] = {
+            "queued": model.objects.filter(status=status.QUEUED).count(),
+            "processing": model.objects.filter(status=status.PROCESSING).count(),
+        }
+    return out
 
 
 def process_lesson_job(job_id: int, backend: str = "auto"):
@@ -743,7 +847,8 @@ def _sync_class_session_status(job: LessonJob) -> ClassSession | None:
 
 
 def _sync_transcript_record(job: LessonJob, segments: list[dict] | None = None):
-    if not (job.course_id and job.transcript.strip()):
+    text = (job.transcript or "").strip() or (job.source_text or "").strip()
+    if not (job.course_id and text):
         return
     session = _sync_class_session_status(job)
     if not session:
@@ -751,8 +856,8 @@ def _sync_transcript_record(job: LessonJob, segments: list[dict] | None = None):
     transcript, _created = Transcript.objects.update_or_create(
         class_session=session,
         defaults={
-            "full_text": job.transcript,
-            "source": Transcript.Source.WHISPER if job.audio or job.mode == LessonJob.Mode.API else Transcript.Source.MANUAL,
+            "full_text": text,
+            "source": Transcript.Source.WHISPER if (job.transcript or "").strip() else Transcript.Source.MANUAL,
             "language": "es",
         },
     )
@@ -800,6 +905,19 @@ def requeue_orphaned_jobs(reason: str = "reinicio del servidor") -> int:
             enqueue_reinforcement_job(job.pk)
         except RuntimeError as exc:
             logger.warning("No se pudo reencolar el refuerzo %s: %s", job.pk, exc)
+            continue
+        requeued += 1
+    from .models import SummaryJob
+
+    for job in SummaryJob.objects.filter(
+        status__in=[SummaryJob.Status.QUEUED, SummaryJob.Status.PROCESSING]
+    ).order_by("created_at"):
+        job.status = SummaryJob.Status.QUEUED
+        job.save(update_fields=["status", "updated_at"])
+        try:
+            enqueue_summary_job(job.pk)
+        except RuntimeError as exc:
+            logger.warning("No se pudo reencolar el resumen %s: %s", job.pk, exc)
             continue
         requeued += 1
     if requeued:

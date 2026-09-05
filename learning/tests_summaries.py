@@ -93,13 +93,18 @@ class SummaryGenerationTests(TestCase):
         self.assertIn("Conceptos:", call_ai.call_args[0][0])  # ahora integra el resumen de clase
         self.assertEqual(Summary.objects.filter(kind=Summary.Kind.COURSE_ACCUMULATED).count(), 1)
 
+    @patch("learning.job_queue.enqueue_summary_job")
     @patch("learning.services.resolve_backend", return_value="local")
     @patch("learning.services.call_ai", return_value=RAW)
-    def test_summary_views(self, _ai, _rb):
+    def test_summary_views(self, _ai, _rb, _enqueue):
+        from learning import job_queue
+        from learning.models import SummaryJob
+
         page = self.client.get(f"/clase/{self.job.pk}/resumen/")
         self.assertContains(page, "Generar resumen")
         resp = self.client.post(f"/clase/{self.job.pk}/resumen/")
         self.assertEqual(resp.status_code, 302)
+        job_queue._process_summary_job(SummaryJob.objects.get().pk)  # lo que haria el worker
         page = self.client.get(resp.url)
         self.assertContains(page, "Fotosintesis y respiracion")
         self.assertContains(page, "Regenerar resumen")
@@ -107,6 +112,7 @@ class SummaryGenerationTests(TestCase):
         self.assertContains(page, "Resumenes por clase")
         resp = self.client.post(f"/cursos/{self.course.pk}/resumen/")
         self.assertEqual(resp.status_code, 302)
+        job_queue._process_summary_job(SummaryJob.objects.get(kind=SummaryJob.Kind.COURSE).pk)
         detail = self.client.get(f"/cursos/{self.course.pk}/")
         self.assertContains(detail, "Resumen del curso")
         lesson = self.client.get(f"/clase/{self.job.pk}/")

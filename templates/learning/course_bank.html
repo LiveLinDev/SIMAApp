@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Banco - {{ course.name }}{% endblock %}
+{% block content %}
+<section class="ld-header">
+  <div>
+    <a href="{% url 'course_detail' course.pk %}" class="back-link">&larr; {{ course.name }}</a>
+    <h1>Banco de preguntas del curso</h1>
+    <p class="muted">Dificultad generada frente a la calibrada con respuestas reales (se usa a partir de {{ calibration_min }} observaciones), uso y calidad de cada pregunta.</p>
+  </div>
+</section>
+
+<div class="bank-stats">
+  <div><strong>{{ report.total }}</strong><span>preguntas en el banco</span></div>
+  <div><strong>{{ report.used }}</strong><span>ya respondidas</span></div>
+  <div><strong>{{ report.calibrated }}</strong><span>con dificultad calibrada</span></div>
+  <div><strong>{% if report.mean_drift is not None %}{{ report.mean_drift }}{% else %}&ndash;{% endif %}</strong><span>desvio medio |b calibrada &minus; b generada|</span></div>
+  <div><strong>{{ report.flagged }}</strong><span>apartadas por calidad</span></div>
+</div>
+
+{% if report.by_topic %}
+<p class="progress-label">Temas: {% for topic, n in report.by_topic %}<span class="topic-chip">{{ topic }} &middot; {{ n }}</span> {% endfor %}</p>
+{% endif %}
+
+<div class="bank-table-wrap">
+<table class="bank-table">
+  <thead>
+    <tr><th>#</th><th>Clase</th><th>Tema</th><th>Bloom</th><th>Enunciado</th><th>b gen.</th><th>b calib.</th><th>Intentos</th><th>Acierto</th><th>Estado</th></tr>
+  </thead>
+  <tbody>
+  {% for r in report.rows %}
+    <tr>
+      <td class="num">{{ r.id }}</td>
+      <td>{{ r.source|truncatechars:28 }}{% if r.timestamp %}<br><small class="muted">min {{ r.timestamp }}</small>{% endif %}</td>
+      <td>{{ r.topic }}</td>
+      <td>{{ r.bloom }}</td>
+      <td>{{ r.prompt|truncatechars:90 }}</td>
+      <td class="num">{{ r.b }}</td>
+      <td class="num">{% if r.b_calibrated is not None %}{{ r.b_calibrated }}{% if not r.calibrated %}<small class="muted">*</small>{% endif %}{% else %}&ndash;{% endif %}</td>
+      <td class="num">{{ r.attempts }}</td>
+      <td class="num">{% if r.accuracy is not None %}{{ r.accuracy }}%{% else %}&ndash;{% endif %}</td>
+      <td>{% if r.flag %}<span class="bank-flag bank-flag--{{ r.flag }}">{% if r.flag == 'too_easy' %}muy facil{% else %}sospechosa{% endif %}</span>{% elif r.quiz_type == 'reinforcement' %}<span class="bank-flag">refuerzo</span>{% endif %}</td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="10" class="muted">El banco se llena con cada clase lista.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+<p class="muted" style="font-size:.8rem;margin-top:8px">* calibracion en curso: aun no alcanza las {{ calibration_min }} observaciones minimas.</p>
+
+<div class="bank-actions">
+  <a class="secondary-button" href="{% url 'course_bank_csv' course.pk %}">Descargar banco (CSV)</a>
+  <a class="secondary-button" href="{% url 'course_answers_csv' course.pk %}">Descargar mis respuestas (CSV)</a>
+</div>
+{% endblock %}

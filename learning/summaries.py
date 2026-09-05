@@ -20,7 +20,9 @@ import re
 from django.db import transaction
 
 from .credits import consume_credits, estimate_summary_cost, has_enough_credits, refund_credits
-from .models import ClassSession, Course, CreditLedgerEntry, LessonJob, Profile, Summary
+from django.utils import timezone
+
+from .models import ClassSession, Course, CreditLedgerEntry, LessonJob, Profile, Summary, SummaryJob
 
 logger = logging.getLogger(__name__)
 
@@ -134,33 +136,52 @@ def _class_session_for(job: LessonJob, create: bool = False) -> ClassSession | N
     return session
 
 
-def generate_class_summary(user, job: LessonJob, backend: str = "auto") -> Summary:
-    """Genera (o regenera) el resumen estructurado de una clase. Cobra creditos y reembolsa si falla."""
-    from .services import call_ai, resolve_backend  # import perezoso: services carga dependencias pesadas
+def _class_source(job: LessonJob) -> str:
+    return (job.transcript or job.source_text or "").strip()
 
-    transcript = (job.transcript or job.source_text or "").strip()
-    if len(transcript) < 200:
+
+def check_class_summary(job: LessonJob):
+    if len(_class_source(job)) < 200:
         raise SummaryUnavailable("La clase no tiene transcripcion suficiente para resumir.")
     if not job.course_id:
         raise SummaryUnavailable("La clase debe pertenecer a un curso para generar su resumen.")
-    session = _class_session_for(job, create=True)
-    resolved = resolve_backend(backend or "auto")
-    profile, amount = _charge(user, job.course, session, resolved, f"clase {job.title}")
-    try:
-        raw = call_ai(build_class_summary_prompt(job.title, transcript, job.corrected_output or job.toon_output), backend=resolved, role="generation")
-        parsed = parse_summary_response(raw, fallback_title=f"Resumen de {job.title}")
-        if not parsed["content"]:
-            raise RuntimeError("El modelo no devolvio contenido para el resumen.")
-    except Exception as exc:
-        refund_credits(profile, amount, course=job.course, class_session=session, description="Reembolso: resumen fallido")
-        logger.warning("Resumen de clase %s fallo: %s", job.pk, exc)
-        raise SummaryUnavailable(f"No se pudo generar el resumen: {exc}") from exc
+
+
+def build_class_summary(job: LessonJob, backend: str) -> dict:
+    """Llama al modelo y devuelve el resumen parseado (sin cobrar ni guardar)."""
+    from .services import call_ai  # import perezoso: services carga dependencias pesadas
+
+    raw = call_ai(build_class_summary_prompt(job.title, _class_source(job), job.corrected_output or job.toon_output), backend=backend, role="generation")
+    parsed = parse_summary_response(raw, fallback_title=f"Resumen de {job.title}")
+    if not parsed["content"]:
+        raise RuntimeError("El modelo no devolvio contenido para el resumen.")
+    return parsed
+
+
+def store_class_summary(job: LessonJob, session: ClassSession | None, parsed: dict) -> Summary:
     with transaction.atomic():
         summary, _ = Summary.objects.update_or_create(
             course=job.course, class_session=session, kind=Summary.Kind.STRUCTURED,
             defaults={"title": parsed["title"], "content": parsed["content"], "key_concepts": parsed["key_concepts"]},
         )
     return summary
+
+
+def generate_class_summary(user, job: LessonJob, backend: str = "auto") -> Summary:
+    """Version sincrona: cobra, genera y guarda (reembolsa si falla). La cola usa run_summary_job."""
+    from .services import resolve_backend
+
+    check_class_summary(job)
+    session = _class_session_for(job, create=True)
+    resolved = resolve_backend(backend or "auto")
+    profile, amount = _charge(user, job.course, session, resolved, f"clase {job.title}")
+    try:
+        parsed = build_class_summary(job, resolved)
+    except Exception as exc:
+        refund_credits(profile, amount, course=job.course, class_session=session, description="Reembolso: resumen fallido")
+        logger.warning("Resumen de clase %s fallo: %s", job.pk, exc)
+        raise SummaryUnavailable(f"No se pudo generar el resumen: {exc}") from exc
+    return store_class_summary(job, session, parsed)
 
 
 def class_summary_for(job: LessonJob) -> Summary | None:
@@ -193,30 +214,145 @@ def _course_sections(course: Course) -> list[tuple[str, str]]:
     return sections
 
 
-def generate_course_summary(user, course: Course, backend: str = "auto") -> Summary:
-    """Resumen acumulado del curso; prioriza los temas debiles del perfil adaptativo."""
-    from .adaptive import get_profile  # import perezoso (adaptive importa summaries indirectamente)
-    from .services import call_ai, resolve_backend
-
+def check_course_summary(course: Course) -> list[tuple[str, str]]:
     sections = _course_sections(course)
     if not sections:
         raise SummaryUnavailable("El curso no tiene clases con contenido para resumir.")
+    return sections
+
+
+def build_course_summary(user, course: Course, backend: str, sections=None) -> dict:
+    from .adaptive import get_profile  # import perezoso (adaptive importa summaries)
+    from .services import call_ai
+
+    sections = sections or check_course_summary(course)
     profile_adaptive = get_profile(user, course)
     weak = list(profile_adaptive.weak_topics) if profile_adaptive else []
-    resolved = resolve_backend(backend or "auto")
-    profile, amount = _charge(user, course, None, resolved, f"curso {course.name}")
-    try:
-        raw = call_ai(build_course_summary_prompt(course, sections, weak), backend=resolved, role="generation")
-        parsed = parse_summary_response(raw, fallback_title=f"Resumen de {course.name}")
-        if not parsed["content"]:
-            raise RuntimeError("El modelo no devolvio contenido para el resumen.")
-    except Exception as exc:
-        refund_credits(profile, amount, course=course, description="Reembolso: resumen de curso fallido")
-        logger.warning("Resumen de curso %s fallo: %s", course.pk, exc)
-        raise SummaryUnavailable(f"No se pudo generar el resumen: {exc}") from exc
+    raw = call_ai(build_course_summary_prompt(course, sections, weak), backend=backend, role="generation")
+    parsed = parse_summary_response(raw, fallback_title=f"Resumen de {course.name}")
+    if not parsed["content"]:
+        raise RuntimeError("El modelo no devolvio contenido para el resumen.")
+    return parsed
+
+
+def store_course_summary(course: Course, parsed: dict) -> Summary:
     with transaction.atomic():
         summary, _ = Summary.objects.update_or_create(
             course=course, class_session=None, kind=Summary.Kind.COURSE_ACCUMULATED,
             defaults={"title": parsed["title"], "content": parsed["content"], "key_concepts": parsed["key_concepts"]},
         )
     return summary
+
+
+def generate_course_summary(user, course: Course, backend: str = "auto") -> Summary:
+    """Version sincrona del resumen acumulado; la cola usa run_summary_job."""
+    from .services import resolve_backend
+
+    sections = check_course_summary(course)
+    resolved = resolve_backend(backend or "auto")
+    profile, amount = _charge(user, course, None, resolved, f"curso {course.name}")
+    try:
+        parsed = build_course_summary(user, course, resolved, sections)
+    except Exception as exc:
+        refund_credits(profile, amount, course=course, description="Reembolso: resumen de curso fallido")
+        logger.warning("Resumen de curso %s fallo: %s", course.pk, exc)
+        raise SummaryUnavailable(f"No se pudo generar el resumen: {exc}") from exc
+    return store_course_summary(course, parsed)
+
+
+# ---------------------------------------------------------------------------
+# Trabajos en cola (SummaryJob): la vista encola y el worker genera
+# ---------------------------------------------------------------------------
+def _job_log(current: str, stage: str, detail: str = "") -> str:
+    stamp = timezone.localtime().strftime("%H:%M:%S")
+    line = f"[{stamp}] {stage}" + (f" - {detail}" if detail else "")
+    return f"{current}\n{line}".strip()
+
+
+def pending_summary_job(course: Course, lesson: LessonJob | None = None) -> SummaryJob | None:
+    qs = SummaryJob.objects.filter(course=course, status__in=[SummaryJob.Status.QUEUED, SummaryJob.Status.PROCESSING])
+    qs = qs.filter(lesson=lesson) if lesson is not None else qs.filter(kind=SummaryJob.Kind.COURSE)
+    return qs.first()
+
+
+def latest_summary_job(course: Course, lesson: LessonJob | None = None) -> SummaryJob | None:
+    qs = SummaryJob.objects.filter(course=course)
+    qs = qs.filter(lesson=lesson) if lesson is not None else qs.filter(kind=SummaryJob.Kind.COURSE)
+    return qs.first()
+
+
+def create_summary_job(user, course: Course, lesson: LessonJob | None = None, backend: str = "auto") -> SummaryJob:
+    """Valida, cobra los creditos y deja el trabajo en la cola. Si ya hay uno pendiente, lo devuelve sin cobrar."""
+    from .services import resolve_backend
+
+    pending = pending_summary_job(course, lesson)
+    if pending is not None:
+        return pending
+    if lesson is not None:
+        check_class_summary(lesson)
+        session = _class_session_for(lesson, create=True)
+        label = f"clase {lesson.title}"
+    else:
+        check_course_summary(course)
+        session = None
+        label = f"curso {course.name}"
+    resolved = resolve_backend(backend or "auto")
+    _profile, amount = _charge(user, course, session, resolved, label)
+    job = SummaryJob.objects.create(
+        user=user, course=course, lesson=lesson,
+        kind=SummaryJob.Kind.CLASS if lesson is not None else SummaryJob.Kind.COURSE,
+        backend=resolved, credits_charged=amount,
+        processing_log=_job_log("", "En cola", f"{label} · backend {resolved} · {amount} creditos"),
+    )
+    from .job_queue import enqueue_summary_job  # import perezoso: job_queue importa este modulo
+
+    try:
+        enqueue_summary_job(job.pk)
+    except RuntimeError as exc:  # cola llena
+        job.status = SummaryJob.Status.ERROR
+        job.error = str(exc)
+        job.save(update_fields=["status", "error", "updated_at"])
+        _refund_job(job)
+        raise SummaryUnavailable(str(exc)) from exc
+    return job
+
+
+def run_summary_job(job: SummaryJob) -> SummaryJob:
+    """La ejecuta el worker: genera, guarda y marca listo; ante error reembolsa."""
+    job.status = SummaryJob.Status.PROCESSING
+    job.processing_log = _job_log(job.processing_log, "Procesando", "Reuniendo el material.")
+    job.save(update_fields=["status", "processing_log", "updated_at"])
+    try:
+        if job.kind == SummaryJob.Kind.CLASS:
+            check_class_summary(job.lesson)
+            session = _class_session_for(job.lesson, create=True)
+            parsed = build_class_summary(job.lesson, job.backend)
+            summary = store_class_summary(job.lesson, session, parsed)
+        else:
+            parsed = build_course_summary(job.user, job.course, job.backend)
+            summary = store_course_summary(job.course, parsed)
+        job.summary = summary
+        job.status = SummaryJob.Status.DONE
+        job.error = ""
+        job.completed_at = timezone.now()
+        job.processing_log = _job_log(job.processing_log, "Listo", f"{len(parsed['key_concepts'])} conceptos clave.")
+        job.save()
+    except Exception as exc:  # noqa: BLE001 - queda en el trabajo y se reembolsa
+        from .services import clean_ai_error
+
+        logger.exception("Resumen %s fallo", job.pk)
+        job.status = SummaryJob.Status.ERROR
+        job.error = clean_ai_error(exc)
+        job.processing_log = _job_log(job.processing_log, "Error", job.error)
+        job.save(update_fields=["status", "error", "processing_log", "updated_at"])
+        _refund_job(job)
+    return job
+
+
+def _refund_job(job: SummaryJob):
+    if job.credits_charged <= 0 or job.credits_refunded:
+        return
+    profile, _ = Profile.objects.get_or_create(user=job.user)
+    refund_credits(profile, job.credits_charged, course=job.course, description="Reembolso: el resumen fallo", metadata={"summary_job": job.pk})
+    job.credits_refunded = True
+    job.save(update_fields=["credits_refunded", "updated_at"])

@@ -34,6 +34,10 @@ def _should_requeue_on_start() -> bool:
       solo el hijo (RUN_MAIN=true) atiende peticiones y debe reencolar.
     - migrate, test, shell y demas comandos no reencolan nunca.
     """
+    from django.conf import settings
+
+    if str(getattr(settings, "SIMA_QUEUE_MODE", "thread")).strip().lower() == "db":
+        return False  # el worker aparte (run_worker) se encarga de lo pendiente
     override = os.environ.get("SIMA_REQUEUE_ON_START", "").strip().lower()
     if override in {"1", "true", "yes"}:
         return True

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import json
 import re
 
@@ -8,6 +9,7 @@ from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpResponse, JsonResponse
+from django.db import connection
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -1864,17 +1866,23 @@ def class_summary(request, pk):
     job = get_object_or_404(LessonJob, pk=pk, user=request.user)
     if request.method == "POST":
         try:
-            summaries.generate_class_summary(request.user, job, backend=request.POST.get("backend", "auto"))
-            messages.success(request, "Resumen de la clase listo.")
+            if not job.course_id:
+                raise summaries.SummaryUnavailable("La clase debe pertenecer a un curso para generar su resumen.")
+            summaries.create_summary_job(request.user, job.course, lesson=job, backend=request.POST.get("backend", "auto"))
+            messages.info(request, "Resumen en cola: esta pagina se actualiza sola cuando este listo.")
         except summaries.SummaryUnavailable as exc:
             messages.warning(request, str(exc))
         return redirect("class_summary", pk=job.pk)
     summary = summaries.class_summary_for(job)
-    if summary is not None and job.course_id:
+    pending_job = summaries.pending_summary_job(job.course, job) if job.course_id else None
+    last_job = summaries.latest_summary_job(job.course, job) if job.course_id else None
+    if summary is not None and job.course_id and pending_job is None:
         _register_summary_review(request.user, job.course, summary.class_session)
     return render(request, "learning/class_summary.html", {
         "job": job,
         "summary": summary,
+        "pending_job": pending_job,
+        "last_job": last_job,
         "can_generate": bool(job.course_id) and len((job.transcript or job.source_text or "").strip()) >= 200,
         "summary_cost": summaries.estimate_summary_cost("auto").amount,
     })
@@ -1885,13 +1893,15 @@ def course_summary(request, pk):
     course = get_object_or_404(Course, pk=pk, user=request.user, is_archived=False)
     if request.method == "POST":
         try:
-            summaries.generate_course_summary(request.user, course, backend=request.POST.get("backend", "auto"))
-            messages.success(request, "Resumen del curso listo.")
+            summaries.create_summary_job(request.user, course, backend=request.POST.get("backend", "auto"))
+            messages.info(request, "Resumen del curso en cola: esta pagina se actualiza sola cuando este listo.")
         except summaries.SummaryUnavailable as exc:
             messages.warning(request, str(exc))
         return redirect("course_summary", pk=course.pk)
     summary = summaries.course_summary_for(course)
-    if summary is not None:
+    pending_job = summaries.pending_summary_job(course)
+    last_job = summaries.latest_summary_job(course)
+    if summary is not None and pending_job is None:
         _register_summary_review(request.user, course)
     class_summaries = list(
         adaptive.Summary.objects.filter(course=course, kind=adaptive.Summary.Kind.STRUCTURED).select_related("class_session")
@@ -1903,6 +1913,80 @@ def course_summary(request, pk):
         "class_summaries": class_summaries,
         "class_summary_count": len(class_summaries),
         "weak_topics": list(profile.weak_topics) if profile else [],
+        "pending_job": pending_job,
+        "last_job": last_job,
         "can_generate": bool(class_summaries) or LessonJob.objects.filter(course=course).exclude(transcript="", source_text="").exists(),
         "summary_cost": summaries.estimate_summary_cost("auto").amount,
     })
+
+
+# ══════════════════════════════════════════════════════════════════
+# BANCO DEL CURSO (evidencia de calibracion) Y EXPORTACIONES
+# ══════════════════════════════════════════════════════════════════
+
+@login_required
+def course_bank(request, pk):
+    course = get_object_or_404(Course, pk=pk, user=request.user, is_archived=False)
+    report = adaptive.bank_report(course)
+    return render(request, "learning/course_bank.html", {"course": course, "report": report, "calibration_min": adaptive.CALIBRATION_MIN})
+
+
+def _csv_response(filename: str, header: list[str], rows):
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    response.write("\ufeff")  # BOM para que Excel abra UTF-8 sin preguntar
+    writer = csv.writer(response, delimiter=";")
+    writer.writerow(header)
+    for row in rows:
+        writer.writerow(row)
+    return response
+
+
+@login_required
+def course_bank_csv(request, pk):
+    course = get_object_or_404(Course, pk=pk, user=request.user)
+    report = adaptive.bank_report(course)
+    return _csv_response(
+        f"banco_curso_{course.pk}.csv",
+        ["id", "clase", "tema", "bloom", "enunciado", "b_generada", "b_calibrada", "desvio", "intentos", "acierto_pct", "bandera"],
+        ((r["id"], r["source"], r["topic"], r["bloom"], r["prompt"], r["b"], r["b_calibrated"], r["drift"], r["attempts"], r["accuracy"], r["flag"]) for r in report["rows"]),
+    )
+
+
+@login_required
+def course_answers_csv(request, pk):
+    course = get_object_or_404(Course, pk=pk, user=request.user)
+    answers = (
+        adaptive.StudentAnswer.objects.filter(user=request.user, course=course)
+        .select_related("question", "practice_session")
+        .order_by("answered_at")
+    )
+    return _csv_response(
+        f"respuestas_curso_{course.pk}.csv",
+        ["fecha", "sesion", "modo", "pregunta_id", "tema", "bloom", "correcta", "theta_antes", "theta_despues"],
+        ((timezone.localtime(a.answered_at).strftime("%Y-%m-%d %H:%M:%S"), a.practice_session_id,
+          a.practice_session.focus if a.practice_session_id else "", a.question_id, a.question.topic, a.question.bloom_level,
+          1 if a.is_correct else 0, a.theta_before, a.theta_after) for a in answers),
+    )
+
+
+def health(request):
+    """Estado minimo para monitoreo: BD, cola y backend configurado. Sin datos sensibles."""
+    from .job_queue import queue_snapshot
+
+    status = {"status": "ok"}
+    try:
+        connection.ensure_connection()
+        status["database"] = "ok"
+    except Exception as exc:  # noqa: BLE001
+        status["status"] = "degraded"
+        status["database"] = f"error: {exc.__class__.__name__}"
+    try:
+        status["queue"] = queue_snapshot()
+    except Exception as exc:  # noqa: BLE001
+        status["status"] = "degraded"
+        status["queue"] = f"error: {exc.__class__.__name__}"
+    status["cloud_backend"] = bool(getattr(settings, "CLOUD_API_KEY", ""))
+    status["cloud_model"] = getattr(settings, "CLOUD_MODEL", "")
+    status["whisper_model"] = getattr(settings, "WHISPER_MODEL", "")
+    return JsonResponse(status, status=200 if status["status"] == "ok" else 503)

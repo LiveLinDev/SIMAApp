@@ -34,8 +34,8 @@
   <section class="quiz-panel">
     <div class="pr-summary">
       <div class="pr-stat pr-stat--main">
-        <strong>{{ feedback.accuracy }}%</strong>
-        <span>{{ feedback.correct }} de {{ feedback.total }} correctas</span>
+        <strong>{% if feedback.is_exam %}{{ feedback.grade }} / 20{% else %}{{ feedback.accuracy }}%{% endif %}</strong>
+        <span>{{ feedback.correct }} de {{ feedback.total }} correctas{% if feedback.is_exam %} &middot; simulacro{% endif %}</span>
       </div>
       <div class="pr-stat">
         <strong>Nivel {{ feedback.level_value }}</strong>

@@ -77,6 +77,11 @@ CALIBRATION_MIN = 3            # observaciones antes de usar la dificultad calib
 RANDOMESQUE_K = 5              # candidatos entre los que se sortea el siguiente item
 PRIOR_SD_UNKNOWN = 1.0         # prior N(0,1) cuando el curso aun no conoce al estudiante
 PRIOR_SD_MIN = 0.5             # el prior nunca se vuelve mas estrecho que esto
+HALF_LIFE_BASE_DAYS = 3.0      # vida media de la retencion tras un solo acierto
+HALF_LIFE_GROWTH = 2.0         # cada acierto consecutivo la duplica (regresion de vida media simplificada)
+HALF_LIFE_MAX_DAYS = 90.0
+RISK_THRESHOLD = WEAK_THRESHOLD  # dominio efectivo (dominio x retencion) bajo esto = en riesgo de olvido
+EXAM_DEFAULT_ITEMS = 15
 _rng = random.Random()
 
 DIFFICULTY_FROM_INT = {1: Difficulty.LOW, 2: Difficulty.LOW, 3: Difficulty.MEDIUM, 4: Difficulty.HIGH, 5: Difficulty.HIGH}
@@ -296,7 +301,11 @@ def update_profile(user, course: Course, session: PracticeSession | None = None)
             bucket[key][0] += weight * (1.0 if answer.is_correct else 0.0)
             bucket[key][1] += weight
 
-    def _summary(seq: dict, acc: dict, labels: bool = False) -> dict:
+    last_seen: dict[str, object] = {}
+    for answer in answers:
+        last_seen[answer.question.topic or "General"] = answer.answered_at
+
+    def _summary(seq: dict, acc: dict, labels: bool = False, with_forgetting: bool = False) -> dict:
         out = {}
         for key, outcomes in seq.items():
             entry = {
@@ -306,10 +315,13 @@ def update_profile(user, course: Course, session: PracticeSession | None = None)
             }
             if labels:
                 entry["label"] = BLOOM_LABELS.get(key, key)
+            if with_forgetting:
+                entry["half_life_days"] = half_life_days(outcomes)
+                entry["last_answered"] = last_seen[key].isoformat() if key in last_seen else None
             out[key] = entry
         return out
 
-    mastery_by_topic = _summary(topic_seq, topic_acc)
+    mastery_by_topic = _summary(topic_seq, topic_acc, with_forgetting=True)
     bloom_mastery = _summary(bloom_seq, bloom_acc, labels=True)
     weak = sorted(
         (t for t, v in mastery_by_topic.items() if v["answers"] >= MIN_ANSWERS_FOR_TOPIC and v["mastery"] < WEAK_THRESHOLD),
@@ -350,6 +362,59 @@ class _Response:
     topic: str
 
 
+def half_life_days(outcomes: list[bool]) -> float:
+    """
+    Vida media de la retencion de un tema (regresion de vida media simplificada,
+    Settles & Meeder 2016): parte de HALF_LIFE_BASE_DAYS y se duplica con cada
+    acierto consecutivo al final de la secuencia; un fallo la devuelve a la base.
+    """
+    streak = 0
+    for ok in reversed(outcomes):
+        if not ok:
+            break
+        streak += 1
+    if streak == 0:
+        return HALF_LIFE_BASE_DAYS
+    return min(HALF_LIFE_MAX_DAYS, HALF_LIFE_BASE_DAYS * HALF_LIFE_GROWTH ** (streak - 1))
+
+
+def topic_retention(entry: dict, now=None) -> float:
+    """Fraccion de lo aprendido que se conserva hoy: 2^(-dias / vida media)."""
+    last = entry.get("last_answered")
+    if not last:
+        return 1.0
+    now = now or timezone.now()
+    try:
+        last_dt = timezone.datetime.fromisoformat(last)
+    except (TypeError, ValueError):
+        return 1.0
+    if timezone.is_naive(last_dt):
+        last_dt = timezone.make_aware(last_dt)
+    days = max(0.0, (now - last_dt).total_seconds() / 86400.0)
+    half_life = float(entry.get("half_life_days") or HALF_LIFE_BASE_DAYS)
+    return 0.5 ** (days / max(half_life, 0.1))
+
+
+def at_risk_topics(profile: AdaptiveProfile | None, now=None) -> list[dict]:
+    """
+    Temas que se dominaban pero cuya retencion estimada ya cayo bajo el umbral:
+    conviene repasarlos antes de que haya que reaprenderlos.
+    """
+    if profile is None:
+        return []
+    rows = []
+    for topic, entry in (profile.mastery_by_topic or {}).items():
+        if entry.get("answers", 0) < MIN_ANSWERS_FOR_TOPIC or entry.get("mastery", 0.0) < WEAK_THRESHOLD:
+            continue
+        retention = topic_retention(entry, now)
+        effective = entry["mastery"] * retention
+        if effective < RISK_THRESHOLD:
+            rows.append({"topic": topic, "mastery": round(entry["mastery"], 3), "retention": round(retention, 3),
+                         "effective": round(effective, 3), "half_life_days": entry.get("half_life_days")})
+    rows.sort(key=lambda r: r["effective"])
+    return rows
+
+
 def _session_responses(session: PracticeSession) -> list[_Response]:
     answers = session.answers.select_related("question").order_by("answered_at")
     return [
@@ -376,13 +441,20 @@ def select_next_item(session: PracticeSession, bank: list[BankItem], responses: 
     candidates = [item for item in bank if item.question_id not in served]
     if not candidates:
         return None
-    fresh = [item for item in candidates if item.question_id not in _recently_correct_ids(session.user, session.course)]
-    if len(fresh) >= 3:
-        candidates = fresh
+    exam = session.focus == PracticeSession.Focus.EXAM
+    if not exam:
+        fresh = [item for item in candidates if item.question_id not in _recently_correct_ids(session.user, session.course)]
+        if len(fresh) >= 3:
+            candidates = fresh
     if session.focus == PracticeSession.Focus.WEAK and profile.weak_topics:
         weak_only = [item for item in candidates if item.topic in profile.weak_topics]
         if len(weak_only) >= 2:
             candidates = weak_only
+    if session.focus == PracticeSession.Focus.RISK:
+        risky = {row["topic"] for row in at_risk_topics(profile)}
+        risk_only = [item for item in candidates if item.topic in risky]
+        if len(risk_only) >= 2:
+            candidates = risk_only
 
     theta = session.theta
     mastery = profile.mastery_by_topic or {}
@@ -390,11 +462,19 @@ def select_next_item(session: PracticeSession, bank: list[BankItem], responses: 
     bank_bloom = Counter(item.bloom for item in bank)
     total = max(len(bank), 1)
 
+    answered_topic = Counter(r.topic for r in responses)
+    bank_topic = Counter(item.topic for item in bank)
+
     def score(item: BankItem) -> float:
         information = item_information(item, theta)
         expected_share = bank_bloom[item.bloom] / total
         current_share = answered_bloom[item.bloom] / max(len(responses), 1)
         bloom_bonus = max(expected_share - current_share, 0.0) * 0.35
+        if exam:
+            # Simulacro: cobertura proporcional de temas, sin sesgo hacia lo debil.
+            topic_expected = bank_topic[item.topic] / total
+            topic_current = answered_topic[item.topic] / max(len(responses), 1)
+            return information + bloom_bonus + max(topic_expected - topic_current, 0.0) * 0.6
         topic_info = mastery.get(item.topic)
         if topic_info is None:
             topic_bonus = 0.15  # tema nunca evaluado: conviene medirlo
@@ -425,11 +505,13 @@ def start_practice(
     focus = focus if focus in PracticeSession.Focus.values else PracticeSession.Focus.BALANCED
     if focus == PracticeSession.Focus.WEAK and not profile.weak_topics:
         focus = PracticeSession.Focus.BALANCED
+    if focus == PracticeSession.Focus.RISK and not at_risk_topics(profile):
+        focus = PracticeSession.Focus.BALANCED
     try:
         target = int(target_count)
     except (TypeError, ValueError):
-        target = 10
-    target = max(3, min(target, len(bank), 25))
+        target = EXAM_DEFAULT_ITEMS if focus == PracticeSession.Focus.EXAM else 10
+    target = max(3, min(target, len(bank), 30 if focus == PracticeSession.Focus.EXAM else 25))
 
     session = PracticeSession.objects.create(
         user=user,
@@ -485,7 +567,8 @@ def answer_question(session: PracticeSession, question_id: int, option_id) -> St
     session.correct_count = sum(1 for r in responses if r.is_correct)
     answered = len(responses)
     exhausted = answered >= len(bank)
-    precise = answered >= MIN_ITEMS_BEFORE_SE_STOP and se <= SE_STOP
+    # Un simulacro tiene longitud fija: no se detiene antes por precision.
+    precise = session.focus != PracticeSession.Focus.EXAM and answered >= MIN_ITEMS_BEFORE_SE_STOP and se <= SE_STOP
     if answered >= session.target_count or precise or exhausted:
         finish_session(session, bank)
         return answer
@@ -597,6 +680,9 @@ def finish_session(session: PracticeSession, bank: list[BankItem] | None = None)
         "weak_topics": profile.weak_topics,
         "strong_topics": profile.strong_topics,
         "recommendations": [{"id": r.pk, "title": r.title, "message": r.message} for r in recommendations],
+        "focus": session.focus,
+        "is_exam": session.focus == PracticeSession.Focus.EXAM,
+        "grade": round(20 * correct_count / total, 1) if total else 0.0,  # escala vigesimal (Peru)
     }
     session.feedback = feedback
     session.save(update_fields=["feedback", "updated_at"])
@@ -729,6 +815,8 @@ def course_overview(user, course: Course) -> dict:
         "concepts": list(Summary.objects.filter(course=course, kind=Summary.Kind.CONCEPT)[:5]),
         "reinforcement_cost": estimate_reinforcement_cost("auto").amount,
         "course_summary": course_summary_for(course),
+        "at_risk_topics": at_risk_topics(profile),
+        "exam_items": min(EXAM_DEFAULT_ITEMS, bank_size) if bank_size else 0,
         "class_summary_count": Summary.objects.filter(course=course, kind=Summary.Kind.STRUCTURED).count(),
         "progress": progress_panel(user, course),
     }
@@ -901,6 +989,13 @@ def daily_plan(user, course: Course) -> list[dict]:
                                         f"material nuevo a tu medida · {estimate_reinforcement_cost('auto').amount} creditos",
                                         reverse("reinforcement_start", args=[course.pk]), {}, 4))
 
+    risky = at_risk_topics(profile, now)
+    if risky:
+        topic = risky[0]["topic"]
+        actions.append(_post_action("risk", f"Repasa «{topic}» antes de olvidarlo",
+                                    f"lo dominabas, pero su retencion estimada cayo al {round(100 * risky[0]['retention'])} %",
+                                    practice_url, {"target_count": 6, "focus": "risk"}, 2))
+
     if last_session and last_session.feedback.get("failed") and last_session.completed_at >= now - timedelta(days=2):
         n = len(last_session.feedback["failed"])
         actions.append(_link_action("failures", f"Revisa tus {n} fallo{'s' if n != 1 else ''}",
@@ -941,3 +1036,41 @@ def today_progress(user) -> dict:
     goal = max(1, prefs.daily_goal if prefs else 10)
     done = answered + reviewed
     return {"done": done, "answered": answered, "reviewed": reviewed, "goal": goal, "pct": min(100, round(100 * done / goal))}
+
+
+# ---------------------------------------------------------------------------
+# 9. Salud del banco (evidencia de calibracion para el curso)
+# ---------------------------------------------------------------------------
+def bank_report(course: Course) -> dict:
+    """Filas por pregunta con dificultad generada vs calibrada, uso y bandera de calidad."""
+    questions = (
+        Question.objects.filter(quiz__course=course, quiz__quiz_type__in=PRACTICE_QUIZ_TYPES)
+        .select_related("quiz", "quiz__class_session")
+        .order_by("quiz__class_session__created_at", "quiz_id", "order")
+    )
+    rows = []
+    drift_sum, drift_n = 0.0, 0
+    for q in questions:
+        accuracy = round(100 * q.correct_count / q.attempts) if q.attempts else None
+        drift = round(q.b_calibrated - q.irt_b, 2) if q.b_calibrated is not None else None
+        if drift is not None and q.calibration_count >= CALIBRATION_MIN:
+            drift_sum += abs(drift)
+            drift_n += 1
+        source = q.quiz.class_session.title if q.quiz.class_session_id else q.quiz.get_quiz_type_display()
+        rows.append({
+            "id": q.pk, "prompt": q.prompt, "topic": q.topic, "bloom": q.bloom_level,
+            "bloom_label": BLOOM_LABELS.get(q.bloom_level, q.bloom_level),
+            "b": round(q.irt_b, 2), "b_calibrated": round(q.b_calibrated, 2) if q.b_calibrated is not None else None,
+            "drift": drift, "calibrated": q.calibration_count >= CALIBRATION_MIN,
+            "attempts": q.attempts, "accuracy": accuracy, "flag": q.quality_flag, "source": source,
+            "timestamp": format_timestamp(q.source_timestamp_seconds), "quiz_type": q.quiz.quiz_type,
+        })
+    return {
+        "rows": rows,
+        "total": len(rows),
+        "calibrated": sum(1 for r in rows if r["calibrated"]),
+        "flagged": sum(1 for r in rows if r["flag"]),
+        "used": sum(1 for r in rows if r["attempts"]),
+        "mean_drift": round(drift_sum / drift_n, 2) if drift_n else None,
+        "by_topic": sorted(Counter(r["topic"] for r in rows).items()),
+    }

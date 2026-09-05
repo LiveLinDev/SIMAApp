@@ -7,7 +7,7 @@
     <a href="{% url 'course_detail' course.pk %}" class="back-link">&larr; {{ course.name }}</a>
     <h1>Practica adaptativa</h1>
     <p class="muted">
-      {% if session.focus == 'weak' %}Modo refuerzo: preguntas de tus temas mas debiles.{% else %}Las preguntas se ajustan a tu nivel a medida que respondes.{% endif %}
+      {% if lesson %}Solo esta clase: {{ lesson.title }} &middot; {% endif %}{% if session.focus == 'weak' %}Modo refuerzo: preguntas de tus temas mas debiles.{% else %}Las preguntas se ajustan a tu nivel a medida que respondes.{% endif %}
     </p>
   </div>
 </section>
@@ -83,6 +83,13 @@
         <input type="hidden" name="target_count" value="{{ session.target_count }}">
         <input type="hidden" name="focus" value="weak">
         <button class="secondary-button" type="submit">Reforzar temas debiles</button>
+      </form>
+      {% endif %}
+      {% if feedback.weak_topics %}
+      <form method="post" action="{% url 'reinforcement_start' course.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="practice_session" value="{{ session.pk }}">
+        <button class="secondary-button" type="submit">Generar refuerzo ({{ reinforcement_cost }} creditos)</button>
       </form>
       {% endif %}
       <a class="secondary-button" href="{% url 'course_detail' course.pk %}">Volver al curso</a>

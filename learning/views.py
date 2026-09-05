@@ -10,10 +10,11 @@ from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpResponse, JsonResponse
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 
-from . import adaptive
+from . import adaptive, adaptive_generation
 from .cat import BLOOM_LABELS, build_bank, choose_next_item, estimate_theta, option_index, parse_cat_params, theta_to_level
 from .credits import (
     REGENERATION_COST,
@@ -368,6 +369,7 @@ def lesson_detail(request, pk):
         "cat_params": cat_params,
         "bloom_stats": bloom_stats,
         "key_topics": sorted(key_topics),
+        "practice_sessions": adaptive.PracticeSession.objects.filter(user=request.user, lesson=job)[:8],
         "quiz_attempts": job.quiz_attempts.filter(user=request.user)[:8],
         "pipeline_step": pipeline_step,
         "pipeline_total": pipeline_total,
@@ -400,33 +402,28 @@ def lesson_job_status(request, pk):
 
 @login_required
 def start_quiz(request, pk):
+    """
+    Reemplazo del quiz por clase: abre una practica adaptativa del curso limitada
+    al banco de esta clase, con la memoria del perfil del curso.
+    """
     if request.method != "POST":
         raise Http404()
     job = _get_accessible_job(request.user, pk)
-    mini_text = job.corrected_output or job.toon_output
-    items, params = build_bank(mini_text)
-    if not items:
-        messages.warning(request, "Esta clase aún no tiene ítems válidos para iniciar un quiz.")
+    if not job.course_id:
+        messages.warning(request, "Asigna esta clase a un curso para practicarla con seguimiento.")
         return redirect("lesson_detail", pk=job.pk)
-
-    dropped = params.get("bank_trace", {}).get("dropped_quality_count", 0)
-    if dropped:
-        messages.info(request, f"Se omitieron {dropped} items con alternativas incompletas o incoherentes para mantener el quiz consistente.")
-
-    requested = int(request.POST.get("target_count", params["max_items"]))
-    target_count = max(1, min(requested, len(items), params["max_items"]))
-    attempt = QuizAttempt.objects.create(
-        user=request.user,
-        lesson=job,
-        target_count=target_count,
-        theta=params["theta_init"],
-    )
-    next_item = choose_next_item(items, [], attempt.theta, [], target_count)
-    attempt.current_item_id = next_item.id
-    attempt.selected_item_ids = [next_item.id]
-    attempt.save()
-    return redirect("quiz_attempt", pk=job.pk, attempt_id=attempt.pk)
-
+    try:
+        session = adaptive.start_practice(
+            request.user,
+            job.course,
+            target_count=request.POST.get("target_count", 10),
+            focus=request.POST.get("focus", "balanced"),
+            lesson=job,
+        )
+    except adaptive.NoItemsError:
+        messages.warning(request, "Esta clase aun no tiene items validos para practicar.")
+        return redirect("lesson_detail", pk=job.pk)
+    return redirect("practice_session", pk=job.course_id, session_id=session.pk)
 
 @login_required
 def quiz_attempt(request, pk, attempt_id):
@@ -1891,3 +1888,49 @@ def recommendation_update(request, pk, rec_id):
     except ValueError:
         raise Http404()
     return redirect("course_detail", pk=course.pk)
+
+
+# ══════════════════════════════════════════════════════════════════
+# REFUERZO ADAPTATIVO (generacion dirigida al perfil)
+# ══════════════════════════════════════════════════════════════════
+
+@login_required
+def reinforcement_start(request, pk):
+    if request.method != "POST":
+        raise Http404()
+    course = get_object_or_404(Course, pk=pk, user=request.user, is_archived=False)
+    practice_session = None
+    if request.POST.get("practice_session"):
+        practice_session = adaptive.PracticeSession.objects.filter(
+            pk=request.POST.get("practice_session"), user=request.user, course=course
+        ).first()
+    topics = [t.strip() for t in request.POST.getlist("topic") if t.strip()]
+    try:
+        job = adaptive_generation.create_reinforcement_job(
+            request.user, course, practice_session=practice_session, topics=topics,
+            requested_items=request.POST.get("items", adaptive_generation.DEFAULT_ITEMS),
+        )
+    except adaptive_generation.ReinforcementUnavailable as exc:
+        messages.warning(request, str(exc))
+        return redirect("course_detail", pk=course.pk)
+    except RuntimeError as exc:  # cola llena
+        messages.warning(request, str(exc))
+        return redirect("course_detail", pk=course.pk)
+    return redirect("reinforcement_detail", pk=course.pk, job_id=job.pk)
+
+
+@login_required
+def reinforcement_detail(request, pk, job_id):
+    course = get_object_or_404(Course, pk=pk, user=request.user)
+    job = get_object_or_404(adaptive.ReinforcementJob, pk=job_id, course=course, user=request.user)
+    summaries = list(adaptive.Summary.objects.filter(pk__in=job.summary_ids or []))
+    flashcards_url = ""
+    if job.quiz_id and job.quiz.class_session_id and job.quiz.class_session.legacy_lesson_job_id:
+        flashcards_url = reverse("flashcards", args=[job.quiz.class_session.legacy_lesson_job_id])
+    return render(request, "learning/reinforcement_detail.html", {
+        "course": course,
+        "job": job,
+        "summaries": summaries,
+        "question_count": job.quiz.questions.count() if job.quiz_id else 0,
+        "flashcards_url": flashcards_url,
+    })

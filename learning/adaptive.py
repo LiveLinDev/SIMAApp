@@ -41,10 +41,13 @@ from .models import (
     Question,
     Quiz,
     Recommendation,
+    ReinforcementJob,
     StudentAnswer,
     StudyActivity,
     StudyStreak,
+    Summary,
 )
+from .credits import estimate_reinforcement_cost
 from .parse_mini import check_option_uniformity, parse_header, parse_mini
 
 THETA_MIN, THETA_MAX = -3.0, 3.0
@@ -108,42 +111,55 @@ def sync_question_bank(job: LessonJob) -> Quiz | None:
         quiz.cat_config = {key: header.get(key, "") for key in ("m", "cat", "bd")}
         quiz.save(update_fields=["course", "title", "topic", "mini_source", "cat_config", "updated_at"])
 
-        existing = {q.external_id: q for q in quiz.questions.all().prefetch_related("options")}
-        kept_ids: set[int] = set()
-        for order, item in enumerate(assessment.items):
-            if len(item.options) != 4 or check_option_uniformity(item):
-                continue  # misma regla que build_bank(): 4 alternativas y calidad semantica
-            fields = {
-                "bloom_level": item.bloom if item.bloom in VALID_BLOOM else BloomLevel.REMEMBER,
-                "topic": (item.topic or session.main_topic or "")[:180],
-                "prompt": item.statement,
-                "difficulty": DIFFICULTY_FROM_INT.get(int(item.difficulty or 3), Difficulty.MEDIUM),
-                "irt_a": float(item.irt_a),
-                "irt_b": float(item.irt_b),
-                "irt_c": float(item.irt_c),
-                "order": order,
-            }
-            question = existing.get(item.id)
-            if question is None:
-                question = Question.objects.create(quiz=quiz, external_id=item.id, **fields)
-            else:
-                dirty = [name for name, value in fields.items() if getattr(question, name) != value]
-                if dirty:
-                    for name in dirty:
-                        setattr(question, name, fields[name])
-                    question.save(update_fields=dirty)
-            kept_ids.add(question.pk)
-
-            desired = [(opt["text"], bool(opt.get("correct"))) for opt in item.options]
-            current = [(opt.text, opt.is_correct) for opt in question.options.all()]
-            if current != desired:
-                question.options.all().delete()
-                AnswerOption.objects.bulk_create(
-                    [AnswerOption(question=question, text=text, is_correct=correct, order=i) for i, (text, correct) in enumerate(desired)]
-                )
-        # preguntas que ya no estan en el MINI y nadie ha respondido
-        quiz.questions.exclude(pk__in=kept_ids).filter(student_answers__isnull=True).delete()
+        persist_items(quiz, assessment.items, default_topic=session.main_topic or "")
     return quiz
+
+
+PRACTICE_QUIZ_TYPES = (Quiz.QuizType.ADAPTIVE, Quiz.QuizType.REINFORCEMENT)
+
+
+def persist_items(quiz: Quiz, items, default_topic: str = "", prune: bool = True) -> int:
+    """
+    Guarda items MINI como Question/AnswerOption dentro de `quiz`. Idempotente:
+    actualiza los existentes por external_id, crea los nuevos y (si prune) borra
+    los que desaparecieron y nadie respondio. Devuelve cuantos quedaron.
+    """
+    existing = {q.external_id: q for q in quiz.questions.all().prefetch_related("options")}
+    kept_ids: set[int] = set()
+    for order, item in enumerate(items):
+        if len(item.options) != 4 or check_option_uniformity(item):
+            continue  # misma regla que build_bank(): 4 alternativas y calidad semantica
+        fields = {
+            "bloom_level": item.bloom if item.bloom in VALID_BLOOM else BloomLevel.REMEMBER,
+            "topic": (item.topic or default_topic or "")[:180],
+            "prompt": item.statement,
+            "difficulty": DIFFICULTY_FROM_INT.get(int(item.difficulty or 3), Difficulty.MEDIUM),
+            "irt_a": float(item.irt_a),
+            "irt_b": float(item.irt_b),
+            "irt_c": float(item.irt_c),
+            "order": order,
+        }
+        question = existing.get(item.id)
+        if question is None:
+            question = Question.objects.create(quiz=quiz, external_id=item.id, **fields)
+        else:
+            dirty = [name for name, value in fields.items() if getattr(question, name) != value]
+            if dirty:
+                for name in dirty:
+                    setattr(question, name, fields[name])
+                question.save(update_fields=dirty)
+        kept_ids.add(question.pk)
+
+        desired = [(opt["text"], bool(opt.get("correct"))) for opt in item.options]
+        current = [(opt.text, opt.is_correct) for opt in question.options.all()]
+        if current != desired:
+            question.options.all().delete()
+            AnswerOption.objects.bulk_create(
+                [AnswerOption(question=question, text=text, is_correct=correct, order=i) for i, (text, correct) in enumerate(desired)]
+            )
+    if prune:
+        quiz.questions.exclude(pk__in=kept_ids).filter(student_answers__isnull=True).delete()
+    return len(kept_ids)
 
 
 def sync_course_bank(course: Course) -> int:
@@ -179,9 +195,13 @@ class BankItem:
         return next((opt for opt in self.options if opt.is_correct), None)
 
 
-def load_bank(course: Course) -> list[BankItem]:
+def load_bank(course: Course, lesson: LessonJob | None = None) -> list[BankItem]:
+    """Banco practicable del curso; con `lesson`, solo los items de esa clase."""
+    questions = Question.objects.filter(quiz__course=course, quiz__quiz_type__in=PRACTICE_QUIZ_TYPES)
+    if lesson is not None:
+        questions = questions.filter(quiz__class_session__legacy_lesson_job=lesson)
     questions = (
-        Question.objects.filter(quiz__course=course, quiz__quiz_type=Quiz.QuizType.ADAPTIVE)
+        questions
         .select_related("quiz")
         .prefetch_related("options")
         .order_by("quiz_id", "order", "id")
@@ -354,11 +374,15 @@ def select_next_item(session: PracticeSession, bank: list[BankItem], responses: 
     return max(candidates, key=score)
 
 
-def start_practice(user, course: Course, target_count: int = 10, focus: str = PracticeSession.Focus.BALANCED) -> PracticeSession:
+def start_practice(
+    user, course: Course, target_count: int = 10, focus: str = PracticeSession.Focus.BALANCED, lesson: LessonJob | None = None
+) -> PracticeSession:
     sync_course_bank(course)
-    bank = load_bank(course)
+    bank = load_bank(course, lesson)
     if not bank:
-        raise NoItemsError("El curso aun no tiene items validos para practicar.")
+        raise NoItemsError(
+            "Esta clase aun no tiene items validos para practicar." if lesson else "El curso aun no tiene items validos para practicar."
+        )
     profile = get_profile(user, course)
     known = profile_is_known(profile)
     theta_start = profile.theta if known else 0.0
@@ -374,6 +398,7 @@ def start_practice(user, course: Course, target_count: int = 10, focus: str = Pr
     session = PracticeSession.objects.create(
         user=user,
         course=course,
+        lesson=lesson,
         focus=focus,
         target_count=target,
         theta_start=theta_start,
@@ -414,7 +439,7 @@ def answer_question(session: PracticeSession, question_id: int, option_id) -> St
         practice_session=session,
     )
 
-    bank = load_bank(session.course)
+    bank = load_bank(session.course, session.lesson)
     by_id = {item.id: item for item in bank}
     responses = _session_responses(session)
     mle, se = estimate_theta(by_id, responses, THETA_MIN, THETA_MAX)
@@ -450,7 +475,7 @@ def answer_question(session: PracticeSession, question_id: int, option_id) -> St
 def finish_session(session: PracticeSession, bank: list[BankItem] | None = None) -> dict:
     if session.is_complete:
         return session.feedback
-    bank = bank if bank is not None else load_bank(session.course)
+    bank = bank if bank is not None else load_bank(session.course, session.lesson)
     by_id = {item.question_id: item for item in bank}
     answers = list(session.answers.select_related("question", "selected_option").order_by("answered_at"))
 
@@ -618,7 +643,7 @@ def complete_recommendation(rec: Recommendation, status: str):
 # ---------------------------------------------------------------------------
 def course_overview(user, course: Course) -> dict:
     profile = AdaptiveProfile.objects.filter(user=user, course=course).first()
-    bank_size = Question.objects.filter(quiz__course=course, quiz__quiz_type=Quiz.QuizType.ADAPTIVE).count()
+    bank_size = Question.objects.filter(quiz__course=course, quiz__quiz_type__in=PRACTICE_QUIZ_TYPES).count()
     pending_bank = LessonJob.objects.filter(course=course).exclude(corrected_output="", toon_output="").exclude(
         class_session__quizzes__quiz_type=Quiz.QuizType.ADAPTIVE
     ).count()
@@ -648,6 +673,9 @@ def course_overview(user, course: Course) -> dict:
         "recommendations": list(
             Recommendation.objects.filter(user=user, course=course, status=Recommendation.Status.PENDING)[:4]
         ),
+        "reinforcements": list(ReinforcementJob.objects.filter(user=user, course=course)[:3]),
+        "concepts": list(Summary.objects.filter(course=course, kind=Summary.Kind.CONCEPT)[:5]),
+        "reinforcement_cost": estimate_reinforcement_cost("auto").amount,
     }
 
 
@@ -657,7 +685,7 @@ def dashboard_today(user) -> dict:
     rows = []
     for course in courses:
         adaptive = AdaptiveProfile.objects.filter(user=user, course=course).first()
-        bank = Question.objects.filter(quiz__course=course, quiz__quiz_type=Quiz.QuizType.ADAPTIVE).count()
+        bank = Question.objects.filter(quiz__course=course, quiz__quiz_type__in=PRACTICE_QUIZ_TYPES).count()
         ready_classes = LessonJob.objects.filter(course=course).exclude(corrected_output="", toon_output="").count()
         recs = list(Recommendation.objects.filter(user=user, course=course, status=Recommendation.Status.PENDING)[:2])
         known = bool(adaptive and profile_is_known(adaptive))
@@ -704,4 +732,6 @@ def session_context(session: PracticeSession) -> dict:
         "level_label": level_label,
         "bloom_label": BLOOM_LABELS.get(question.bloom_level, question.bloom_level) if question else "",
         "feedback": session.feedback if session.is_complete else None,
+        "reinforcement_cost": estimate_reinforcement_cost("auto").amount,
+        "lesson": session.lesson,
     }

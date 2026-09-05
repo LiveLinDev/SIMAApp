@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Refuerzo - {{ course.name }}{% endblock %}
+{% block content %}
+{% if job.status == 'queued' or job.status == 'processing' %}<meta http-equiv="refresh" content="6">{% endif %}
+
+<section class="ld-header">
+  <div>
+    <a href="{% url 'course_detail' course.pk %}" class="back-link">&larr; {{ course.name }}</a>
+    <h1>Refuerzo adaptativo</h1>
+    <p class="muted">{{ job.topics|join:", " }} &middot; habilidad estimada {{ job.theta|floatformat:2 }} &middot; {{ job.requested_items }} preguntas solicitadas</p>
+  </div>
+</section>
+
+<div class="rf-shell">
+
+  {% if job.status == 'done' %}
+  <section class="rf-panel">
+    <div class="rf-stats">
+      <div><strong>{{ question_count }}</strong><span>preguntas nuevas en el banco</span></div>
+      <div><strong>{{ summaries|length }}</strong><span>explicaciones</span></div>
+      <div><strong>{{ job.flashcard_ids|length }}</strong><span>flashcards</span></div>
+    </div>
+
+    {% if summaries %}
+    <h3>Explicaciones</h3>
+    <div class="rf-concepts">
+      {% for s in summaries %}
+      <article class="rf-concept">
+        <span class="study-badge">{{ s.key_concepts.0 }}</span>
+        <h4>{{ s.title }}</h4>
+        <p>{{ s.content }}</p>
+      </article>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="rf-actions">
+      <form method="post" action="{% url 'practice_start' course.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="target_count" value="8">
+        <input type="hidden" name="focus" value="weak">
+        <button class="primary-button" type="submit">Practicar el refuerzo</button>
+      </form>
+      {% if flashcards_url %}<a class="secondary-button" href="{{ flashcards_url }}">Ver flashcards</a>{% endif %}
+      <a class="secondary-button" href="{% url 'course_detail' course.pk %}">Volver al curso</a>
+    </div>
+  </section>
+
+  {% elif job.status == 'error' %}
+  <section class="rf-panel rf-panel--error">
+    <h3>No se pudo generar el refuerzo</h3>
+    <p>{{ job.error }}</p>
+    {% if job.credits_refunded %}<p class="muted">Los {{ job.credits_charged }} creditos fueron reembolsados.</p>{% endif %}
+    <div class="rf-actions">
+      <form method="post" action="{% url 'reinforcement_start' course.pk %}">
+        {% csrf_token %}
+        <button class="primary-button" type="submit">Intentar de nuevo</button>
+      </form>
+      <a class="secondary-button" href="{% url 'course_detail' course.pk %}">Volver al curso</a>
+    </div>
+  </section>
+
+  {% else %}
+  <section class="rf-panel">
+    <h3>Generando material a tu medida&hellip;</h3>
+    <p class="muted">Estamos leyendo las clases del curso y creando preguntas y explicaciones sobre {{ job.topics|join:", " }}. Esta pagina se actualiza sola.</p>
+  </section>
+  {% endif %}
+
+  <details class="rf-log">
+    <summary>Registro del proceso</summary>
+    <pre>{{ job.processing_log }}</pre>
+  </details>
+</div>
+
+<style>
+  .rf-shell { max-width: 900px; margin: 0 auto; display: grid; gap: 18px; }
+  .rf-panel { border: 1px solid var(--line); border-radius: 18px; background: var(--surface); padding: 26px; box-shadow: 0 18px 50px var(--shadow); }
+  .rf-panel--error { border-color: #ff8b8b; }
+  .rf-panel h3 { margin: 0 0 12px; }
+  .rf-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 18px; }
+  .rf-stats div { border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: grid; gap: 2px; }
+  .rf-stats strong { font-size: 1.8rem; line-height: 1; color: var(--acid); }
+  .rf-stats span { color: var(--muted); font-size: .9rem; }
+  .rf-concepts { display: grid; gap: 12px; }
+  .rf-concept { border-left: 3px solid var(--acid); padding: 6px 14px; }
+  .rf-concept h4 { margin: 6px 0 4px; }
+  .rf-concept p { margin: 0; color: var(--ink); line-height: 1.5; }
+  .rf-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; align-items: center; }
+  .rf-log summary { cursor: pointer; color: var(--muted); }
+  .rf-log pre { white-space: pre-wrap; font-size: .8rem; color: var(--muted); }
+</style>
+{% endblock %}

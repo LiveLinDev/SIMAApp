@@ -19,6 +19,7 @@ TEXT_QUIZ_COST = 18
 AUDIO_TRANSCRIPTION_COST = 35
 VERIFICATION_COST = 7
 REGENERATION_COST = 12
+REINFORCEMENT_COST = 10
 CLOUD_BACKEND_SURCHARGE = 15
 
 
@@ -120,6 +121,48 @@ def consume_credits(
         class_session=class_session,
         action=action,
         amount=-amount,
+        balance_after=profile.credit_balance,
+        description=description,
+        metadata=metadata or {},
+    )
+
+
+def estimate_reinforcement_cost(backend: str | None = "auto") -> CreditEstimate:
+    """Costo del refuerzo adaptativo: base fija mas el recargo de nube si aplica."""
+    from .services import resolve_backend  # import perezoso
+
+    resolved = resolve_backend(backend or "auto")
+    amount = REINFORCEMENT_COST
+    details = [f"refuerzo {REINFORCEMENT_COST}"]
+    if resolved == "cloud":
+        surcharge = max(0, int(getattr(settings, "CLOUD_BACKEND_SURCHARGE", CLOUD_BACKEND_SURCHARGE)))
+        if surcharge:
+            amount += surcharge
+            details.append(f"nube {surcharge}")
+    return CreditEstimate(action=CreditLedgerEntry.Action.QUIZ_GENERATION, amount=amount, details=tuple(details))
+
+
+@transaction.atomic
+def refund_credits(
+    profile: Profile,
+    amount: int,
+    *,
+    course=None,
+    class_session=None,
+    description: str = "",
+    metadata: dict | None = None,
+) -> CreditLedgerEntry | None:
+    if amount <= 0 or plan_credit_amount(profile.plan) is None:
+        return None
+    profile = Profile.objects.select_for_update().get(pk=profile.pk)
+    profile.credit_balance += amount
+    profile.save(update_fields=["credit_balance", "updated_at"])
+    return CreditLedgerEntry.objects.create(
+        user=profile.user,
+        course=course,
+        class_session=class_session,
+        action=CreditLedgerEntry.Action.MANUAL_ADJUSTMENT,
+        amount=amount,
         balance_after=profile.credit_balance,
         description=description,
         metadata=metadata or {},

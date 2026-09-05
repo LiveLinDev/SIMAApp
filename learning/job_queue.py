@@ -47,16 +47,25 @@ _queued_ids = set()
 _workers_started = 0
 
 
-def enqueue_lesson_job(job_id: int, backend: str = "auto"):
+def _enqueue(kind: str, job_id: int, backend: str = "auto"):
     ensure_worker()
+    key = (kind, job_id)
     with _lock:
-        if job_id in _queued_ids:
+        if key in _queued_ids:
             return
         try:
-            _queue.put_nowait((job_id, backend))
+            _queue.put_nowait((kind, job_id, backend))
         except Full as exc:
-            raise RuntimeError("La cola local esta llena. Espera a que termine una clase antes de agregar otra.") from exc
-        _queued_ids.add(job_id)
+            raise RuntimeError("La cola local esta llena. Espera a que termine un trabajo antes de agregar otro.") from exc
+        _queued_ids.add(key)
+
+
+def enqueue_lesson_job(job_id: int, backend: str = "auto"):
+    _enqueue("lesson", job_id, backend)
+
+
+def enqueue_reinforcement_job(job_id: int):
+    _enqueue("reinforcement", job_id)
 
 
 def ensure_worker():
@@ -75,17 +84,28 @@ def ensure_worker():
 
 def _worker_loop():
     while True:
-        job_id, backend = _queue.get()
+        kind, job_id, backend = _queue.get()
         try:
             close_old_connections()
-            process_lesson_job(job_id, backend)
+            if kind == "reinforcement":
+                _process_reinforcement_job(job_id)
+            else:
+                process_lesson_job(job_id, backend)
         except Exception:
-            logger.exception("Error procesando LessonJob %s", job_id)
+            logger.exception("Error procesando trabajo %s %s", kind, job_id)
         finally:
             with _lock:
-                _queued_ids.discard(job_id)
+                _queued_ids.discard((kind, job_id))
             close_old_connections()
             _queue.task_done()
+
+
+def _process_reinforcement_job(job_id: int):
+    from .adaptive_generation import run_reinforcement  # import perezoso
+    from .models import ReinforcementJob
+
+    job = ReinforcementJob.objects.select_related("user", "course", "practice_session").get(pk=job_id)
+    run_reinforcement(job)
 
 
 def process_lesson_job(job_id: int, backend: str = "auto"):
@@ -762,6 +782,19 @@ def requeue_orphaned_jobs(reason: str = "reinicio del servidor") -> int:
             enqueue_lesson_job(job.pk, job.ai_backend or "auto")
         except RuntimeError as exc:
             logger.warning("No se pudo reencolar LessonJob %s: %s", job.pk, exc)
+            continue
+        requeued += 1
+    from .models import ReinforcementJob
+
+    for job in ReinforcementJob.objects.filter(
+        status__in=[ReinforcementJob.Status.QUEUED, ReinforcementJob.Status.PROCESSING]
+    ).order_by("created_at"):
+        job.status = ReinforcementJob.Status.QUEUED
+        job.save(update_fields=["status", "updated_at"])
+        try:
+            enqueue_reinforcement_job(job.pk)
+        except RuntimeError as exc:
+            logger.warning("No se pudo reencolar el refuerzo %s: %s", job.pk, exc)
             continue
         requeued += 1
     if requeued:

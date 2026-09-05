@@ -160,12 +160,32 @@
         <input type="hidden" name="focus" value="weak">
         <button class="secondary-button" type="submit">Reforzar temas debiles</button>
       </form>
+      <form method="post" action="{% url 'reinforcement_start' course.pk %}" class="practice-form">
+        {% csrf_token %}
+        <button class="secondary-button" type="submit">Generar refuerzo ({{ overview.reinforcement_cost }} creditos)</button>
+      </form>
       {% endif %}
       {% if overview.bank_size %}<p class="progress-label">{{ overview.bank_size }} preguntas en el banco del curso</p>{% endif %}
       {% else %}
         <p class="progress-label">El banco de preguntas se llena con cada clase lista.</p>
       {% endif %}
     </div>
+
+    {% if overview.reinforcements or overview.concepts %}
+    <div class="course-panel">
+      <h3>Refuerzos</h3>
+      {% for rj in overview.reinforcements %}
+        <p class="progress-label"><a href="{% url 'reinforcement_detail' course.pk rj.pk %}">{{ rj.topics|join:", " }}</a> &middot; {{ rj.get_status_display }} &middot; {{ rj.created_at|date:"d M H:i" }}</p>
+      {% endfor %}
+      {% if overview.concepts %}
+      <ul class="rec-list">
+        {% for c in overview.concepts %}
+        <li><strong>{{ c.title }}</strong><span>{{ c.content|truncatechars:160 }}</span></li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+    {% endif %}
 
     {% if overview.recommendations %}
     <div class="course-panel">

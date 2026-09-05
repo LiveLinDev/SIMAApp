@@ -290,6 +290,7 @@ class Summary(models.Model):
         BRIEF = "brief", "Breve"
         STRUCTURED = "structured", "Estructurado"
         COURSE_ACCUMULATED = "course_accumulated", "Acumulado del curso"
+        CONCEPT = "concept", "Explicacion de concepto"
 
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="summaries")
     class_session = models.ForeignKey(
@@ -353,6 +354,7 @@ class Quiz(models.Model):
         PRACTICE = "practice", "Practica"
         ADAPTIVE = "adaptive", "Adaptativo"
         DIAGNOSTIC = "diagnostic", "Diagnostico"
+        REINFORCEMENT = "reinforcement", "Refuerzo"
 
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="quizzes")
     class_session = models.ForeignKey(
@@ -488,6 +490,14 @@ class PracticeSession(models.Model):
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="practice_sessions")
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="practice_sessions")
+    lesson = models.ForeignKey(
+        "LessonJob",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="practice_sessions",
+        help_text="Si esta definido, la practica se limita al banco de esa clase.",
+    )
     focus = models.CharField(max_length=16, choices=Focus.choices, default=Focus.BALANCED)
     target_count = models.PositiveIntegerField(default=10)
     theta_start = models.FloatField(default=0.0)
@@ -522,6 +532,47 @@ class PracticeSession(models.Model):
     def accuracy(self):
         total = self.answered_count
         return round((self.correct_count / total) * 100) if total else 0
+
+
+class ReinforcementJob(models.Model):
+    """Generacion adaptativa: material nuevo dirigido a los temas debiles del perfil."""
+
+    class Status(models.TextChoices):
+        QUEUED = "queued", "En cola"
+        PROCESSING = "processing", "Procesando"
+        DONE = "done", "Listo"
+        ERROR = "error", "Error"
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="reinforcement_jobs")
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="reinforcement_jobs")
+    practice_session = models.ForeignKey(
+        PracticeSession, on_delete=models.SET_NULL, null=True, blank=True, related_name="reinforcement_jobs"
+    )
+    topics = models.JSONField(default=list, blank=True)
+    theta = models.FloatField(default=0.0)
+    requested_items = models.PositiveIntegerField(default=8)
+    status = models.CharField(max_length=16, choices=Status.choices, default=Status.QUEUED)
+    processing_log = models.TextField(blank=True)
+    error = models.TextField(blank=True)
+    quiz = models.ForeignKey(Quiz, on_delete=models.SET_NULL, null=True, blank=True, related_name="reinforcement_jobs")
+    summary_ids = models.JSONField(default=list, blank=True)
+    flashcard_ids = models.JSONField(default=list, blank=True)
+    credits_charged = models.IntegerField(default=0)
+    credits_refunded = models.BooleanField(default=False)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [models.Index(fields=["user", "course", "status"])]
+
+    def __str__(self):
+        return f"Refuerzo {self.pk} - {self.course}"
+
+    @property
+    def is_done(self):
+        return self.status == self.Status.DONE
 
 
 class CreditLedgerEntry(models.Model):

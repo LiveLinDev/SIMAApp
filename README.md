@@ -113,9 +113,10 @@ learning/
   parse_mini.py   parser/serializador .mini, filtros de coherencia, aplicación de correcciones
   cat.py          IRT 3PL: probabilidad, información de Fisher y estimación de habilidad (theta)
   adaptive.py     núcleo de acompañamiento: banco del curso, sesión de práctica CAT, perfil por tema, recomendaciones, racha/XP
+  adaptive_generation.py  refuerzo dirigido: ítems nuevos, explicaciones y flashcards a la medida del perfil (cobra créditos, reembolsa si falla)
   credits.py      planes y ledger de créditos
   models.py       LessonJob (pipeline) · Course/ClassSession/Quiz/Question/StudentAnswer/AdaptiveProfile/PracticeSession
-  migrations/     17 migraciones
+  migrations/     18 migraciones
 templates/        20 plantillas server-side
 static/learning/  CSS
 PROMPT.md, coherence_prompt.md, correct_prompt.md   prompts que el pipeline lee en ejecución
@@ -157,15 +158,25 @@ Modo **refuerzo** (`focus=weak`): la sesión se limita a los temas con dominio <
 sincroniza solo al terminar cada clase y al iniciar una práctica; también a mano con
 `python manage.py sync_question_bank`.
 
+**Generación adaptativa** (`/cursos/<id>/refuerzo/`, `learning/adaptive_generation.py`): a partir de
+los temas débiles, los niveles Bloom donde el estudiante falla y su θ, una sola llamada al modelo
+produce ítems nuevos calibrados (`b ≈ θ`), una explicación por concepto fallado basada en la
+transcripción y una flashcard por concepto. Los ítems pasan los filtros deterministas del pipeline y
+entran al banco como `Quiz` de tipo `reinforcement`. Cobra `REINFORCEMENT_COST` (+ recargo de nube)
+y reembolsa si la generación falla. Corre en la misma cola que las clases.
+
+El **quiz por clase** (`/clase/<id>/quiz/iniciar/`) ahora abre una práctica del curso limitada al banco
+de esa clase, con la memoria del perfil; `QuizAttempt` queda solo como historial.
+
 ## Tests
 
 ```bash
 python manage.py test learning
 ```
 
-Veintiocho tests: parser `.mini`, reencolado, resolución de backends, renderizado del selector y motor
-adaptativo (banco, sesión completa, perfil, recomendaciones, vistas). No hay cobertura del pipeline
-con IA ni del quiz por clase heredado.
+Treinta y cinco tests: parser `.mini`, reencolado, resolución de backends, renderizado del selector,
+motor adaptativo (banco, sesión completa, perfil, recomendaciones, vistas) y refuerzo (cobro, generación
+con IA simulada, reembolso, reemplazo del quiz por clase). No hay cobertura del pipeline con IA real.
 
 ## Problemas conocidos
 
@@ -173,10 +184,8 @@ con IA ni del quiz por clase heredado.
   `runserver`, la app reencola automáticamente los trabajos que quedaron en `QUEUED`/`PROCESSING`
   (`learning/apps.py`); con otro servidor, exporta `SIMA_REQUEUE_ON_START=1`. Para hacerlo a
   mano: `python manage.py requeue_jobs` (`--dry-run` solo lista).
-- **Dos capas de quiz.** El quiz por clase (`/clase/<id>/quiz/`, `QuizAttempt`) lee el `.mini`
-  crudo y no recuerda nada entre intentos; es la capa heredada. La práctica por curso
-  (`/cursos/<id>/practicar/`, `PracticeSession`) usa el banco persistido y el perfil. Conviven hasta
-  retirar la primera.
+- **`QuizAttempt` heredado.** Ya no se crean intentos por clase; las vistas `quiz_attempt` quedan
+  solo para consultar historial antiguo y pueden retirarse junto con el modelo.
 - **Prompt de verificación demasiado largo** con clases extensas (`exceed_context_size_error`
   en modelos locales): reducir `VERIFICATION_SOURCE_CHARS` o `VERIFICATION_MAX_SOURCES`.
 - **URLs con caracteres no ASCII** pueden fallar al descargar fuentes; el pipeline continúa

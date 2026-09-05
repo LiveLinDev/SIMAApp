@@ -68,7 +68,7 @@
   <form class="intensity-card" method="post" action="{% url 'start_quiz' job.pk %}" id="start-quiz-form">
     {% csrf_token %}
     <h3>Plan de estudio</h3>
-    <p class="muted">El CAT elegirá cada ítem por información IRT 3PL y cubrirá niveles de Bloom según tu banco.</p>
+    <p class="muted">Practica esta clase con la memoria de tu curso: las preguntas se eligen por información IRT 3PL a tu nivel, sin repetir lo que ya dominas.</p>
     <div class="intensity-options">
       <label class="intensity-btn">
         <input type="radio" name="target_count" value="5">
@@ -219,7 +219,19 @@
   {# historial de intentos #}
   <div class="history-card">
     <h3>Tu historial</h3>
-    {% if quiz_attempts %}
+    {% if practice_sessions %}
+      <div class="attempt-list">
+        {% for ps in practice_sessions %}
+        <a class="attempt-row" href="{% url 'practice_session' ps.course_id ps.pk %}">
+          <span>
+            <strong>{{ ps.correct_count }}/{{ ps.answered_count }} correctas</strong>
+            <small>{{ ps.created_at|date:"d M H:i" }} · θ {{ ps.theta|floatformat:2 }} · SE {{ ps.standard_error|floatformat:2 }}{% if not ps.is_complete %} · en curso{% endif %}</small>
+          </span>
+          <span class="study-badge">{{ ps.accuracy }}%</span>
+        </a>
+        {% endfor %}
+      </div>
+    {% elif quiz_attempts %}
       <div class="attempt-list">
         {% for attempt in quiz_attempts %}
         <a class="attempt-row" href="{% url 'quiz_attempt' job.pk attempt.pk %}">

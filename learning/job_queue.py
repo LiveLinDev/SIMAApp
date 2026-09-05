@@ -35,6 +35,7 @@ from .services import (
     strip_non_academic_content_noise,
     text_change_summary,
     transcribe_audio,
+    transcribe_audio_detailed,
     use_direct_cloud_mini,
     verify_items,
 )
@@ -117,9 +118,9 @@ def process_lesson_job(job_id: int, backend: str = "auto"):
         if job.audio:
             _set_stage(job, "Transcribiendo audio con Whisper", f"Archivo: {job.audio.name}. Whisper corre localmente.")
             if not job.transcript:
-                job.transcript = transcribe_audio(job.audio.path)
+                job.transcript, whisper_segments = transcribe_audio_detailed(job.audio.path)
                 job.save(update_fields=["transcript", "updated_at"])
-                _sync_transcript_record(job)
+                _sync_transcript_record(job, segments=whisper_segments)
             _discard_processed_audio(job)
 
         if requested_backend == "local":
@@ -741,13 +742,13 @@ def _sync_class_session_status(job: LessonJob) -> ClassSession | None:
     return session
 
 
-def _sync_transcript_record(job: LessonJob):
+def _sync_transcript_record(job: LessonJob, segments: list[dict] | None = None):
     if not (job.course_id and job.transcript.strip()):
         return
     session = _sync_class_session_status(job)
     if not session:
         return
-    Transcript.objects.update_or_create(
+    transcript, _created = Transcript.objects.update_or_create(
         class_session=session,
         defaults={
             "full_text": job.transcript,
@@ -755,6 +756,10 @@ def _sync_transcript_record(job: LessonJob):
             "language": "es",
         },
     )
+    if segments:
+        from .segments import store_segments  # import perezoso
+
+        store_segments(transcript, segments)
 
 
 def requeue_orphaned_jobs(reason: str = "reinicio del servidor") -> int:

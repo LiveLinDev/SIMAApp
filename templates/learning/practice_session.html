@@ -14,6 +14,22 @@
 
 <div class="quiz-shell">
 
+  {% if last %}
+  <section class="fb-strip {% if last.is_correct %}fb-strip--ok{% else %}fb-strip--bad{% endif %}">
+    <div class="fb-head">
+      <strong>{% if last.is_correct %}Correcto{% else %}Incorrecto{% endif %}</strong>
+      <span class="muted">{{ last.topic }}</span>
+    </div>
+    {% if not last.is_correct %}
+    <p>Elegiste <span class="pr-bad">{{ last.chosen }}</span>. La respuesta correcta es <span class="pr-good">{{ last.correct }}</span>.</p>
+    {% endif %}
+    {% if last.explanation %}<p class="fb-expl">{{ last.explanation }}</p>{% endif %}
+    {% if last.excerpt %}
+    <p class="fb-source">{% if last.timestamp_label %}<span class="study-badge">min {{ last.timestamp_label }}</span> {% endif %}<em>&laquo;{{ last.excerpt }}&raquo;</em></p>
+    {% endif %}
+  </section>
+  {% endif %}
+
   {% if feedback %}
   <section class="quiz-panel">
     <div class="pr-summary">
@@ -56,6 +72,7 @@
         <p class="pr-failed-q">{{ item.prompt }}</p>
         <p class="pr-failed-a">Tu respuesta: <span class="pr-bad">{{ item.chosen }}</span> &middot; Correcta: <span class="pr-good">{{ item.correct }}</span></p>
         <small>{{ item.topic }} &middot; {{ item.bloom_label }}</small>
+        {% if item.excerpt %}<p class="fb-source">{% if item.timestamp_label %}<span class="study-badge">min {{ item.timestamp_label }}</span> {% endif %}<em>&laquo;{{ item.excerpt }}&raquo;</em></p>{% endif %}
       </li>
       {% endfor %}
     </ol>
@@ -172,5 +189,12 @@
   .pr-recs li { border-left: 3px solid var(--acid); padding: 6px 12px; display: grid; gap: 2px; }
   .pr-recs span { color: var(--muted); font-size: .92rem; }
   .pr-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; align-items: center; }
+  .fb-strip { border: 1px solid var(--line); border-left-width: 4px; border-radius: 14px; background: var(--surface); padding: 16px 20px; display: grid; gap: 6px; }
+  .fb-strip--ok { border-left-color: #6fd69a; } .fb-strip--bad { border-left-color: #ff8b8b; }
+  .fb-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .fb-head strong { font-size: 1.05rem; }
+  .fb-strip p { margin: 0; }
+  .fb-expl { color: var(--ink); line-height: 1.5; }
+  .fb-source { color: var(--muted); font-size: .9rem; line-height: 1.45; }
 </style>
 {% endblock %}

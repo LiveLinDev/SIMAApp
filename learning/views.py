@@ -26,7 +26,7 @@ from .credits import (
 )
 from .forms import ApiLessonForm, CourseForm, FreeLessonForm, ManualResultForm, PlanForm, RegisterForm, VerificationResultForm
 from .job_queue import enqueue_lesson_job
-from .models import ClassSession, Course, Difficulty, Flashcard, LessonJob, QuizAttempt, QuizResponse, UserPreference, get_plan_details
+from .models import ClassSession, Course, Difficulty, Flashcard, LessonJob, UserPreference, get_plan_details
 from .parse_mini import apply_corrections_with_trace, assessment_to_dict, filter_incoherent_items, normalize_mini_text, parse_mini, render_mini_html, validate_mini_parse
 from .services import (
     build_generation_prompt,
@@ -186,7 +186,7 @@ def course_detail(request, pk):
         "sessions": class_sessions.count(),
         "ready": jobs.filter(Q(corrected_output__gt="") | Q(toon_output__gt="")).count(),
         "processing": jobs.filter(status__in=[LessonJob.Status.QUEUED, LessonJob.Status.PROCESSING]).count(),
-        "quizzes": sum(job.quiz_attempts.filter(user=request.user).count() for job in jobs[:100]),
+        "quizzes": adaptive.PracticeSession.objects.filter(user=request.user, course=course, completed_at__isnull=False).count(),
     }
     progress_pct = round((stats["ready"] / stats["classes"]) * 100) if stats["classes"] > 0 else 0
     profile = _get_or_create_profile(request.user)
@@ -371,7 +371,6 @@ def lesson_detail(request, pk):
         "bloom_stats": bloom_stats,
         "key_topics": sorted(key_topics),
         "practice_sessions": adaptive.PracticeSession.objects.filter(user=request.user, lesson=job)[:8],
-        "quiz_attempts": job.quiz_attempts.filter(user=request.user)[:8],
         "pipeline_step": pipeline_step,
         "pipeline_total": pipeline_total,
         "is_owner": job.user_id == request.user.id,
@@ -425,129 +424,6 @@ def start_quiz(request, pk):
         messages.warning(request, "Esta clase aun no tiene items validos para practicar.")
         return redirect("lesson_detail", pk=job.pk)
     return redirect("practice_session", pk=job.course_id, session_id=session.pk)
-
-@login_required
-def quiz_attempt(request, pk, attempt_id):
-    job = _get_accessible_job(request.user, pk)
-    attempt = get_object_or_404(QuizAttempt, pk=attempt_id, lesson=job, user=request.user)
-    mini_text = job.corrected_output or job.toon_output
-    items, params = build_bank(mini_text)
-    items_by_id = {item.id: item for item in items}
-    current_item = items_by_id.get(attempt.current_item_id)
-    responses = list(attempt.responses.all())
-    if not current_item and not attempt.is_complete and items:
-        answered_ids = {response.item_id for response in responses}
-        next_item = choose_next_item(items, answered_ids, attempt.theta, responses, attempt.target_count)
-        if next_item:
-            current_item = next_item
-            attempt.current_item_id = next_item.id
-            if next_item.id not in attempt.selected_item_ids:
-                attempt.selected_item_ids = [*attempt.selected_item_ids, next_item.id]
-            attempt.save(update_fields=["current_item_id", "selected_item_ids", "updated_at"])
-        else:
-            attempt.completed_at = timezone.now()
-            attempt.current_item_id = ""
-            attempt.save(update_fields=["completed_at", "current_item_id", "updated_at"])
-    progress_pct = min(100, round((len(responses) / max(attempt.target_count, 1)) * 100))
-    bloom_counts = {}
-    for response in responses:
-        bloom_counts[response.item_bloom] = bloom_counts.get(response.item_bloom, 0) + 1
-    bloom_progress = [
-        {"level": level, "label": label, "count": bloom_counts.get(level, 0)}
-        for level, label in BLOOM_LABELS.items()
-        if bloom_counts.get(level, 0)
-    ]
-
-    bloom_chart_data = [
-        {"label": BLOOM_LABELS.get(level, level), "count": bloom_counts.get(level, 0), "pct": round((bloom_counts.get(level, 0) / max(attempt.answered_count, 1)) * 100)}
-        for level in ["L1", "L2", "L3", "L4", "L5", "L6"]
-        if bloom_counts.get(level, 0) > 0
-    ]
-    level_value, level_label = theta_to_level(attempt.theta)
-    return render(request, "learning/quiz_attempt.html", {
-        "job": job,
-        "attempt": attempt,
-        "item": current_item,
-        "item_bloom_label": BLOOM_LABELS.get(current_item.bloom, current_item.bloom) if current_item else "",
-        "responses": responses,
-        "progress_pct": progress_pct,
-        "bloom_progress": bloom_progress,
-        "bloom_chart_data": bloom_chart_data,
-        "bloom_labels": BLOOM_LABELS,
-        "cat_params": params,
-        "level_value": level_value,
-        "level_label": level_label,
-    })
-
-
-@login_required
-def answer_quiz(request, pk, attempt_id):
-    if request.method != "POST":
-        raise Http404()
-    job = _get_accessible_job(request.user, pk)
-    attempt = get_object_or_404(QuizAttempt, pk=attempt_id, lesson=job, user=request.user)
-    if attempt.is_complete:
-        return redirect("quiz_attempt", pk=job.pk, attempt_id=attempt.pk)
-
-    mini_text = job.corrected_output or job.toon_output
-    items, params = build_bank(mini_text)
-    items_by_id = {item.id: item for item in items}
-    item = items_by_id.get(attempt.current_item_id)
-    if not item:
-        responses = list(attempt.responses.all())
-        next_item = choose_next_item(items, {response.item_id for response in responses}, attempt.theta, responses, attempt.target_count)
-        if next_item:
-            attempt.current_item_id = next_item.id
-            attempt.selected_item_ids = [*attempt.selected_item_ids, next_item.id]
-            attempt.save(update_fields=["current_item_id", "selected_item_ids", "updated_at"])
-            messages.info(request, "Se omitio una pregunta con alternativas incoherentes y se cargo la siguiente.")
-            return redirect("quiz_attempt", pk=job.pk, attempt_id=attempt.pk)
-        messages.warning(request, "No se encontró el ítem actual.")
-        return redirect("lesson_detail", pk=job.pk)
-
-    selected_index = int(request.POST.get("option", "-1"))
-    correct_index = option_index(item)
-    is_correct = selected_index == correct_index
-    response = QuizResponse.objects.create(
-        attempt=attempt,
-        item_id=item.id,
-        item_bloom=item.bloom,
-        item_topic=item.topic,
-        item_area=item.area,
-        item_demand=item.demand,
-        theta_before=attempt.theta,
-        selected_index=selected_index,
-        correct_index=correct_index,
-        is_correct=is_correct,
-    )
-
-    responses = list(attempt.responses.all())
-    theta, se = estimate_theta(items_by_id, responses, params["theta_min"], params["theta_max"])
-    response.theta_after = theta
-    response.save(update_fields=["theta_after"])
-    attempt.theta = theta
-    attempt.standard_error = se
-    attempt.correct_count = sum(1 for r in responses if r.is_correct)
-
-    should_stop = len(responses) >= attempt.target_count or se <= params["se_stop"] or len(responses) >= len(items)
-    if should_stop:
-        attempt.completed_at = timezone.now()
-        attempt.current_item_id = ""
-        attempt.save()
-        profile = _get_or_create_profile(request.user)
-        profile.total_xp += 5 + attempt.correct_count * 2
-        profile.save()
-    else:
-        next_item = choose_next_item(items, set(attempt.selected_item_ids), theta, responses, attempt.target_count)
-        if next_item:
-            attempt.current_item_id = next_item.id
-            attempt.selected_item_ids = [*attempt.selected_item_ids, next_item.id]
-        else:
-            attempt.completed_at = timezone.now()
-            attempt.current_item_id = ""
-        attempt.save()
-    return redirect("quiz_attempt", pk=job.pk, attempt_id=attempt.pk)
-
 
 @login_required
 def retry_api_lesson(request, pk):
@@ -1861,7 +1737,7 @@ def practice_start(request, pk):
 def practice_session(request, pk, session_id):
     course = get_object_or_404(Course, pk=pk, user=request.user)
     session = get_object_or_404(adaptive.PracticeSession, pk=session_id, course=course, user=request.user)
-    return render(request, "learning/practice_session.html", adaptive.session_context(session))
+    return render(request, "learning/practice_session.html", adaptive.session_context(session, last_answer_id=request.GET.get("last")))
 
 
 @login_required
@@ -1870,12 +1746,14 @@ def practice_answer(request, pk, session_id):
         raise Http404()
     course = get_object_or_404(Course, pk=pk, user=request.user)
     session = get_object_or_404(adaptive.PracticeSession, pk=session_id, course=course, user=request.user)
+    answer = None
     if not session.is_complete:
         try:
-            adaptive.answer_question(session, int(request.POST.get("question_id", 0)), request.POST.get("option_id"))
+            answer = adaptive.answer_question(session, int(request.POST.get("question_id", 0)), request.POST.get("option_id"))
         except (ValueError, adaptive.Question.DoesNotExist):
             messages.info(request, "Esa pregunta ya no esta activa; continua con la siguiente.")
-    return redirect("practice_session", pk=course.pk, session_id=session.pk)
+    url = reverse("practice_session", args=[course.pk, session.pk])
+    return redirect(f"{url}?last={answer.pk}" if answer else url)
 
 
 @login_required

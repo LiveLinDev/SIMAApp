@@ -32,6 +32,7 @@ from django.utils import timezone
 
 from .cat import BLOOM_LABELS, item_information, theta_to_level
 from .psychometrics import bkt_trace, calibrate_difficulty, eap_estimate, quality_flag, randomesque
+from .segments import attach_sources, format_timestamp
 from .models import (
     AdaptiveProfile,
     AnswerOption,
@@ -122,6 +123,7 @@ def sync_question_bank(job: LessonJob) -> Quiz | None:
         quiz.save(update_fields=["course", "title", "topic", "mini_source", "cat_config", "updated_at"])
 
         persist_items(quiz, assessment.items, default_topic=session.main_topic or "")
+    attach_sources(quiz, session, job)
     return quiz
 
 
@@ -541,6 +543,9 @@ def finish_session(session: PracticeSession, bank: list[BankItem] | None = None)
                 "bloom_label": BLOOM_LABELS.get(answer.question.bloom_level, answer.question.bloom_level),
                 "chosen": answer.selected_option.text if answer.selected_option else "(sin respuesta)",
                 "correct": correct.text if correct else "",
+                "excerpt": answer.question.source_excerpt,
+                "timestamp": answer.question.source_timestamp_seconds,
+                "timestamp_label": format_timestamp(answer.question.source_timestamp_seconds),
             })
 
     total = len(answers)
@@ -762,7 +767,42 @@ def dashboard_today(user) -> dict:
     }
 
 
-def session_context(session: PracticeSession) -> dict:
+def last_answer_feedback(session: PracticeSession, answer_id) -> dict | None:
+    """Retroalimentacion inmediata de la ultima respuesta de la sesion."""
+    try:
+        answer = (
+            session.answers.select_related("question", "selected_option")
+            .prefetch_related("question__options")
+            .get(pk=int(answer_id))
+        )
+    except (StudentAnswer.DoesNotExist, TypeError, ValueError):
+        return None
+    latest = session.answers.order_by("-answered_at", "-id").first()
+    if latest is None or latest.pk != answer.pk:
+        return None
+    question = answer.question
+    correct = next((o for o in question.options.all() if o.is_correct), None)
+    explanation = question.explanation
+    if not explanation:
+        for summary in Summary.objects.filter(course=session.course, kind=Summary.Kind.CONCEPT).order_by("-created_at")[:60]:
+            concepts = summary.key_concepts or []
+            if question.topic and question.topic in concepts:
+                explanation = summary.content
+                break
+    return {
+        "is_correct": answer.is_correct,
+        "prompt": question.prompt,
+        "topic": question.topic,
+        "chosen": answer.selected_option.text if answer.selected_option else "(sin respuesta)",
+        "correct": correct.text if correct else "",
+        "explanation": explanation,
+        "excerpt": question.source_excerpt,
+        "timestamp_label": format_timestamp(question.source_timestamp_seconds),
+        "theta_after": answer.theta_after,
+    }
+
+
+def session_context(session: PracticeSession, last_answer_id=None) -> dict:
     """Contexto para la plantilla de practica: pregunta actual o retroalimentacion."""
     question = None
     options = []
@@ -771,6 +811,7 @@ def session_context(session: PracticeSession) -> dict:
         options = list(question.options.all())
     answered = session.answers.count()
     level_value, level_label = theta_to_level(session.theta)
+    last = last_answer_feedback(session, last_answer_id) if last_answer_id else None
     return {
         "session": session,
         "course": session.course,
@@ -784,6 +825,7 @@ def session_context(session: PracticeSession) -> dict:
         "feedback": session.feedback if session.is_complete else None,
         "reinforcement_cost": estimate_reinforcement_cost("auto").amount,
         "lesson": session.lesson,
+        "last": last,
     }
 
 

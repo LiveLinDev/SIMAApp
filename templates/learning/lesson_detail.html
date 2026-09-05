@@ -231,18 +231,6 @@
         </a>
         {% endfor %}
       </div>
-    {% elif quiz_attempts %}
-      <div class="attempt-list">
-        {% for attempt in quiz_attempts %}
-        <a class="attempt-row" href="{% url 'quiz_attempt' job.pk attempt.pk %}">
-          <span>
-            <strong>{{ attempt.correct_count }}/{{ attempt.answered_count }} correctas</strong>
-            <small>{{ attempt.created_at|date:"d M H:i" }} · θ {{ attempt.theta|floatformat:2 }} · SE {{ attempt.standard_error|floatformat:2 }}</small>
-          </span>
-          <span class="study-badge">{{ attempt.accuracy }}%</span>
-        </a>
-        {% endfor %}
-      </div>
     {% else %}
     <div class="empty-state-mini">
       <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>

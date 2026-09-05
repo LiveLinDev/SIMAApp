@@ -1793,6 +1793,19 @@ def transcribe_audio(audio_path):
     return result.get("text", "").strip()
 
 
+def transcribe_audio_detailed(audio_path) -> tuple[str, list[dict]]:
+    """Texto completo y segmentos con marcas de tiempo (start, end, text)."""
+    try:
+        import whisper
+    except ImportError as exc:
+        raise RuntimeError("Instala Whisper local para transcribir: pip install openai-whisper") from exc
+    from .segments import normalize_whisper_result
+
+    configure_local_ffmpeg(whisper)
+    model = whisper.load_model(settings.WHISPER_MODEL)
+    return normalize_whisper_result(model.transcribe(str(audio_path)))
+
+
 def configure_local_ffmpeg(whisper_module=None):
     try:
         import imageio_ffmpeg

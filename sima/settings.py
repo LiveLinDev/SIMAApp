@@ -187,6 +187,10 @@ else:
     CLOUD_API_KEY = env_text("CLOUD_API_KEY", "") or DEEPSEEK_API_KEY
     CLOUD_API_BASE = env_text("CLOUD_API_BASE", "") or env_text("DEEPSEEK_API_BASE", "") or _default_base
     CLOUD_MODEL = env_text("CLOUD_MODEL", "") or env_text("DEEPSEEK_MODEL", "") or _default_model
+# Modelo opcional para verificar/reparar (por defecto el mismo CLOUD_MODEL).
+CLOUD_VERIFICATION_MODEL = env_text("CLOUD_VERIFICATION_MODEL", "")
+# Esfuerzo de razonamiento para modelos gpt-oss (low | medium | high): low ahorra tokens de salida.
+CLOUD_REASONING_EFFORT = env_text("CLOUD_REASONING_EFFORT", "low")
 _CLOUD_LABELS = {
     "deepseek": "DeepSeek", "openai": "OpenAI", "gemini": "Gemini", "qwen": "Qwen",
     "groq": "Groq", "mistral": "Mistral", "anthropic": "Claude", "openai_compatible": "Nube",

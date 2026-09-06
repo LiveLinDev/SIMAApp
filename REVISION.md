@@ -98,10 +98,22 @@ Recordatorios por correo: marca la casilla en Inicio → Preferencias y ejecuta
 
 ## 5. Proveedor de IA: estado real al 6 de septiembre
 
-- **Groq es el perfil activo en tu `.env`** y ya se probó con tu clave: ping en 4 s y una generación de
-  prueba con 6 ítems válidos de 6 pedidos en 9 s, sin incoherencias, costo estimado de una milésima de
-  dólar (el nivel gratuito no cobra). Su límite es 8 000 tokens por minuto y un tope diario por modelo:
-  SIMA espera y reintenta ante el 429, así que una clase tarda más pero termina.
+- **Groq es el perfil activo en tu `.env`**, probado de punta a punta con dos clases reales de la base:
+
+  | Clase | Palabras | Ítems finales | Fuentes web | Correcciones | Tiempo |
+  |---|---|---|---|---|---|
+  | "Test" (normas APA) | 443 | 7 | 15 | 7 | 3 min |
+  | "Patologías" (Medicina General) | 2 424 | 30 | 15 | 9 | 4,5 min + 1 min de re-verificación |
+
+  Configuración que quedó en tu `.env` tras comparar modelos con el mismo texto:
+  **generar con `qwen/qwen3.8-27b`** (9 de 9 ítems válidos frente a 6 de 9 de `openai/gpt-oss-120b`) y
+  **verificar con `openai/gpt-oss-120b`** (`CLOUD_VERIFICATION_MODEL`), porque Qwen devuelve reportes de
+  verificación vacíos (n=0) y GPT-OSS sí evalúa cada ítem; además corrigió que Qwen ponía casi todas las
+  respuestas correctas en la opción A. El nivel gratuito (8 000 tokens por minuto y por petición, tope
+  diario por modelo) se respeta con `CLOUD_TOKENS_PER_MINUTE=6000`, `CLOUD_MAX_TOKENS=4000`,
+  `CLOUD_CHUNK_WORDS=1200`, `CLOUD_ITEMS_PER_CHUNK_MAX=12` y `VERIFICATION_CONTEXT_MAX_CHARS=8000`:
+  SIMA espera antes de llamar y reintenta si aun así recibe 429. Las clases de prueba quedaron en la base
+  con el sufijo "(prueba Groq …)"; puedes practicarlas o borrarlas desde la interfaz.
 - **Qwen queda en espera** (bloque comentado en `.env`): la clave y el dominio de tu workspace son
   correctos, pero Alibaba suspendió la activación (`RISK_CONTROL_REJECTION`). Cuando el KYC se
   resuelva, basta descomentar sus 5 líneas y comentar las de Groq.

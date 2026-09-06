@@ -116,6 +116,20 @@ def clean_ai_error(exc) -> str:
     return err_str
 
 
+VERIFICATION_ROLES = {"verification", "coherence", "transcript"}
+
+
+def model_for_role(role: str) -> str:
+    """
+    CLOUD_MODEL genera; CLOUD_VERIFICATION_MODEL (opcional) verifica, repara coherencia y
+    transcripcion. Permite combinar un modelo que respeta bien el formato .mini con otro
+    que razona mejor sobre hechos (p. ej. Qwen 3.8 para generar y GPT-OSS 120B para verificar).
+    """
+    if role in VERIFICATION_ROLES:
+        return getattr(settings, "CLOUD_VERIFICATION_MODEL", "") or getattr(settings, "CLOUD_MODEL", "")
+    return getattr(settings, "CLOUD_MODEL", "")
+
+
 def _cloud_temperature(role: str) -> float:
     if role in {"verification", "coherence", "transcript"}:
         return getattr(settings, "CLOUD_VERIFICATION_TEMPERATURE", 0.2)
@@ -129,11 +143,24 @@ def _call_cloud_model(prompt: str, role: str = "generation", max_tokens: int | N
     return _call_openai_compatible(prompt, role=role, max_tokens=max_tokens)
 
 
-def effective_max_tokens(requested: int | None) -> int:
-    """Tope de salida: el pedido por la llamada, recortado al CLOUD_MAX_TOKENS global (0 = sin tope)."""
+REASONING_MARKERS = ("gpt-oss", "thinking", "reasoner", "/o1", "/o3", "-r1")
+REASONING_EXTRA_TOKENS = 2500   # los modelos con razonamiento gastan salida "pensando" antes de responder
+
+
+def is_reasoning_model(model: str) -> bool:
+    name = (model or "").lower()
+    return any(marker in name for marker in REASONING_MARKERS)
+
+
+def effective_max_tokens(requested: int | None, model: str = "") -> int:
+    """
+    Tope de salida: lo que pide la llamada (mas un margen si el modelo razona antes de
+    responder), recortado al CLOUD_MAX_TOKENS global (0 = sin tope).
+    """
     cap = int(getattr(settings, "CLOUD_MAX_TOKENS", 6000) or 0)
     if requested and requested > 0:
-        return min(cap, int(requested)) if cap > 0 else int(requested)
+        wanted = int(requested) + (REASONING_EXTRA_TOKENS if is_reasoning_model(model) else 0)
+        return min(cap, wanted) if cap > 0 else wanted
     return cap
 
 
@@ -157,7 +184,7 @@ def _call_anthropic(prompt: str, role: str = "generation", max_tokens: int | Non
         # Sin temperature: los modelos Claude 4.6+ rechazan parametros de muestreo.
         message = client.messages.create(
             model=model,
-            max_tokens=effective_max_tokens(max_tokens) or 6000,
+            max_tokens=effective_max_tokens(max_tokens, model) or 6000,
             messages=[{"role": "user", "content": prompt}],
         )
     except AuthenticationError as exc:
@@ -188,7 +215,7 @@ def _call_openai_compatible(prompt: str, role: str = "generation", max_tokens: i
 
     label = getattr(settings, "CLOUD_LABEL", "Nube")
     base_url = normalize_openai_base_url(getattr(settings, "CLOUD_API_BASE", "") or "https://api.deepseek.com")
-    model = getattr(settings, "CLOUD_MODEL", "")
+    model = model_for_role(role)
     timeout = getattr(settings, "CLOUD_API_TIMEOUT", 120)
     if not model:
         raise RuntimeError("CLOUD_MODEL no esta configurado en .env.")
@@ -202,9 +229,12 @@ def _call_openai_compatible(prompt: str, role: str = "generation", max_tokens: i
         timeout=timeout,
     )
     # Algunos endpoints compatibles (Gemini) no aceptan max_tokens: CLOUD_MAX_TOKENS=0 lo omite.
-    budget = effective_max_tokens(max_tokens)
+    budget = effective_max_tokens(max_tokens, model)
     if budget > 0:
         request["max_tokens"] = budget
+    if "gpt-oss" in model.lower():
+        # Groq/OpenAI: menos razonamiento = menos tokens de salida consumidos antes de la respuesta.
+        request["extra_body"] = {"reasoning_effort": getattr(settings, "CLOUD_REASONING_EFFORT", "low")}
     if getattr(settings, "CLOUD_PROVIDER", "") == "qwen":
         # Los modelos Qwen3 pueden traer "razonamiento" que rompe el bloque .mini y, en algunos
         # modelos, obliga a streaming; se pide la respuesta directa.

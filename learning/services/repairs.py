@@ -1,11 +1,14 @@
 """Verificacion factual y reparaciones del .mini (coherencia, opciones, transcripcion) con trazas de cambios."""
 from __future__ import annotations
 
+from django.conf import settings
+
 import difflib
 import re
 
 
 from .backends import (
+    model_for_role,
     call_ai,
     resolve_backend,
 )
@@ -33,15 +36,42 @@ def verify_items(mini_content: str, backend: str = "auto", verification_mode: st
     # El reporte v|/e| es corto: ~60 tokens por item mas cabecera.
     output = call_ai(call_prompt, backend=backend, role="verification", max_tokens=600 + 60 * max(1, count_mini_items(mini_content)))
     output = ensure_verification_report_format(output, mini_content, backend)
+    trace["degenerate"] = verification_report_is_degenerate(output, mini_content)
+    trace["model"] = model_for_role("verification") if backend == "cloud" else getattr(settings, "LOCAL_MODEL", "")
     trace["backend"] = backend
     trace["prompt_chars"] = len(prompt)
     trace["output_chars"] = len(output)
     return prompt, output, backend, trace
 
 
+def verification_report_is_degenerate(output: str, mini_content: str) -> bool:
+    """
+    Un reporte v| con n=0 para un .mini que si tiene items significa que el modelo no
+    evaluo nada (pasa con modelos que no siguen el prompt de verificacion): no debe
+    contar como "verificado".
+    """
+    if not _looks_like_verification_report(output):
+        return False
+    first = next((l.strip() for l in output.splitlines() if l.strip()), "")
+    m = re.search(r"\|n=(\d+)", first)
+    return bool(m) and int(m.group(1)) == 0 and count_mini_items(mini_content) > 0
+
+
 def ensure_verification_report_format(output: str, mini_content: str, backend: str) -> str:
-    if _looks_like_verification_report(output):
+    if _looks_like_verification_report(output) and not verification_report_is_degenerate(output, mini_content):
         return output
+    if verification_report_is_degenerate(output, mini_content):
+        # segunda oportunidad con instruccion explicita; si insiste, se deja constancia
+        strict = (
+            "El reporte anterior declaro n=0 items revisados, pero el MINI tiene items. "
+            "Revisa CADA item contra las fuentes y devuelve v| con n=<total de items> y una linea e<N>| por cada error real.\n\n"
+            f"MINI_A_VERIFICAR:\n{mini_content}"
+        )
+        try:
+            second = call_ai(strict, backend=backend, role="verification", max_tokens=600 + 60 * max(1, count_mini_items(mini_content)))
+        except Exception:
+            return output
+        return second if _looks_like_verification_report(second) and not verification_report_is_degenerate(second, mini_content) else output
 
     retry_prompt = (
         "Convierte el reporte informal siguiente al formato MINI de verificacion.\n"

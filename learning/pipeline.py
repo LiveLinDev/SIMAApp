@@ -171,7 +171,9 @@ def process_lesson_job(job_id: int, backend: str = "auto"):
             _set_stage(
                 job,
                 "Verificacion recibida",
-                f"Fuentes web: {_count_web_sources(verification_trace)}. EduQG matches: {_count_eduqg_matches(verification_trace)}.",
+                f"Fuentes web: {_count_web_sources(verification_trace)}. EduQG matches: {_count_eduqg_matches(verification_trace)}. "
+                f"Modelo: {verification_trace.get('model', '')}."
+                + (" AVISO: el modelo devolvio un reporte vacio (n=0); los items no fueron evaluados." if verification_trace.get("degenerate") else ""),
             )
             _set_stage(job, "Aplicando correcciones", "Interpretando el reporte y generando la version final.")
             corrected_output, correction_trace = apply_corrections_with_trace(job.toon_output, verification_output)

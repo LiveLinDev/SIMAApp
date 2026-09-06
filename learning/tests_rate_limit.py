@@ -34,6 +34,42 @@ class TokenRateLimiterTests(SimpleTestCase):
         self.assertEqual(backends.estimate_tokens("hola mundo" * 35), 101)
 
 
+class ReasoningBudgetTests(SimpleTestCase):
+    @override_settings(CLOUD_MAX_TOKENS=4000)
+    def test_reasoning_models_get_extra_output(self):
+        self.assertTrue(backends.is_reasoning_model("openai/gpt-oss-120b"))
+        self.assertFalse(backends.is_reasoning_model("qwen/qwen3.8-27b"))
+        self.assertEqual(backends.effective_max_tokens(1000, "qwen/qwen3.8-27b"), 1000)
+        self.assertEqual(backends.effective_max_tokens(1000, "openai/gpt-oss-120b"), 3500)
+        self.assertEqual(backends.effective_max_tokens(3000, "openai/gpt-oss-120b"), 4000)  # recortado al tope
+        self.assertEqual(backends.effective_max_tokens(None, "openai/gpt-oss-120b"), 4000)
+
+
+class RoleModelTests(SimpleTestCase):
+    @override_settings(CLOUD_MODEL="qwen/qwen3.8-27b", CLOUD_VERIFICATION_MODEL="openai/gpt-oss-120b")
+    def test_model_per_role(self):
+        self.assertEqual(backends.model_for_role("generation"), "qwen/qwen3.8-27b")
+        self.assertEqual(backends.model_for_role("verification"), "openai/gpt-oss-120b")
+        self.assertEqual(backends.model_for_role("coherence"), "openai/gpt-oss-120b")
+        with override_settings(CLOUD_VERIFICATION_MODEL=""):
+            self.assertEqual(backends.model_for_role("verification"), "qwen/qwen3.8-27b")
+
+    def test_degenerate_report_detection_and_retry(self):
+        from learning.services import repairs
+
+        mini = "a|m=IRT3PL|d=20260906|n=2|l=es|t=x|bd=1,1,0,0,0,0|cat=0,-3,3,0.3,10,SH\ni1|L1|T|q1?|a*,b,c,d|1,0,0.25|2|x,0,low\ni2|L1|T|q2?|a*,b,c,d|1,0,0.25|2|x,0,low"
+        self.assertTrue(repairs.verification_report_is_degenerate("v|d=20240522|n=0|e=0|s=VERIFICADO", mini))
+        self.assertFalse(repairs.verification_report_is_degenerate("v|d=20260906|n=2|e=0|s=VERIFICADO", mini))
+        self.assertFalse(repairs.verification_report_is_degenerate("texto sin formato", mini))
+        with patch.object(repairs, "call_ai", return_value="v|d=20260906|n=2|e=1|s=CORREGIDO\ne1|i1|wrong_answer|options|a|b|razon") as call:
+            fixed = repairs.ensure_verification_report_format("v|d=20240522|n=0|e=0|s=VERIFICADO", mini, "cloud")
+        self.assertIn("n=2", fixed)
+        self.assertEqual(call.call_count, 1)
+        with patch.object(repairs, "call_ai", return_value="v|d=20240522|n=0|e=0|s=VERIFICADO"):
+            same = repairs.ensure_verification_report_format("v|d=20240522|n=0|e=0|s=VERIFICADO", mini, "cloud")
+        self.assertIn("n=0", same)  # insiste: se deja constancia en la traza
+
+
 class ContextBudgetTests(SimpleTestCase):
     def test_fit_context_keeps_whole_blocks(self):
         from learning.services.evidence import fit_context

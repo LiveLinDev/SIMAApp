@@ -8,7 +8,7 @@ from django.core.management import call_command
 from django.test import TestCase, TransactionTestCase, override_settings
 from django.utils import timezone
 
-from learning import adaptive, job_queue, summaries
+from learning import adaptive, job_queue, pipeline, summaries
 from learning.models import (
     ClassSession, Course, LessonJob, Plan, PracticeSession, Profile, Question, ReinforcementJob, Summary, SummaryJob, Transcript,
 )
@@ -247,13 +247,13 @@ class PipelineSimulatedTests(TestCase):
     def setUp(self):
         _base(self)
 
-    @patch("learning.job_queue.use_direct_cloud_mini", return_value=True)
-    @patch("learning.job_queue.generate_items", return_value=("PROMPT", MINI, "cloud"))
-    @patch("learning.job_queue.resolve_backend", return_value="cloud")
+    @patch("learning.pipeline.use_direct_cloud_mini", return_value=True)
+    @patch("learning.pipeline.generate_items", return_value=("PROMPT", MINI, "cloud"))
+    @patch("learning.pipeline.resolve_backend", return_value="cloud")
     def test_text_lesson_end_to_end(self, _rb, _gen, _direct):
         job = LessonJob.objects.create(user=self.user, course=self.course, title="Clase 2", mode=LessonJob.Mode.API,
                                        status=LessonJob.Status.QUEUED, source_text=TRANSCRIPT, ai_backend="cloud")
-        job_queue.process_lesson_job(job.pk, "cloud")
+        pipeline.process_lesson_job(job.pk, "cloud")
         job.refresh_from_db()
         self.assertEqual(job.status, LessonJob.Status.CORRECTED, job.error)
         self.assertIn("i1|", job.corrected_output)
@@ -269,12 +269,12 @@ class PipelineSimulatedTests(TestCase):
         practice = adaptive.start_practice(self.user, self.course, target_count=3, lesson=job)
         self.assertIsNotNone(practice.current_question_id)
 
-    @patch("learning.job_queue.generate_items", side_effect=RuntimeError("proveedor caido"))
-    @patch("learning.job_queue.resolve_backend", return_value="cloud")
+    @patch("learning.pipeline.generate_items", side_effect=RuntimeError("proveedor caido"))
+    @patch("learning.pipeline.resolve_backend", return_value="cloud")
     def test_pipeline_error_is_recorded(self, _rb, _gen):
         job = LessonJob.objects.create(user=self.user, course=self.course, title="Clase 3", mode=LessonJob.Mode.API,
                                        status=LessonJob.Status.QUEUED, source_text=TRANSCRIPT)
-        job_queue.process_lesson_job(job.pk, "cloud")
+        pipeline.process_lesson_job(job.pk, "cloud")
         job.refresh_from_db()
         self.assertEqual(job.status, LessonJob.Status.ERROR)
         self.assertIn("proveedor caido", job.error)

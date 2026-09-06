@@ -7,7 +7,7 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
-from learning import adaptive, job_queue, summaries
+from learning import adaptive, job_queue, pipeline, summaries
 from learning.models import Course, LessonJob, Plan, Profile, SummaryJob
 from learning.tests_adaptive import MINI
 from learning.tests_summaries import TRANSCRIPT
@@ -87,6 +87,7 @@ class PendingJobLimitTests(TestCase):
 
 class SharedHelpersTests(TestCase):
     def test_views_reuse_queue_helpers(self):
-        self.assertIs(_common._sync_class_session_for_job, job_queue._sync_class_session_status)
-        self.assertIs(_common._compile_mini_for_render, job_queue._compile_mini_for_render)
-        self.assertEqual(_common._normalize_verification_mode("nope"), job_queue._normalize_verification_mode("nope"))
+        self.assertIs(_common._sync_class_session_for_job, pipeline._sync_class_session_status)
+        self.assertIs(_common._compile_mini_for_render, pipeline._compile_mini_for_render)
+        self.assertEqual(_common._normalize_verification_mode("nope"), pipeline._normalize_verification_mode("nope"))
+        self.assertIs(job_queue.process_lesson_job, pipeline.process_lesson_job)  # reexport de compatibilidad

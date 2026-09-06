@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.urls import NoReverseMatch, reverse
 
 from learning import adaptive, segments
-from learning.job_queue import _sync_class_session_status, _sync_transcript_record
+from learning.pipeline import _sync_class_session_status, _sync_transcript_record
 from learning.models import Course, LessonJob, Plan, Profile, Question, Summary, TranscriptSegment
 from learning.tests_adaptive import MINI
 

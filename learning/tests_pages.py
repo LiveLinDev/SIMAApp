@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from learning import adaptive, spaced_repetition
-from learning.job_queue import _sync_class_session_status
+from learning.pipeline import _sync_class_session_status
 from learning.models import Course, Flashcard, LessonJob, Plan, Profile, Question, Summary
 from learning.tests_adaptive import MINI
 from learning.tests_summaries import TRANSCRIPT

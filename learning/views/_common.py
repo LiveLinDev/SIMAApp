@@ -28,13 +28,13 @@ from ..credits import (
     has_enough_credits,
 )
 from ..forms import ApiLessonForm, CourseForm, FreeLessonForm, ManualResultForm, PlanForm, RegisterForm, VerificationResultForm
-from ..job_queue import (
+from ..job_queue import enqueue_lesson_job
+from ..pipeline import (
     _compile_mini_for_render,
     _job_content_for_generation,
     _normalize_verification_mode,
     _safe_trace_list,
     _sync_class_session_status,
-    enqueue_lesson_job,
 )
 from ..models import ClassSession, Course, Difficulty, Flashcard, LessonJob, UserPreference, get_plan_details
 from ..parse_mini import apply_corrections_with_trace, assessment_to_dict, filter_incoherent_items, normalize_mini_text, parse_mini, render_mini_html, validate_mini_parse

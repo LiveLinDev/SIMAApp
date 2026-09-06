@@ -110,7 +110,7 @@ def sync_question_bank(job: LessonJob) -> Quiz | None:
     mini_text = lesson_mini(job)
     if not (job.course_id and mini_text):
         return None
-    from .job_queue import _sync_class_session_status  # import perezoso: evita ciclo
+    from .pipeline import _sync_class_session_status  # import perezoso: evita ciclo
 
     session = _sync_class_session_status(job)
     if session is None:

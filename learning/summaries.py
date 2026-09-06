@@ -130,7 +130,7 @@ def _charge(user, course, class_session, backend: str, label: str):
 def _class_session_for(job: LessonJob, create: bool = False) -> ClassSession | None:
     session = ClassSession.objects.filter(legacy_lesson_job=job).first()
     if session is None and create and job.course_id:
-        from .job_queue import _sync_class_session_status  # import perezoso
+        from .pipeline import _sync_class_session_status  # import perezoso
 
         session = _sync_class_session_status(job)
     return session

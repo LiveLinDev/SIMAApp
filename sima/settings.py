@@ -195,6 +195,9 @@ CLOUD_LABEL = env_text("CLOUD_LABEL", "") or _CLOUD_LABELS.get(CLOUD_PROVIDER, C
 # Gemini no acepta max_tokens en su endpoint compatible: 0 lo omite.
 CLOUD_MAX_TOKENS = env_int("CLOUD_MAX_TOKENS", env_int("DEEPSEEK_MAX_TOKENS", 0 if CLOUD_PROVIDER == "gemini" else 6000))
 CLOUD_API_TIMEOUT = env_int("CLOUD_API_TIMEOUT", env_int("DEEPSEEK_API_TIMEOUT", 120))
+# Ante 429 (limite de tokens por minuto de los niveles gratuitos) se espera lo que sugiere el proveedor y se reintenta.
+CLOUD_RATE_LIMIT_RETRIES = env_int("CLOUD_RATE_LIMIT_RETRIES", 5)
+CLOUD_RATE_LIMIT_MAX_WAIT = env_int("CLOUD_RATE_LIMIT_MAX_WAIT", 90)
 CLOUD_GENERATION_TEMPERATURE = env_float("CLOUD_GENERATION_TEMPERATURE", env_float("DEEPSEEK_GENERATION_TEMPERATURE", 0.3))
 CLOUD_VERIFICATION_TEMPERATURE = env_float("CLOUD_VERIFICATION_TEMPERATURE", env_float("DEEPSEEK_VERIFICATION_TEMPERATURE", 0.2))
 # True: el proveedor cloud entrega el MINI final en una pasada y se OMITE la verificacion factual.
@@ -210,6 +213,7 @@ LOCAL_MIN_ITEMS = env_int("LOCAL_MIN_ITEMS", 5)
 LOCAL_MAX_ITEMS = env_int("LOCAL_MAX_ITEMS", 150)
 LOCAL_ITEMS_PER_CHUNK_MAX = env_int("LOCAL_ITEMS_PER_CHUNK_MAX", 22)
 CLOUD_ITEMS_PER_CHUNK_MAX = env_int("CLOUD_ITEMS_PER_CHUNK_MAX", 32)
+CLOUD_CHUNK_WORDS = env_int("CLOUD_CHUNK_WORDS", 3000)  # palabras por llamada de generacion en la nube
 LOCAL_GENERATION_TEMPERATURE = env_float("LOCAL_GENERATION_TEMPERATURE", 0.4)
 LOCAL_VERIFICATION_TEMPERATURE = env_float("LOCAL_VERIFICATION_TEMPERATURE", 0.3)
 LOCAL_MAX_TOKENS = env_int("LOCAL_MAX_TOKENS", 8000)

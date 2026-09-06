@@ -96,7 +96,18 @@ Recordatorios por correo: marca la casilla en Inicio → Preferencias y ejecuta
 7. **Diagramas C4**: los `.dsl` de `docs/` se regeneran con Structurizr Lite o el sitio de Structurizr
    si quieres las imágenes para el documento de tesis; el contenido ya refleja el sistema actual.
 
-## 5. Probar con Qwen (perfil preparado)
+## 5. Proveedor de IA: estado real al 6 de septiembre
+
+- **Groq es el perfil activo en tu `.env`** y ya se probó con tu clave: ping en 4 s y una generación de
+  prueba con 6 ítems válidos de 6 pedidos en 9 s, sin incoherencias, costo estimado de una milésima de
+  dólar (el nivel gratuito no cobra). Su límite es 8 000 tokens por minuto y un tope diario por modelo:
+  SIMA espera y reintenta ante el 429, así que una clase tarda más pero termina.
+- **Qwen queda en espera** (bloque comentado en `.env`): la clave y el dominio de tu workspace son
+  correctos, pero Alibaba suspendió la activación (`RISK_CONTROL_REJECTION`). Cuando el KYC se
+  resuelva, basta descomentar sus 5 líneas y comentar las de Groq.
+- **DeepSeek** sigue comentado con la clave expuesta; rótala o bórrala.
+
+## 5b. Probar con Qwen (cuando Alibaba libere la cuenta)
 
 Tu `.env` actual sigue en DeepSeek (`deepseek-v4-flash`, verificación activada). Para pasar a Qwen, que
 tiene 1 millón de tokens gratis por modelo durante 90 días con cuenta internacional:

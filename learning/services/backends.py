@@ -4,6 +4,9 @@ from __future__ import annotations
 import re
 from urllib.parse import urlparse
 
+import re
+import time
+
 from django.conf import settings
 
 
@@ -176,12 +179,7 @@ def _call_openai_compatible(prompt: str, role: str = "generation") -> str:
     if not model:
         raise RuntimeError("CLOUD_MODEL no esta configurado en .env.")
 
-    client = OpenAI(
-        api_key=getattr(settings, "CLOUD_API_KEY", ""),
-        base_url=base_url,
-        max_retries=0,
-        timeout=timeout,
-    )
+    client = _chat_client(OpenAI, base_url, timeout)
     request = dict(
         model=model,
         messages=[{"role": "user", "content": prompt}],
@@ -197,10 +195,64 @@ def _call_openai_compatible(prompt: str, role: str = "generation") -> str:
         # Los modelos Qwen3 pueden traer "razonamiento" que rompe el bloque .mini y, en algunos
         # modelos, obliga a streaming; se pide la respuesta directa.
         request["extra_body"] = {"enable_thinking": False}
+    retries = max(0, int(getattr(settings, "CLOUD_RATE_LIMIT_RETRIES", 5)))
+    max_wait = float(getattr(settings, "CLOUD_RATE_LIMIT_MAX_WAIT", 90))
+    attempt = 0
+    while True:
+        try:
+            response = client.chat.completions.create(**request)
+            break
+        except Exception as exc:
+            # Niveles gratuitos (Groq, Gemini) limitan tokens por minuto: se espera lo que
+            # sugiere el proveedor y se reintenta en vez de tumbar el pipeline.
+            if _is_rate_limit_error(exc) and attempt < retries:
+                attempt += 1
+                wait = _suggested_wait_seconds(str(exc)) or min(max_wait, 5.0 * 2 ** (attempt - 1))
+                time.sleep(min(max_wait, wait + 0.5))
+                continue
+            _raise_cloud_error(exc, label, model, base_url, timeout, attempt)
+
+    return _extract_chat_completion_text(response, label)
+
+
+def _chat_client(OpenAI, base_url: str, timeout: int):
+    return OpenAI(api_key=getattr(settings, "CLOUD_API_KEY", ""), base_url=base_url, max_retries=0, timeout=timeout)
+
+
+def _is_rate_limit_error(exc) -> bool:
     try:
-        response = client.chat.completions.create(**request)
-    except Exception as exc:
-        from openai import APIConnectionError, APITimeoutError, AuthenticationError, NotFoundError
+        from openai import RateLimitError
+    except ImportError:  # pragma: no cover
+        return False
+    return isinstance(exc, RateLimitError) or getattr(exc, "status_code", None) == 429
+
+
+_WAIT_RE = re.compile(r"try again in\s*(?:(\d+)m)?([\d.]+)s", re.I)
+
+
+def _suggested_wait_seconds(message: str):
+    """Groq y otros escriben 'Please try again in 14.2s' (o '2m3.5s') en el mensaje del 429."""
+    m = _WAIT_RE.search(message or "")
+    if not m:
+        return None
+    minutes = int(m.group(1) or 0)
+    return minutes * 60 + float(m.group(2))
+
+
+def _raise_cloud_error(exc, label, model, base_url, timeout, attempts):
+    from openai import APIConnectionError, APITimeoutError, AuthenticationError, NotFoundError
+
+    if getattr(exc, "status_code", None) == 413:
+        raise RuntimeError(
+            f"{label} rechazo la peticion por tamano (413): baja CLOUD_CHUNK_WORDS (p. ej. 1200) y "
+            "CLOUD_ITEMS_PER_CHUNK_MAX (p. ej. 12) en .env para el nivel gratuito."
+        ) from exc
+    if _is_rate_limit_error(exc):
+        raise RuntimeError(
+            f"{label} alcanzo el limite de uso del nivel actual (429) tras {attempts} reintento(s). "
+            "Espera un minuto o reduce CLOUD_ITEMS_PER_CHUNK_MAX / CLOUD_CHUNK_WORDS en .env."
+        ) from exc
+    if True:
         if isinstance(exc, AuthenticationError):
             raise RuntimeError(f"{label} rechazo la API key configurada. Revisa CLOUD_API_KEY en .env.") from exc
         if isinstance(exc, NotFoundError):
@@ -213,8 +265,6 @@ def _call_openai_compatible(prompt: str, role: str = "generation") -> str:
         if isinstance(exc, APIConnectionError):
             raise RuntimeError(f"No se pudo conectar a {label} en {base_url}. Revisa CLOUD_API_BASE en .env.") from exc
         raise RuntimeError(f"Error llamando a {label}: {exc}") from exc
-
-    return _extract_chat_completion_text(response, label)
 
 
 _call_deepseek = _call_openai_compatible

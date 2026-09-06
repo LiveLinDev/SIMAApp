@@ -13,6 +13,7 @@ from .evidence import (
     build_verification_context,
 )
 from .generation import (
+    count_mini_items,
     clean_plain_text_output,
     extract_mini_lines,
 )
@@ -29,7 +30,8 @@ def verify_items(mini_content: str, backend: str = "auto", verification_mode: st
     prompt = build_verification_prompt(mini_content, source_context=source_context)
     # /no_think solo para backend local
     call_prompt = prompt + "\n/no_think" if backend == "local" else prompt
-    output = call_ai(call_prompt, backend=backend, role="verification")
+    # El reporte v|/e| es corto: ~60 tokens por item mas cabecera.
+    output = call_ai(call_prompt, backend=backend, role="verification", max_tokens=600 + 60 * max(1, count_mini_items(mini_content)))
     output = ensure_verification_report_format(output, mini_content, backend)
     trace["backend"] = backend
     trace["prompt_chars"] = len(prompt)

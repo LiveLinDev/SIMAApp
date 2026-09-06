@@ -199,9 +199,20 @@ def allocate_item_budget(chunks: list[str], total_items: int, per_chunk_max: int
     return budgets
 
 
-def call_generation_prompt(prompt: str, backend: str) -> str:
+OUTPUT_TOKENS_BASE = 400        # cabecera a| + margen
+OUTPUT_TOKENS_PER_ITEM = 170    # una linea i<N>| con 4 opciones y metadatos
+
+
+def output_budget(items: int | None) -> int | None:
+    """Tokens de salida que necesita una llamada que pide `items` items .mini."""
+    if not items or items <= 0:
+        return None
+    return OUTPUT_TOKENS_BASE + OUTPUT_TOKENS_PER_ITEM * int(items)
+
+
+def call_generation_prompt(prompt: str, backend: str, items: int | None = None) -> str:
     call_prompt = prompt + "\n/no_think" if backend == "local" else prompt
-    return call_ai(call_prompt, backend=backend, role="generation")
+    return call_ai(call_prompt, backend=backend, role="generation", max_tokens=output_budget(items))
 
 
 def count_mini_items(raw_output: str) -> int:
@@ -218,7 +229,7 @@ def _retry_if_few_items(prompt: str, mini: str, target_items: int, backend: str)
         f"REFUERZO: este chunk debe contener exactamente {target_items} lineas i<N>|. "
         "Cubre conceptos distintos del fragmento y evita repetir enunciados."
     )
-    retry_mini = call_generation_prompt(retry_prompt, backend=backend)
+    retry_mini = call_generation_prompt(retry_prompt, backend=backend, items=target_items)
     if count_mini_items(retry_mini) > count_mini_items(mini):
         return retry_prompt, retry_mini
     return prompt, mini
@@ -248,7 +259,7 @@ def _generate_chunk_safe(
         cloud_optimized=(backend == "cloud"),
     )
     try:
-        mini = call_generation_prompt(prompt, backend=backend)
+        mini = call_generation_prompt(prompt, backend=backend, items=chunk_items)
     except LocalAITimeoutError:
         words = chunk.split()
         if len(words) < 200 or depth > 3:
@@ -294,7 +305,7 @@ def generate_items(
             items_requested=budgets[0],
             cloud_optimized=(backend == "cloud"),
         )
-        result = call_generation_prompt(prompt, backend=backend)
+        result = call_generation_prompt(prompt, backend=backend, items=budgets[0])
         prompt, result = _retry_if_few_items(prompt, result, budgets[0], backend=backend)
         return prompt, result, backend
 

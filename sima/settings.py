@@ -198,6 +198,8 @@ CLOUD_API_TIMEOUT = env_int("CLOUD_API_TIMEOUT", env_int("DEEPSEEK_API_TIMEOUT",
 # Ante 429 (limite de tokens por minuto de los niveles gratuitos) se espera lo que sugiere el proveedor y se reintenta.
 CLOUD_RATE_LIMIT_RETRIES = env_int("CLOUD_RATE_LIMIT_RETRIES", 5)
 CLOUD_RATE_LIMIT_MAX_WAIT = env_int("CLOUD_RATE_LIMIT_MAX_WAIT", 90)
+# Cuota de tokens por minuto del modelo (0 = sin limitador). Con cuota, SIMA espera antes de llamar en vez de recibir 429.
+CLOUD_TOKENS_PER_MINUTE = env_int("CLOUD_TOKENS_PER_MINUTE", 0)
 CLOUD_GENERATION_TEMPERATURE = env_float("CLOUD_GENERATION_TEMPERATURE", env_float("DEEPSEEK_GENERATION_TEMPERATURE", 0.3))
 CLOUD_VERIFICATION_TEMPERATURE = env_float("CLOUD_VERIFICATION_TEMPERATURE", env_float("DEEPSEEK_VERIFICATION_TEMPERATURE", 0.2))
 # True: el proveedor cloud entrega el MINI final en una pasada y se OMITE la verificacion factual.
@@ -233,6 +235,8 @@ VERIFICATION_SOURCE_URLS = os.getenv("VERIFICATION_SOURCE_URLS", "")
 VERIFICATION_MAX_SOURCES = env_int("VERIFICATION_MAX_SOURCES", 6)
 VERIFICATION_SOURCE_TIMEOUT = env_int("VERIFICATION_SOURCE_TIMEOUT", 8)
 VERIFICATION_SOURCE_CHARS = env_int("VERIFICATION_SOURCE_CHARS", 2200)
+# Tope total del contexto de fuentes que va en el prompt de verificacion (0 = sin tope).
+VERIFICATION_CONTEXT_MAX_CHARS = env_int("VERIFICATION_CONTEXT_MAX_CHARS", 14000)
 VERIFICATION_DEFAULT_MODE = os.getenv("VERIFICATION_DEFAULT_MODE", "web")
 EDUQG_REFERENCE_PATH = os.getenv("EDUQG_REFERENCE_PATH", "")
 EDUQG_SOURCE_CHARS = env_int("EDUQG_SOURCE_CHARS", 6000)

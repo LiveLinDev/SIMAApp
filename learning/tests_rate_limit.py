@@ -15,6 +15,50 @@ def _response(text):
     return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content=text))], usage=None)
 
 
+class TokenRateLimiterTests(SimpleTestCase):
+    def test_waits_only_when_window_is_full(self):
+        clock = {"t": 0.0}
+        sleeps = []
+
+        def sleeper(s):
+            sleeps.append(s)
+            clock["t"] += s
+
+        limiter = backends.TokenRateLimiter(clock=lambda: clock["t"], sleeper=sleeper)
+        self.assertEqual(limiter.acquire(3000, 6000), 0.0)
+        self.assertEqual(limiter.acquire(2500, 6000), 0.0)
+        waited = limiter.acquire(2000, 6000)  # 7500 > 6000: espera a que expire la ventana
+        self.assertGreater(waited, 0)
+        self.assertGreaterEqual(clock["t"], 60.0)
+        self.assertEqual(limiter.acquire(100, 0), 0.0)  # sin limite configurado
+        self.assertEqual(backends.estimate_tokens("hola mundo" * 35), 101)
+
+
+class ContextBudgetTests(SimpleTestCase):
+    def test_fit_context_keeps_whole_blocks(self):
+        from learning.services.evidence import fit_context
+
+        blocks = [f"URL: https://f{i}\nCONTENIDO: " + ("x" * 900) for i in range(6)]
+        context = "\n\n".join(blocks)
+        fitted = fit_context(context, 2000)
+        self.assertLessEqual(len(fitted), 2000)
+        self.assertEqual(fitted.count("URL:"), 2)  # bloques completos, sin cortar a la mitad
+        self.assertTrue(fit_context(context, len(context) + 1) == context)
+        huge = "y" * 5000
+        self.assertTrue(fit_context(huge, 1000).endswith("[...]"))
+
+    @override_settings(VERIFICATION_CONTEXT_MAX_CHARS=1500, VERIFICATION_FETCH_SOURCES=True)
+    def test_verification_context_is_capped(self):
+        from learning.services import evidence
+
+        big = "\n\n".join(f"URL: https://s{i}\nCONTENIDO: " + ("z" * 700) for i in range(5))
+        with patch.object(evidence, "build_web_context", return_value=(big, {"enabled": True, "queries": [], "configured_sources": []})):
+            context, trace = evidence.build_verification_context("i1|L1|t|q?|a*,b,c,d|1,0,0.25|2|x,0,low", "web")
+        self.assertLessEqual(len(context), 1500)
+        self.assertTrue(trace["context_truncated"])
+        self.assertEqual(trace["context_chars"], len(context))
+
+
 @override_settings(CLOUD_PROVIDER="groq", CLOUD_API_KEY="gsk_real_key_1234567890", CLOUD_API_BASE="https://api.groq.com/openai/v1",
                    CLOUD_MODEL="openai/gpt-oss-120b", CLOUD_LABEL="Groq", CLOUD_RATE_LIMIT_RETRIES=3, CLOUD_RATE_LIMIT_MAX_WAIT=30)
 class RateLimitRetryTests(SimpleTestCase):

@@ -5,6 +5,7 @@ import re
 from urllib.parse import urlparse
 
 import re
+import threading
 import time
 
 from django.conf import settings
@@ -90,14 +91,19 @@ def use_direct_cloud_mini(backend: str) -> bool:
     return bool(getattr(settings, "CLOUD_DIRECT_MINI", False))
 
 
-def call_ai(prompt: str, backend: str = "auto", role: str = "generation") -> str:
+def call_ai(prompt: str, backend: str = "auto", role: str = "generation", max_tokens: int | None = None) -> str:
+    """
+    max_tokens: tope de salida para ESTA llamada (se recorta a CLOUD_MAX_TOKENS si esta definido).
+    Los proveedores con limite de tokens por peticion cuentan la salida reservada, asi que cada
+    llamada pide solo lo que necesita.
+    """
     backend = resolve_backend(backend)
     if backend == "cloud":
         if not cloud_backend_available():
             raise RuntimeError(
                 "No hay un proveedor de IA en la nube configurado (CLOUD_API_KEY en .env). Usa el backend local."
             )
-        return _call_cloud_model(prompt, role=role)
+        return _call_cloud_model(prompt, role=role, max_tokens=max_tokens)
     if backend == "local":
         return _call_local(prompt, role=role)
     raise RuntimeError(f"Backend desconocido: {backend}")
@@ -116,14 +122,22 @@ def _cloud_temperature(role: str) -> float:
     return getattr(settings, "CLOUD_GENERATION_TEMPERATURE", 0.3)
 
 
-def _call_cloud_model(prompt: str, role: str = "generation") -> str:
+def _call_cloud_model(prompt: str, role: str = "generation", max_tokens: int | None = None) -> str:
     """Enruta al proveedor cloud configurado en CLOUD_PROVIDER."""
     if getattr(settings, "CLOUD_PROVIDER", "openai_compatible") == "anthropic":
-        return _call_anthropic(prompt, role=role)
-    return _call_openai_compatible(prompt, role=role)
+        return _call_anthropic(prompt, role=role, max_tokens=max_tokens)
+    return _call_openai_compatible(prompt, role=role, max_tokens=max_tokens)
 
 
-def _call_anthropic(prompt: str, role: str = "generation") -> str:
+def effective_max_tokens(requested: int | None) -> int:
+    """Tope de salida: el pedido por la llamada, recortado al CLOUD_MAX_TOKENS global (0 = sin tope)."""
+    cap = int(getattr(settings, "CLOUD_MAX_TOKENS", 6000) or 0)
+    if requested and requested > 0:
+        return min(cap, int(requested)) if cap > 0 else int(requested)
+    return cap
+
+
+def _call_anthropic(prompt: str, role: str = "generation", max_tokens: int | None = None) -> str:
     try:
         from anthropic import (
             Anthropic,
@@ -143,7 +157,7 @@ def _call_anthropic(prompt: str, role: str = "generation") -> str:
         # Sin temperature: los modelos Claude 4.6+ rechazan parametros de muestreo.
         message = client.messages.create(
             model=model,
-            max_tokens=getattr(settings, "CLOUD_MAX_TOKENS", 6000),
+            max_tokens=effective_max_tokens(max_tokens) or 6000,
             messages=[{"role": "user", "content": prompt}],
         )
     except AuthenticationError as exc:
@@ -165,7 +179,7 @@ def _call_anthropic(prompt: str, role: str = "generation") -> str:
     return text.replace("\x00", "")
 
 
-def _call_openai_compatible(prompt: str, role: str = "generation") -> str:
+def _call_openai_compatible(prompt: str, role: str = "generation", max_tokens: int | None = None) -> str:
     """Proveedor cloud con API compatible con OpenAI Chat Completions (DeepSeek, OpenAI, Gemini, Qwen, Groq...)."""
     try:
         from openai import OpenAI
@@ -188,13 +202,16 @@ def _call_openai_compatible(prompt: str, role: str = "generation") -> str:
         timeout=timeout,
     )
     # Algunos endpoints compatibles (Gemini) no aceptan max_tokens: CLOUD_MAX_TOKENS=0 lo omite.
-    max_tokens = int(getattr(settings, "CLOUD_MAX_TOKENS", 6000) or 0)
-    if max_tokens > 0:
-        request["max_tokens"] = max_tokens
+    budget = effective_max_tokens(max_tokens)
+    if budget > 0:
+        request["max_tokens"] = budget
     if getattr(settings, "CLOUD_PROVIDER", "") == "qwen":
         # Los modelos Qwen3 pueden traer "razonamiento" que rompe el bloque .mini y, en algunos
         # modelos, obliga a streaming; se pide la respuesta directa.
         request["extra_body"] = {"enable_thinking": False}
+    limit_per_minute = int(getattr(settings, "CLOUD_TOKENS_PER_MINUTE", 0) or 0)
+    if limit_per_minute > 0:
+        _limiter.acquire(estimate_tokens(prompt) + (budget or 0), limit_per_minute)
     retries = max(0, int(getattr(settings, "CLOUD_RATE_LIMIT_RETRIES", 5)))
     max_wait = float(getattr(settings, "CLOUD_RATE_LIMIT_MAX_WAIT", 90))
     attempt = 0
@@ -213,6 +230,46 @@ def _call_openai_compatible(prompt: str, role: str = "generation") -> str:
             _raise_cloud_error(exc, label, model, base_url, timeout, attempt)
 
     return _extract_chat_completion_text(response, label)
+
+
+class TokenRateLimiter:
+    """
+    Ventana deslizante de 60 s: antes de cada llamada se estima su costo (entrada + salida
+    reservada) y, si la ventana ya no lo admite, se espera. Evita el 429 en vez de sufrirlo.
+    Vive en el proceso: en modo thread cubre a los workers en hilos; con varios procesos
+    `run_worker`, cada uno respeta su propia cuota (usa un valor por worker).
+    """
+
+    def __init__(self, clock=time.monotonic, sleeper=time.sleep):
+        self._events: list[tuple[float, int]] = []
+        self._clock = clock
+        self._sleep = sleeper
+        self._lock = threading.Lock()
+
+    def acquire(self, tokens: int, limit_per_minute: int) -> float:
+        if limit_per_minute <= 0 or tokens <= 0:
+            return 0.0
+        waited = 0.0
+        with self._lock:
+            while True:
+                now = self._clock()
+                self._events = [(t, n) for t, n in self._events if now - t < 60.0]
+                used = sum(n for _, n in self._events)
+                if used + tokens <= limit_per_minute or not self._events:
+                    self._events.append((now, min(tokens, limit_per_minute)))
+                    return waited
+                oldest = self._events[0][0]
+                pause = max(0.5, 60.0 - (now - oldest) + 0.2)
+                self._sleep(pause)
+                waited += pause
+
+
+_limiter = TokenRateLimiter()
+
+
+def estimate_tokens(text: str) -> int:
+    """Estimacion barata (~3.5 caracteres por token en espanol)."""
+    return int(len(text or "") / 3.5) + 1
 
 
 def _chat_client(OpenAI, base_url: str, timeout: int):
@@ -248,9 +305,11 @@ def _raise_cloud_error(exc, label, model, base_url, timeout, attempts):
             "CLOUD_ITEMS_PER_CHUNK_MAX (p. ej. 12) en .env para el nivel gratuito."
         ) from exc
     if _is_rate_limit_error(exc):
+        detail = re.sub(r"\s+", " ", str(exc))
+        detail = detail[detail.find("Rate limit"):][:220] if "Rate limit" in detail else detail[:220]
         raise RuntimeError(
-            f"{label} alcanzo el limite de uso del nivel actual (429) tras {attempts} reintento(s). "
-            "Espera un minuto o reduce CLOUD_ITEMS_PER_CHUNK_MAX / CLOUD_CHUNK_WORDS en .env."
+            f"{label} alcanzo el limite de uso del nivel actual (429) tras {attempts} reintento(s): {detail} "
+            "Ajusta CLOUD_TOKENS_PER_MINUTE en .env al limite del modelo o espera."
         ) from exc
     if True:
         if isinstance(exc, AuthenticationError):

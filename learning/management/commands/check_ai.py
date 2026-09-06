@@ -61,6 +61,7 @@ class Command(BaseCommand):
         parser.add_argument("--file", help="Texto de clase a usar con --mini (por defecto una muestra de biologia).")
         parser.add_argument("--items", type=int, default=6, help="Items a pedir con --mini (default 6).")
         parser.add_argument("--runs", type=int, default=1, help="Repeticiones de --mini para medir cuantas veces respeta el formato.")
+        parser.add_argument("--model", help="Probar otro modelo del mismo proveedor sin tocar .env (p. ej. llama-3.3-70b-versatile).")
 
     # ------------------------------------------------------------------ util
     def ok(self, text):
@@ -80,6 +81,8 @@ class Command(BaseCommand):
     # ------------------------------------------------------------------ pasos
     def handle(self, *args, **options):
         self.failed = False
+        if options.get("model"):
+            settings.CLOUD_MODEL = options["model"]  # solo en este proceso
         provider = getattr(settings, "CLOUD_PROVIDER", "")
         self.stdout.write("Configuracion de IA")
         self.stdout.write(f"  proveedor     : {provider} ({getattr(settings, 'CLOUD_LABEL', '')})")

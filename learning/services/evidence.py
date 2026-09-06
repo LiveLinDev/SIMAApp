@@ -69,8 +69,36 @@ def build_verification_context(mini_content: str, verification_mode: str = "web"
         parts.append(web_context)
         trace["web"] = web_trace
 
-    trace["context_chars"] = sum(len(part) for part in parts if part)
-    return "\n\n".join(part for part in parts if part.strip()), trace
+    context = "\n\n".join(part for part in parts if part.strip())
+    budget = int(getattr(settings, "VERIFICATION_CONTEXT_MAX_CHARS", 14000) or 0)
+    if budget > 0 and len(context) > budget:
+        context = fit_context(context, budget)
+        trace["context_truncated"] = True
+    trace["context_chars"] = len(context)
+    return context, trace
+
+
+def fit_context(context: str, max_chars: int) -> str:
+    """
+    Recorta el contexto a un presupuesto de caracteres conservando bloques completos
+    (cada fuente es un bloque separado por linea en blanco). Los proveedores con pocos
+    tokens por minuto (niveles gratuitos) rechazan peticiones grandes con 413.
+    """
+    if len(context) <= max_chars:
+        return context
+    kept, used = [], 0
+    for block in context.split("\n\n"):
+        block = block.strip()
+        if not block:
+            continue
+        extra = len(block) + (2 if kept else 0)
+        if used + extra > max_chars:
+            if not kept:  # un solo bloque enorme: cortarlo en vez de quedarse sin contexto
+                kept.append(block[: max(200, max_chars - 40)].rstrip() + " [...]")
+            break
+        kept.append(block)
+        used += extra
+    return "\n\n".join(kept)
 
 
 def normalize_verification_mode(verification_mode: str) -> str:

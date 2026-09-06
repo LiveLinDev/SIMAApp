@@ -571,7 +571,7 @@ def _fill_items_if_needed(
             f"CONTENIDO:\n{source_content[:4000]}\n\n"
             f"Responde SOLO con el bloque MINI (cabecera a| + items iN|)."
         )
-        raw_output = call_ai(fill_prompt, backend=backend, role="generation")
+        raw_output = call_ai(fill_prompt, backend=backend, role="generation", max_tokens=2000)
         fill_mini = extract_mini_lines(raw_output)
         if fill_mini:
             combined = merge_mini_chunks([current_mini, fill_mini])

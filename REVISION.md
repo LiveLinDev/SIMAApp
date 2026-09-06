@@ -5,17 +5,19 @@ probar cada pieza en tu máquina en pocos minutos, y qué decisiones quedan en t
 
 ## 1. Avance medible
 
-| Indicador | Antes (retomar, 9a0a15b) | Ahora (b4868a1) |
+| Indicador | Antes (retomar, 9a0a15b) | Ahora |
 |---|---|---|
-| Pruebas automáticas | 5 (solo parser `.mini`) | **93** en 13 módulos, todas en verde |
+| Pruebas automáticas | 5 (solo parser `.mini`) | **96** en 14 módulos, todas en verde (incluye una que renderiza las 31 páginas del producto) |
 | Cobertura funcional de pruebas | parser | parser, backends, reencolado, pipeline completo con IA simulada, motor adaptativo, motor v2, refuerzo, ritmo, ciclo de aprendizaje, resúmenes, progreso, recordatorios, cola en BD, simulacro, olvido, banco, salud |
-| Commits locales sobre `main` | — | 14 (77 archivos, +9 226 / −2 592 líneas) |
+| Commits locales sobre `main` | — | 17 |
 | Migraciones aplicadas | 0015 | 0023 (0022 elimina las tablas heredadas del quiz) |
 | Módulos nuevos del núcleo | 0 | 8 (`adaptive`, `psychometrics`, `adaptive_generation`, `spaced_repetition`, `segments`, `summaries`, `progress`, `reminders`; 3 319 líneas con `job_queue`) |
 | Tablas del modelo nuevo en uso | vacías | `Question`, `AnswerOption`, `StudentAnswer`, `AdaptiveProfile`, `Recommendation`, `StudyActivity`, `Summary`, `Flashcard` (SM-2), `Transcript`, `TranscriptSegment`, `PracticeSession`, `ReinforcementJob`, `SummaryJob` |
 | Comandos de operación | — | `requeue_jobs`, `sync_question_bank`, `send_study_reminders`, `run_worker` |
 | Modos de práctica | quiz por clase sin memoria | equilibrada, refuerzo de débiles, repaso de temas en riesgo, simulacro con nota |
 | Organización de vistas | `views.py` de 1 992 líneas con funciones duplicadas | paquete `learning/views/` por dominio (8 módulos), sin duplicados, ayudantes compartidos con el worker |
+| Organización de servicios | `services.py` de 1 849 líneas | paquete `learning/services/` (prompts, backends, generation, repairs, evidence, transcription), sin ciclos |
+| Documentación de arquitectura | diagramas C4 de abril con componentes "planeados" y API de Claude | `docs/ARQUITECTURA.md` + C4 (contexto, contenedores, componentes) sincronizados con el código |
 
 ## 2. Qué hace SIMA ahora, de punta a punta
 
@@ -89,8 +91,8 @@ Recordatorios por correo: marca la casilla en Inicio → Preferencias y ejecuta
    constantes al inicio de `learning/adaptive.py` y `learning/psychometrics.py`; conviene ajustarlos
    con datos reales de un ciclo.
 6. **Plan gratuito**: si incluye algún refuerzo o resumen al mes (hoy cobran créditos siempre).
-7. **`services.py`** (1 849 líneas) sigue siendo un solo módulo: prompts, proveedores, verificación web
-   y EduQG, Whisper. Partirlo es la siguiente reorganización razonable, sin urgencia.
+7. **Diagramas C4**: los `.dsl` de `docs/` se regeneran con Structurizr Lite o el sitio de Structurizr
+   si quieres las imágenes para el documento de tesis; el contenido ya refleja el sistema actual.
 
 ## 5. Referencias del motor (para la sustentación)
 

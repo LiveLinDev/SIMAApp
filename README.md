@@ -135,6 +135,7 @@ static/learning/  CSS
 PROMPT.md, coherence_prompt.md, correct_prompt.md   prompts que el pipeline lee en ejecución
 MINI_FORMAT_SPEC.md   especificación del formato .mini
 docs/PIPELINE.md      pipeline etapa por etapa
+docs/ARQUITECTURA.md  módulos y los tres flujos principales; diagramas C4 en docs/c4-*.dsl
 desarollo/VALIDACION_FLUJO_SIMA.md   prueba real del pipeline y fallos conocidos
 ```
 

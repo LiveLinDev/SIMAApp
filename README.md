@@ -110,7 +110,9 @@ learning/
   views/          paquete de vistas por dominio: core (inicio, panel, salud), courses (curso, banco, CSV),
                   lessons (clases y pipeline), study (flashcards, repaso, ejercicios, mapa), pipeline (trazas),
                   practice (práctica, recomendaciones, refuerzo), summaries_views, _common (ayudantes)
-  services.py     prompts, llamadas a IA (nube compatible OpenAI / Anthropic / local), chunking, verificación web y EduQG, Whisper
+  services/       paquete: prompts (plantillas y limpieza), backends (proveedores nube/local y call_ai),
+                  generation (chunks y presupuesto de ítems), repairs (verificación y reparaciones .mini),
+                  evidence (web, documentos fuente, EduQG), transcription (Whisper)
   job_queue.py    cola (hilos o BD) + worker; orquestación del pipeline por etapas; reclamo de trabajos; límite por usuario
   parse_mini.py   parser/serializador .mini, filtros de coherencia, aplicación de correcciones
   cat.py          IRT 3PL: probabilidad, información de Fisher y nivel

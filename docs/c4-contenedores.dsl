@@ -1,39 +1,53 @@
-workspace "SIMA — Contenedores" "Descomposición interna del sistema SIMA" {
+workspace "SIMA — Contenedores" "Descomposición interna del sistema SIMA (estado septiembre 2026)" {
 
     !identifiers hierarchical
 
     model {
-        estudiante = person "Estudiante" "Usa la plataforma desde el navegador o móvil."
+        estudiante = person "Estudiante" "Usa la plataforma desde el navegador (escritorio o móvil)."
         admin      = person "Administrador" "Gestiona el sistema vía Django Admin."
 
-        claude = softwareSystem "Anthropic Claude API" "Genera y verifica ítems IRT en formato MINI. Solo interviene en el pipeline de ingesta de clases." {
+        cloud = softwareSystem "Proveedor de IA en la nube" "DeepSeek u otro modelo compatible con OpenAI, o Anthropic; configurable por variables de entorno." {
             tags "External"
         }
-
-        whisper = softwareSystem "Whisper (local)" "Transcribe audio a texto dentro del servidor." {
+        whisper = softwareSystem "Whisper (local)" "Transcripción con segmentos y tiempo dentro del servidor." {
+            tags "External"
+        }
+        correo = softwareSystem "Servidor de correo (SMTP)" {
             tags "External"
         }
 
         sima = softwareSystem "SIMA" {
 
-            web = container "Web Application" "Orquesta toda la lógica: ingesta de clases, pipeline IRT (generación → verificación → corrección), quizzes adaptativos con selección de ítems por theta CAT, flashcards con repetición espaciada y seguimiento de progreso gamificado." "Python / Django 4.x"
+            web = container "Aplicación web" "Django 4.x/5.x. Vistas por dominio (learning/views/), motor adaptativo (adaptive, psychometrics, spaced_repetition), servicios de IA (learning/services/), créditos, resúmenes, progreso y recordatorios. Con SIMA_QUEUE_MODE=thread también ejecuta el worker en hilos." "Python / Django"
 
-            db = container "Base de datos" "Almacena usuarios, perfiles, planes, LessonJobs con sus ítems IRT, sesiones de evaluación, respuestas del estudiante, parámetros theta actualizados y progreso diario (racha, XP, nivel)." "SQLite (dev) / PostgreSQL (prod)" {
+            worker = container "Worker de trabajos" "Proceso aparte (manage.py run_worker) con SIMA_QUEUE_MODE=db: reclama en la base de datos los trabajos en cola (clases, refuerzos, resúmenes) con bloqueo, ejecuta el pipeline y reencola los atascados. Varios workers pueden convivir." "Python / Django management command"
+
+            scheduler = container "Tareas programadas" "Programador de tareas de Windows o cron: send_study_reminders (diario), run_worker --once (opcional), requeue_jobs." "Sistema operativo"
+
+            db = container "Base de datos" "Usuarios, perfiles y créditos; cursos, clases (LessonJob), transcripciones con segmentos; banco de preguntas con estadísticas y calibración; sesiones de práctica y respuestas; perfil adaptativo por curso; flashcards SM-2; resúmenes; trabajos de refuerzo y resumen; actividad, racha y recomendaciones." "PostgreSQL" {
                 tags "Database"
             }
 
-            storage = container "Almacenamiento de archivos" "Guarda los audios subidos por el estudiante antes de transcribir." "Sistema de archivos local /media" {
+            storage = container "Almacenamiento de archivos" "Audios subidos (se descartan tras transcribir) y logs rotativos (logs/sima.log)." "Sistema de archivos local" {
                 tags "Storage"
             }
         }
 
-        estudiante -> sima.web    "Sube clases, completa quizzes y revisa progreso (HTTPS)"
-        admin      -> sima.web    "Accede a Django Admin (HTTPS)"
+        estudiante -> sima.web       "Sube clases, practica, repasa, genera refuerzo y resúmenes, revisa progreso (HTTPS)"
+        admin      -> sima.web       "Accede a Django Admin (HTTPS)"
 
-        sima.web -> sima.db       "Lee y escribe clases, ítems IRT, sesiones y progreso"
-        sima.web -> sima.storage  "Guarda y lee archivos de audio"
-        sima.web -> whisper       "Envía ruta de audio; recibe transcripción"
-        sima.web -> claude        "Envía contenido de clase; recibe ítems IRT en formato MINI"
+        sima.web    -> sima.db       "Lee y escribe todo el modelo; deja trabajos en cola (QUEUED)"
+        sima.web    -> sima.storage  "Guarda audios y escribe logs"
+        sima.web    -> cloud         "Refuerzo y resúmenes en modo thread; también el pipeline de clase"
+        sima.web    -> whisper       "Transcribe en modo thread"
+
+        sima.worker -> sima.db       "Reclama trabajos (select_for_update skip_locked), guarda resultados y estado"
+        sima.worker -> cloud         "Genera y verifica ítems .mini, refuerzo y resúmenes"
+        sima.worker -> whisper       "Transcribe el audio de la clase"
+        sima.worker -> sima.storage  "Lee audios; escribe logs"
+
+        sima.scheduler -> sima.web   "Ejecuta comandos de gestión (recordatorios, reencolado)"
+        sima.web    -> correo        "Envía recordatorios de estudio"
     }
 
     views {

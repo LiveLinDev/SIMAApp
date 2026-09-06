@@ -1,122 +1,115 @@
-workspace "SIMA — Componentes" "Componentes internos del Web Application de SIMA" {
+workspace "SIMA — Componentes" "Componentes internos de la aplicación web de SIMA (estado septiembre 2026; todo existe)" {
 
     !identifiers hierarchical
 
     model {
-        estudiante = person "Estudiante" "Usa la plataforma desde el navegador o móvil."
+        estudiante = person "Estudiante" "Usa la plataforma desde el navegador."
         admin      = person "Administrador" "Gestiona el sistema vía Django Admin."
 
-        claude = softwareSystem "Anthropic Claude API" "Genera y verifica ítems IRT en formato MINI." {
+        cloud = softwareSystem "Proveedor de IA en la nube" "DeepSeek / compatible OpenAI / Anthropic." {
             tags "External"
         }
-        whisper = softwareSystem "Whisper (local)" "Transcribe audio a texto dentro del servidor." {
+        whisper = softwareSystem "Whisper (local)" "Transcripción con segmentos." {
             tags "External"
         }
-        db = softwareSystem "Base de datos" "PostgreSQL / SQLite." {
+        db = softwareSystem "Base de datos" "PostgreSQL." {
+            tags "External"
+        }
+        correo = softwareSystem "SMTP" {
             tags "External"
         }
 
         sima = softwareSystem "SIMA" {
 
-            web = container "Web Application" "Django 4.x" {
+            web = container "Aplicación web" "Django" {
 
-                # ── Ingesta y pipeline IRT ─────────────────────────────────
-                lesson_views = component "Lesson Views" "Gestiona el ciclo completo de una clase: creación (free/api), transcripción, generación de ítems IRT, verificación, corrección y descarga. Rutas: free_lesson, api_lesson, lesson_detail, submit_toon, submit_verification, submit_correction, download_json." "learning/views.py — existe"
+                # ── Vistas (learning/views/) ───────────────────────────────
+                views_core = component "Vistas: inicio y panel" "Registro, inicio con «Hoy en SIMA», progreso de dos semanas, preferencias (meta diaria, recordatorios), planes y /salud/." "learning/views/core.py"
+                views_courses = component "Vistas: cursos" "Crear, editar, archivar y restaurar cursos; detalle con plan de hoy, progreso, resumen, refuerzos; banco del curso y exportaciones CSV." "learning/views/courses.py"
+                views_lessons = component "Vistas: clases" "Carga de clase (audio o texto), estado en vivo, reintentos, reparaciones de transcripción y coherencia, visibilidad, descarga; «Practicar esta clase»." "learning/views/lessons.py"
+                views_practice = component "Vistas: práctica" "Sesión adaptativa (pregunta, respuesta con retroalimentación inmediata, cierre), recomendaciones, refuerzo dirigido." "learning/views/practice.py"
+                views_study = component "Vistas: estudio" "Flashcards por clase, repaso SM-2 por curso, ejercicios de emparejar y completar, mapa de la clase." "learning/views/study.py"
+                views_summaries = component "Vistas: resúmenes" "Resumen de clase y acumulado del curso (encolan un SummaryJob y muestran su estado)." "learning/views/summaries_views.py"
+                views_pipeline = component "Vistas: trazas del pipeline" "Visualización etapa por etapa de una clase con métricas y trazas JSON." "learning/views/pipeline.py"
 
-                lesson_models = component "LessonJob Model" "Entidad central del pipeline. Campos: source_text, audio, transcript, generation_prompt, toon_output (ítems MINI brutos), verification_prompt, verification_output (reporte v|), corrected_output (ítems MINI finales), status, error." "learning/models.py — existe"
+                # ── Núcleo adaptativo ──────────────────────────────────────
+                adaptive = component "Núcleo adaptativo" "Banco del curso desde el .mini verificado; sesión CAT (equilibrada, temas débiles, riesgo de olvido, simulacro); perfil por tema y Bloom; olvido por vida media; plan de hoy; recomendaciones; XP y racha; informe del banco." "learning/adaptive.py"
+                psychometrics = component "Psicometría" "IRT 3PL (cat.py) + EAP, selección randomesque, calibración Elo de la dificultad, Bayesian Knowledge Tracing y puerta de calidad." "learning/cat.py, learning/psychometrics.py"
+                spaced = component "Repetición espaciada" "SM-2 para flashcards: factor de facilidad, intervalos, cola de repaso del curso." "learning/spaced_repetition.py"
+                generation = component "Generación adaptativa" "Refuerzo dirigido: ítems b≈θ sobre temas débiles, explicaciones y flashcards; cobra créditos y reembolsa." "learning/adaptive_generation.py"
+                summaries = component "Resúmenes" "Resumen estructurado de clase y acumulado del curso; SummaryJob en cola." "learning/summaries.py"
+                segments = component "Segmentos" "Segmentos de transcripción con tiempo y enlace pregunta ↔ fragmento de la clase." "learning/segments.py"
+                progress = component "Progreso y recordatorios" "Serie diaria y SVG de dos semanas; correos de recordatorio." "learning/progress.py, learning/reminders.py"
+                credits = component "Créditos" "Planes, estimación de costos, cobro y reembolso en un ledger." "learning/credits.py"
 
-                services = component "Services" "Integración con IA. Funciones: build_generation_prompt, build_verification_prompt, call_claude, transcribe_audio, configure_local_ffmpeg." "learning/services.py — existe"
-
-                # ── Evaluación adaptativa (planeado) ──────────────────────
-                adaptive_engine = component "Motor Adaptativo CAT" "Selecciona el siguiente ítem óptimo según el theta (habilidad estimada) actual del estudiante usando el criterio de máxima información Fisher. Actualiza theta tras cada respuesta con estimación MLE/EAP." "learning/cat_engine.py — planeado" {
-                    tags "Planned"
-                }
-
-                eval_views = component "Evaluation Views" "Sirve sesiones de evaluación diaria: inicia quiz adaptativo, recibe respuestas, delega selección de ítem al Motor CAT y registra la sesión. Rutas: quiz_start, quiz_next, quiz_finish." "learning/views.py — planeado" {
-                    tags "Planned"
-                }
-
-                eval_models = component "Evaluation Models" "QuizSession (sesión activa: theta_actual, ítems vistos, respuestas), QuizResponse (ítem respondido, correcto, theta antes/después), FlashCard (frente/reverso extraído de ítems IRT, intervalo de repaso espaciado, fecha próxima revisión)." "learning/models.py — planeado" {
-                    tags "Planned"
-                }
-
-                # ── Repetición espaciada (planeado) ───────────────────────
-                spacedrepetition = component "Motor de Repetición Espaciada" "Calcula el intervalo de repaso de cada flashcard usando el algoritmo SM-2. Actualiza facilidad y fecha de próxima revisión según la autoevaluación del estudiante (fácil/regular/difícil)." "learning/spaced_repetition.py — planeado" {
-                    tags "Planned"
-                }
-
-                flashcard_views = component "Flashcard Views" "Sirve sesiones de repaso de flashcards: muestra frente, recibe autoevaluación, delega al Motor de Repetición Espaciada. Rutas: flashcard_session, flashcard_review." "learning/views.py — planeado" {
-                    tags "Planned"
-                }
-
-                # ── Progreso y gamificación (planeado) ────────────────────
-                progress_views = component "Progress Views" "Muestra dashboard de progreso: racha diaria, XP acumulado, nivel, curva de theta por materia, historial de sesiones y logros desbloqueados. Rutas: progress, profile." "learning/views.py — planeado" {
-                    tags "Planned"
-                }
-
-                progress_models = component "Progress & Gamification Models" "StudySession (fecha, tipo actividad, XP ganado, tiempo), StudentProgress (theta por materia, racha actual, XP total, nivel), Achievement (logros: primera clase, 7 días seguidos, quiz perfecto, etc.)." "learning/models.py — planeado" {
-                    tags "Planned"
-                }
+                # ── Pipeline y servicios de IA ─────────────────────────────
+                queue = component "Cola y pipeline" "Orquesta el pipeline de una clase (transcripción → generación → reparaciones → verificación → corrección → banco). Modo thread (hilos) o db (worker aparte: reclamo, reencolado, límite por usuario)." "learning/job_queue.py, management/commands/run_worker.py"
+                svc_prompts = component "Servicios: prompts" "Plantillas PROMPT.md / coherence / correct y limpieza del contenido." "learning/services/prompts.py"
+                svc_backends = component "Servicios: proveedores" "Resolución de backend (nube compatible OpenAI, Anthropic, local), call_ai, errores." "learning/services/backends.py"
+                svc_generation = component "Servicios: generación" "Chunks, presupuesto adaptativo de ítems, reintentos, extracción del bloque .mini." "learning/services/generation.py"
+                svc_repairs = component "Servicios: verificación y reparaciones" "Verificación factual y reparaciones del .mini con trazas de cambios." "learning/services/repairs.py"
+                svc_evidence = component "Servicios: evidencia" "Búsqueda web, documentos fuente y referencia EduQG para la verificación." "learning/services/evidence.py"
+                svc_transcription = component "Servicios: transcripción" "Whisper local: texto y segmentos con tiempo." "learning/services/transcription.py"
+                parse_mini = component "Formato .mini" "Parser/serializador, filtros de coherencia y uniformidad, aplicación de correcciones." "learning/parse_mini.py"
 
                 # ── Infraestructura compartida ─────────────────────────────
-                profile_model = component "Profile & Plan Model" "Perfil del usuario: plan activo (free/basic/pro/unlimited), clases API usadas este mes, fecha de reset mensual." "learning/models.py — existe"
-
-                forms = component "Forms" "Valida inputs del usuario: RegisterForm, FreeLessonForm, ApiLessonForm, PlanForm, ManualResultForm, VerificationResultForm." "learning/forms.py — existe"
-
-                templates = component "Templates" "Renderiza HTML server-side. Existentes: home, dashboard, lesson_detail, lesson_form, plans. Planeados: quiz, flashcard_session, progress, profile." "templates/learning/ — existe + planeado"
-
-                auth = component "Auth" "Autenticación, sesiones y decorador @login_required." "django.contrib.auth — existe"
-
-                django_admin = component "Django Admin" "Administra usuarios, planes, LessonJobs y datos de progreso." "django.contrib.admin — existe"
+                models = component "Modelo de datos" "Course, LessonJob, ClassSession, Transcript(+Segment), Quiz/Question/AnswerOption, PracticeSession, StudentAnswer, AdaptiveProfile, Flashcard, Summary, ReinforcementJob, SummaryJob, Recommendation, StudyActivity, Profile, CreditLedgerEntry." "learning/models.py (23 migraciones)"
+                templates = component "Plantillas" "24 plantillas server-side con CSS propio (claro/oscuro, móvil)." "templates/learning/"
+                auth = component "Auth y admin" "Autenticación, sesiones, @login_required; Django Admin para todo el modelo." "django.contrib"
             }
         }
 
-        # ── Relaciones existentes ──────────────────────────────────────────
-        estudiante -> sima.web.lesson_views    "Sube clases y gestiona el pipeline IRT"
-        admin      -> sima.web.django_admin    "Administra datos del sistema"
+        estudiante -> sima.web.views_core     "Inicio, preferencias"
+        estudiante -> sima.web.views_courses  "Cursos, banco, CSV"
+        estudiante -> sima.web.views_lessons  "Sube y revisa clases"
+        estudiante -> sima.web.views_practice "Practica, refuerzo"
+        estudiante -> sima.web.views_study    "Repasa y ejercita"
+        estudiante -> sima.web.views_summaries "Resúmenes"
+        admin      -> sima.web.auth           "Django Admin"
 
-        sima.web.lesson_views -> sima.web.forms          "Valida inputs"
-        sima.web.lesson_views -> sima.web.lesson_models  "Lee y escribe LessonJobs"
-        sima.web.lesson_views -> sima.web.services       "Orquesta transcripción y generación IRT"
-        sima.web.lesson_views -> sima.web.templates      "Renderiza HTML"
-        sima.web.lesson_views -> sima.web.auth           "Protegido con @login_required"
+        sima.web.views_core      -> sima.web.adaptive   "Hoy en SIMA, plan de hoy"
+        sima.web.views_core      -> sima.web.progress   "Progreso de dos semanas"
+        sima.web.views_courses   -> sima.web.adaptive   "Resumen del curso, plan, banco"
+        sima.web.views_courses   -> sima.web.progress   "Progreso del curso"
+        sima.web.views_lessons   -> sima.web.queue      "Encola la clase"
+        sima.web.views_lessons   -> sima.web.credits    "Estima y cobra créditos"
+        sima.web.views_practice  -> sima.web.adaptive   "Sesión, respuesta, cierre"
+        sima.web.views_practice  -> sima.web.generation "Refuerzo dirigido"
+        sima.web.views_study     -> sima.web.spaced     "Calificación SM-2"
+        sima.web.views_summaries -> sima.web.summaries  "Encola SummaryJob"
+        sima.web.views_pipeline  -> sima.web.models     "Lee trazas del LessonJob"
 
-        sima.web.services -> claude   "Envía contenido; recibe ítems IRT en formato MINI"
-        sima.web.services -> whisper  "Envía ruta de audio; recibe transcripción"
+        sima.web.adaptive     -> sima.web.psychometrics "Estimación, selección, calibración, BKT"
+        sima.web.adaptive     -> sima.web.segments      "Fragmento y minuto por pregunta"
+        sima.web.adaptive     -> sima.web.parse_mini    "Lee el .mini verificado"
+        sima.web.adaptive     -> sima.web.spaced        "Tarjetas vencidas para el plan"
+        sima.web.generation   -> sima.web.svc_backends  "call_ai"
+        sima.web.generation   -> sima.web.credits       "Cobro y reembolso"
+        sima.web.generation   -> sima.web.queue         "ReinforcementJob en cola"
+        sima.web.summaries    -> sima.web.svc_backends  "call_ai"
+        sima.web.summaries    -> sima.web.credits       "Cobro y reembolso"
+        sima.web.summaries    -> sima.web.queue         "SummaryJob en cola"
+        sima.web.progress     -> correo                 "Recordatorios"
 
-        sima.web.lesson_models -> db  "Persiste LessonJobs e ítems IRT"
-        sima.web.profile_model -> db  "Persiste perfiles y planes"
+        sima.web.queue -> sima.web.svc_transcription "Transcribe"
+        sima.web.queue -> sima.web.svc_generation    "Genera ítems"
+        sima.web.queue -> sima.web.svc_repairs       "Verifica y repara"
+        sima.web.queue -> sima.web.parse_mini        "Filtra y corrige"
+        sima.web.queue -> sima.web.adaptive          "Sincroniza el banco del curso"
+        sima.web.queue -> sima.web.generation        "Ejecuta refuerzos"
+        sima.web.queue -> sima.web.summaries         "Ejecuta resúmenes"
 
-        sima.web.django_admin -> sima.web.lesson_models  "Gestiona"
-        sima.web.django_admin -> sima.web.profile_model  "Gestiona"
+        sima.web.svc_generation -> sima.web.svc_prompts  "Plantillas"
+        sima.web.svc_generation -> sima.web.svc_backends "call_ai"
+        sima.web.svc_repairs    -> sima.web.svc_evidence "Contexto de verificación"
+        sima.web.svc_repairs    -> sima.web.svc_backends "call_ai"
+        sima.web.svc_evidence   -> sima.web.svc_backends "Consultas generadas por IA"
+        sima.web.svc_backends   -> cloud                  "Peticiones al modelo"
+        sima.web.svc_transcription -> whisper             "Transcribe"
 
-        # ── Relaciones planeadas ───────────────────────────────────────────
-        estudiante -> sima.web.eval_views       "Inicia y responde quiz adaptativo diario"
-        estudiante -> sima.web.flashcard_views  "Repasa flashcards con repetición espaciada"
-        estudiante -> sima.web.progress_views   "Consulta progreso, racha y logros"
-
-        sima.web.eval_views -> sima.web.lesson_models    "Lee ítems IRT corregidos del LessonJob"
-        sima.web.eval_views -> sima.web.adaptive_engine  "Solicita siguiente ítem óptimo"
-        sima.web.eval_views -> sima.web.eval_models      "Persiste sesión y respuestas"
-        sima.web.eval_views -> sima.web.progress_models  "Registra XP y actualiza racha"
-        sima.web.eval_views -> sima.web.templates        "Renderiza pantalla de quiz"
-        sima.web.eval_views -> sima.web.auth             "Protegido con @login_required"
-
-        sima.web.adaptive_engine -> sima.web.eval_models "Lee theta actual y respuestas previas"
-
-        sima.web.flashcard_views -> sima.web.eval_models       "Lee flashcards pendientes de repaso"
-        sima.web.flashcard_views -> sima.web.spacedrepetition  "Calcula próximo intervalo de repaso"
-        sima.web.flashcard_views -> sima.web.progress_models   "Registra XP de la sesión"
-        sima.web.flashcard_views -> sima.web.templates         "Renderiza pantalla de flashcard"
-        sima.web.flashcard_views -> sima.web.auth              "Protegido con @login_required"
-
-        sima.web.progress_views -> sima.web.progress_models  "Lee historial, racha y logros"
-        sima.web.progress_views -> sima.web.eval_models      "Lee resultados de evaluaciones"
-        sima.web.progress_views -> sima.web.templates        "Renderiza dashboard de progreso"
-        sima.web.progress_views -> sima.web.auth             "Protegido con @login_required"
-
-        sima.web.eval_models     -> db  "Persiste sesiones, respuestas y flashcards"
-        sima.web.progress_models -> db  "Persiste progreso, XP, racha y logros"
+        sima.web.models -> db "Persistencia"
+        sima.web.views_core -> sima.web.templates "Renderiza"
+        sima.web.views_core -> sima.web.auth      "Protegido"
     }
 
     views {
@@ -139,11 +132,6 @@ workspace "SIMA — Componentes" "Componentes internos del Web Application de SI
                 background #58cc02
                 stroke     #46a302
                 shape      roundedBox
-            }
-            element "Planned" {
-                background #ffc800
-                stroke     #c99a00
-                color      #24323f
             }
             element "External" {
                 background #6b7a88

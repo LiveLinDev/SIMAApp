@@ -67,3 +67,18 @@ class ReorgTests(TestCase):
         page = self.client.get(reverse("practice_session", args=[self.course.pk, session.pk]))
         self.assertContains(page, "data-hotkeys")
         self.assertContains(page, "requestSubmit")
+
+
+class ServicesPackageTests(TestCase):
+    def test_services_package_reexports_and_routes_calls(self):
+        from learning import services
+        from learning.services import backends, evidence, generation, prompts, repairs, transcription
+
+        self.assertIs(services.call_ai, backends.call_ai)
+        self.assertIs(services.generate_items, generation.generate_items)
+        self.assertIs(services.verify_items, repairs.verify_items)
+        self.assertIs(services.build_web_context, evidence.build_web_context)
+        self.assertIs(services.read_prompt, prompts.read_prompt)
+        self.assertIs(services.transcribe_audio_detailed, transcription.transcribe_audio_detailed)
+        self.assertEqual(services.normalize_backend("anthropic"), "cloud")
+        self.assertTrue(services.read_prompt("PROMPT.md").strip())

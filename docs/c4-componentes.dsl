@@ -43,7 +43,9 @@ workspace "SIMA — Componentes" "Componentes internos de la aplicación web de 
                 credits = component "Créditos" "Planes, estimación de costos, cobro y reembolso en un ledger." "learning/credits.py"
 
                 # ── Pipeline y servicios de IA ─────────────────────────────
-                queue = component "Cola y pipeline" "Orquesta el pipeline de una clase (transcripción → generación → reparaciones → verificación → corrección → banco). Modo thread (hilos) o db (worker aparte: reclamo, reencolado, límite por usuario)." "learning/job_queue.py, management/commands/run_worker.py"
+                queue = component "Cola de trabajos" "Encolado en hilos o en BD, worker, reclamo con bloqueo, reencolado de huérfanos y límite de trabajos por usuario." "learning/job_queue.py, management/commands/run_worker.py"
+                pipeline = component "Pipeline de la clase" "Transcripción → generación → reparaciones → verificación → corrección → ClassSession/Transcript → banco del curso." "learning/pipeline.py"
+                portability = component "Portabilidad" "Exportar e importar un curso como JSON (clases, resúmenes, flashcards) con reconstrucción del banco." "learning/portability.py"
                 svc_prompts = component "Servicios: prompts" "Plantillas PROMPT.md / coherence / correct y limpieza del contenido." "learning/services/prompts.py"
                 svc_backends = component "Servicios: proveedores" "Resolución de backend (nube compatible OpenAI, Anthropic, local), call_ai, errores." "learning/services/backends.py"
                 svc_generation = component "Servicios: generación" "Chunks, presupuesto adaptativo de ítems, reintentos, extracción del bloque .mini." "learning/services/generation.py"
@@ -91,13 +93,16 @@ workspace "SIMA — Componentes" "Componentes internos de la aplicación web de 
         sima.web.summaries    -> sima.web.queue         "SummaryJob en cola"
         sima.web.progress     -> correo                 "Recordatorios"
 
-        sima.web.queue -> sima.web.svc_transcription "Transcribe"
-        sima.web.queue -> sima.web.svc_generation    "Genera ítems"
-        sima.web.queue -> sima.web.svc_repairs       "Verifica y repara"
-        sima.web.queue -> sima.web.parse_mini        "Filtra y corrige"
-        sima.web.queue -> sima.web.adaptive          "Sincroniza el banco del curso"
+        sima.web.queue -> sima.web.pipeline          "Ejecuta el pipeline de la clase"
         sima.web.queue -> sima.web.generation        "Ejecuta refuerzos"
         sima.web.queue -> sima.web.summaries         "Ejecuta resúmenes"
+        sima.web.pipeline -> sima.web.svc_transcription "Transcribe"
+        sima.web.pipeline -> sima.web.svc_generation    "Genera ítems"
+        sima.web.pipeline -> sima.web.svc_repairs       "Verifica y repara"
+        sima.web.pipeline -> sima.web.parse_mini        "Filtra y corrige"
+        sima.web.pipeline -> sima.web.adaptive          "Sincroniza el banco del curso"
+        sima.web.portability -> sima.web.pipeline       "Recrea ClassSession"
+        sima.web.portability -> sima.web.adaptive       "Reconstruye el banco"
 
         sima.web.svc_generation -> sima.web.svc_prompts  "Plantillas"
         sima.web.svc_generation -> sima.web.svc_backends "call_ai"

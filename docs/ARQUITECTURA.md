@@ -10,7 +10,9 @@ describe los módulos y los tres flujos principales. Los diagramas C4 (`c4-conte
 |---|---|
 | `learning/views/` | Vistas por dominio: `core` (inicio, panel, salud), `courses`, `lessons`, `practice`, `study`, `summaries_views`, `pipeline`, `_common` (ayudantes). `__init__` reexporta nombres explícitos: una vista nueva se agrega ahí. |
 | `learning/services/` | Servicios de IA: `prompts`, `backends` (proveedores y `call_ai`), `generation` (chunks y presupuesto de ítems), `repairs` (verificación y reparaciones), `evidence` (web y EduQG), `transcription` (Whisper). `__init__` reexporta todo. |
-| `job_queue.py` | Pipeline de una clase y cola de trabajos. Modo `thread` (hilos en el web) o `db` (worker aparte que reclama en la base). Reencolado de huérfanos, límite de trabajos por usuario, instantánea para `/salud/`. |
+| `job_queue.py` | Cola de trabajos: modo `thread` (hilos en el web) o `db` (worker aparte que reclama en la base con bloqueo). Reencolado de huérfanos, límite de trabajos por usuario, instantánea para `/salud/`. |
+| `pipeline.py` | Etapas de una clase: transcripción, generación, reparaciones, verificación, corrección, sincronización de `ClassSession`/`Transcript` y del banco del curso. |
+| `portability.py` | Exportar e importar un curso como JSON (`export_course`, `import_course`). |
 | `parse_mini.py` | Formato `.mini`: parser, serializador, filtros deterministas, aplicación de correcciones. |
 | `cat.py`, `psychometrics.py` | IRT 3PL; EAP, randomesque, calibración Elo, Bayesian Knowledge Tracing, puerta de calidad. |
 | `adaptive.py` | Banco del curso, sesión de práctica (modos equilibrada / débiles / riesgo / simulacro), perfil por tema y Bloom, olvido por vida media, plan de hoy, recomendaciones, XP y racha, informe del banco. |
@@ -21,7 +23,7 @@ describe los módulos y los tres flujos principales. Los diagramas C4 (`c4-conte
 | `progress.py`, `reminders.py` | Serie de dos semanas con SVG; correos de recordatorio. |
 | `credits.py` | Planes, estimaciones, cobro y reembolso (ledger). |
 | `models.py` | Modelo de datos (23 migraciones). |
-| `management/commands/` | `run_worker`, `requeue_jobs`, `sync_question_bank`, `send_study_reminders`. |
+| `management/commands/` | `run_worker`, `requeue_jobs`, `sync_question_bank`, `send_study_reminders`, `export_course`, `import_course`. |
 
 ## Flujo 1: de la clase al banco de preguntas
 
@@ -29,7 +31,7 @@ describe los módulos y los tres flujos principales. Los diagramas C4 (`c4-conte
 POST /api/nueva/ ──► LessonJob(QUEUED) + cobro de créditos
    │  (thread) hilo del web            (db) manage.py run_worker reclama con skip_locked
    ▼
-process_lesson_job
+pipeline.process_lesson_job
    Whisper (audio) ──► transcript + TranscriptSegment (minuto)
    generation: chunks ──► call_ai ──► .mini bruto
    parse_mini: filtros de coherencia y uniformidad ──► repairs (no descarte)

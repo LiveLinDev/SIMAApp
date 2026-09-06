@@ -113,7 +113,9 @@ learning/
   services/       paquete: prompts (plantillas y limpieza), backends (proveedores nube/local y call_ai),
                   generation (chunks y presupuesto de ítems), repairs (verificación y reparaciones .mini),
                   evidence (web, documentos fuente, EduQG), transcription (Whisper)
-  job_queue.py    cola (hilos o BD) + worker; orquestación del pipeline por etapas; reclamo de trabajos; límite por usuario
+  job_queue.py    cola (hilos o BD), worker, reclamo de trabajos con bloqueo, reencolado, límite por usuario
+  pipeline.py     etapas de una clase: transcripción → generación → reparaciones → verificación → corrección → banco
+  portability.py  exportar/importar un curso como JSON (clases, resúmenes, flashcards)
   parse_mini.py   parser/serializador .mini, filtros de coherencia, aplicación de correcciones
   cat.py          IRT 3PL: probabilidad, información de Fisher y nivel
   psychometrics.py  EAP, randomesque, calibración Elo, Bayesian Knowledge Tracing, puerta de calidad
@@ -128,7 +130,7 @@ learning/
   credits.py      planes y ledger de créditos
   models.py       LessonJob (pipeline) · Course/ClassSession/Transcript/Quiz/Question/StudentAnswer/AdaptiveProfile/
                   PracticeSession/ReinforcementJob/SummaryJob/Flashcard/Summary/Recommendation/StudyActivity
-  management/commands/  requeue_jobs · sync_question_bank · send_study_reminders · run_worker
+  management/commands/  requeue_jobs · sync_question_bank · send_study_reminders · run_worker · export_course · import_course
   migrations/     23 migraciones
 templates/        24 plantillas server-side
 static/learning/  CSS
@@ -142,7 +144,7 @@ desarollo/VALIDACION_FLUJO_SIMA.md   prueba real del pipeline y fallos conocidos
 ### Pipeline de una clase
 
 ```
-POST /api/nueva/ → LessonJob(QUEUED) → cola en memoria → process_lesson_job()
+POST /api/nueva/ → LessonJob(QUEUED) → cola (hilos o BD) → pipeline.process_lesson_job()
   Whisper (si es audio) → generación por chunks (PROMPT.md)
   → filtro de ítems incoherentes → reparación (no descarte)
   → filtro de opciones no uniformes → reparación
@@ -213,6 +215,12 @@ hoy pone el simulacro en primer lugar.
 
 **Límite por usuario**: `SIMA_MAX_PENDING_JOBS` (3) trabajos en cola o procesando (clases, refuerzos,
 resúmenes); se comprueba antes de cobrar créditos.
+
+**Exportar e importar un curso** (`learning/portability.py`): `python manage.py export_course <id> --out curso.json`
+guarda las clases (transcripción y `.mini` verificado), resúmenes y flashcards; `python manage.py import_course
+curso.json --user <usuario> [--name ...]` lo recrea para otro usuario o en otra máquina y reconstruye el banco de
+preguntas sin volver a pagar la generación. El historial de práctica no viaja y las clases importadas quedan
+privadas.
 
 **Olvido por tema**: cada tema del perfil guarda una **vida media de retención** (regresión de vida
 media simplificada, Settles & Meeder 2016: 3 días tras un acierto, se duplica con cada acierto

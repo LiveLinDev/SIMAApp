@@ -7,16 +7,17 @@ probar cada pieza en tu máquina en pocos minutos, y qué decisiones quedan en t
 
 | Indicador | Antes (retomar, 9a0a15b) | Ahora |
 |---|---|---|
-| Pruebas automáticas | 5 (solo parser `.mini`) | **96** en 14 módulos, todas en verde (incluye una que renderiza las 31 páginas del producto) |
+| Pruebas automáticas | 5 (solo parser `.mini`) | **99** en 15 módulos, todas en verde (incluye una que renderiza las 31 páginas del producto) |
 | Cobertura funcional de pruebas | parser | parser, backends, reencolado, pipeline completo con IA simulada, motor adaptativo, motor v2, refuerzo, ritmo, ciclo de aprendizaje, resúmenes, progreso, recordatorios, cola en BD, simulacro, olvido, banco, salud |
-| Commits locales sobre `main` | — | 17 |
+| Commits locales sobre `main` | — | 19 |
 | Migraciones aplicadas | 0015 | 0023 (0022 elimina las tablas heredadas del quiz) |
 | Módulos nuevos del núcleo | 0 | 8 (`adaptive`, `psychometrics`, `adaptive_generation`, `spaced_repetition`, `segments`, `summaries`, `progress`, `reminders`; 3 319 líneas con `job_queue`) |
 | Tablas del modelo nuevo en uso | vacías | `Question`, `AnswerOption`, `StudentAnswer`, `AdaptiveProfile`, `Recommendation`, `StudyActivity`, `Summary`, `Flashcard` (SM-2), `Transcript`, `TranscriptSegment`, `PracticeSession`, `ReinforcementJob`, `SummaryJob` |
-| Comandos de operación | — | `requeue_jobs`, `sync_question_bank`, `send_study_reminders`, `run_worker` |
+| Comandos de operación | — | `requeue_jobs`, `sync_question_bank`, `send_study_reminders`, `run_worker`, `export_course`, `import_course` |
 | Modos de práctica | quiz por clase sin memoria | equilibrada, refuerzo de débiles, repaso de temas en riesgo, simulacro con nota |
 | Organización de vistas | `views.py` de 1 992 líneas con funciones duplicadas | paquete `learning/views/` por dominio (8 módulos), sin duplicados, ayudantes compartidos con el worker |
 | Organización de servicios | `services.py` de 1 849 líneas | paquete `learning/services/` (prompts, backends, generation, repairs, evidence, transcription), sin ciclos |
+| Cola y pipeline | un solo `job_queue.py` de 935 líneas | `job_queue.py` (cola, 285 líneas) + `pipeline.py` (etapas de la clase) |
 | Documentación de arquitectura | diagramas C4 de abril con componentes "planeados" y API de Claude | `docs/ARQUITECTURA.md` + C4 (contexto, contenedores, componentes) sincronizados con el código |
 
 ## 2. Qué hace SIMA ahora, de punta a punta
@@ -71,6 +72,7 @@ Luego, con tu usuario en http://127.0.0.1:8002 :
 | 11. Editar curso | Curso → **Editar** | Pon una fecha de examen a 3 días: la cabecera muestra "Examen en 3 dias" y el plan propone el simulacro primero |
 | 12. Archivar | Curso → **Archivar** | Desaparece del panel; en Inicio → Cursos aparece "Cursos archivados" con **Restaurar** |
 | 13. Límite | Pide tres resúmenes seguidos de clases distintas | El cuarto avisa "trabajos en proceso" sin cobrar |
+| 14. Portabilidad | `python manage.py export_course <id> --out curso.json` y luego `import_course curso.json --user <tu usuario> --name Copia` | Aparece el curso "Copia" con sus clases, resúmenes, flashcards y banco listo para practicar |
 
 Para el worker aparte (opcional): pon `SIMA_QUEUE_MODE=db` en `.env`, reinicia el web y en otra
 terminal `python manage.py run_worker`. Con `--once` sirve para el Programador de tareas.
@@ -94,7 +96,15 @@ Recordatorios por correo: marca la casilla en Inicio → Preferencias y ejecuta
 7. **Diagramas C4**: los `.dsl` de `docs/` se regeneran con Structurizr Lite o el sitio de Structurizr
    si quieres las imágenes para el documento de tesis; el contenido ya refleja el sistema actual.
 
-## 5. Referencias del motor (para la sustentación)
+## 5. Modelo de IA configurado para probar
+
+`.env` apunta a **DeepSeek**: `CLOUD_PROVIDER=deepseek`, modelo `deepseek-v4-flash` (el anterior `deepseek-chat`
+fue retirado el 24 de julio de 2026) y `DEEPSEEK_DIRECT_MINI=False`, es decir, con verificación factual
+activada. Whisper `base` local para el audio. `LOCAL_MODEL=qwen2.5:7b` solo aplica si algún día corres un
+modelo local; hoy no se usa. La clave de DeepSeek que está en `.env` es la expuesta en el historial:
+rótala antes de probar con crédito real.
+
+## 6. Referencias del motor (para la sustentación)
 
 - Bock & Mislevy (1982), estimación EAP de la habilidad.
 - Kingsbury & Zara (1989), selección randomesque para controlar la exposición.

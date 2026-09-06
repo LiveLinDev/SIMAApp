@@ -96,13 +96,24 @@ Recordatorios por correo: marca la casilla en Inicio → Preferencias y ejecuta
 7. **Diagramas C4**: los `.dsl` de `docs/` se regeneran con Structurizr Lite o el sitio de Structurizr
    si quieres las imágenes para el documento de tesis; el contenido ya refleja el sistema actual.
 
-## 5. Modelo de IA configurado para probar
+## 5. Probar con Qwen (perfil preparado)
 
-`.env` apunta a **DeepSeek**: `CLOUD_PROVIDER=deepseek`, modelo `deepseek-v4-flash` (el anterior `deepseek-chat`
-fue retirado el 24 de julio de 2026) y `DEEPSEEK_DIRECT_MINI=False`, es decir, con verificación factual
-activada. Whisper `base` local para el audio. `LOCAL_MODEL=qwen2.5:7b` solo aplica si algún día corres un
-modelo local; hoy no se usa. La clave de DeepSeek que está en `.env` es la expuesta en el historial:
-rótala antes de probar con crédito real.
+Tu `.env` actual sigue en DeepSeek (`deepseek-v4-flash`, verificación activada). Para pasar a Qwen, que
+tiene 1 millón de tokens gratis por modelo durante 90 días con cuenta internacional:
+
+1. Crea la clave en Alibaba Cloud Model Studio (región internacional, Singapur) y cópiala.
+2. En `.env` reemplaza el bloque de DeepSeek por el bloque de Qwen de `.env.example` (`CLOUD_PROVIDER=qwen`,
+   `CLOUD_API_KEY=<tu clave>`; endpoint y modelo `qwen-flash` ya tienen valor por defecto). Deja
+   `CLOUD_DIRECT_MINI=False` para conservar la verificación factual.
+3. Instala dependencias si es un equipo nuevo: `pip install -r requirements.txt`.
+4. Ejecuta `check-ia.bat` (o `python manage.py check_ai --ping --mini --runs 3`). Debe terminar en
+   "Todo listo": valida la configuración, hace un ping y genera ítems `.mini` de una clase de muestra
+   reportando ítems válidos, tiempo y costo aproximado. Con `--file apuntes.txt` usa una clase tuya.
+5. Arranca con `INICIAR_SIMA.bat` (o `python manage.py runserver 127.0.0.1:8002`) y sube una clase.
+
+Detalles ya resueltos en el código: Qwen se llama con `enable_thinking=false` (evita que el razonamiento
+contamine el bloque `.mini`), y `CLOUD_PROVIDER=qwen` fija endpoint y modelo por defecto. Whisper `base`
+sigue transcribiendo el audio en local. `LOCAL_MODEL=qwen2.5:7b` solo aplica con un modelo local; hoy no se usa.
 
 ## 6. Referencias del motor (para la sustentación)
 

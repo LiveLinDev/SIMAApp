@@ -193,6 +193,10 @@ def _call_openai_compatible(prompt: str, role: str = "generation") -> str:
     max_tokens = int(getattr(settings, "CLOUD_MAX_TOKENS", 6000) or 0)
     if max_tokens > 0:
         request["max_tokens"] = max_tokens
+    if getattr(settings, "CLOUD_PROVIDER", "") == "qwen":
+        # Los modelos Qwen3 pueden traer "razonamiento" que rompe el bloque .mini y, en algunos
+        # modelos, obliga a streaming; se pide la respuesta directa.
+        request["extra_body"] = {"enable_thinking": False}
     try:
         response = client.chat.completions.create(**request)
     except Exception as exc:

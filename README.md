@@ -77,8 +77,12 @@ servicio de Postgres, crea la BD si no existe, migra y sirve en :8002).
 
 ### Cambiar de proveedor de IA
 
-Basta con cambiar tres variables en `.env` y reiniciar; el pipeline no cambia. Precios públicos por
-millón de tokens a septiembre de 2026 (entrada / salida, USD); verifícalos antes de decidir:
+Basta con cambiar `CLOUD_PROVIDER` y `CLOUD_API_KEY` en `.env` y reiniciar (endpoint y modelo tienen valor
+por defecto por proveedor; se pueden fijar con `CLOUD_API_BASE` y `CLOUD_MODEL`). Antes de subir clases,
+comprueba el proveedor con `python manage.py check_ai --ping --mini` (o `check-ia.bat`): valida la
+configuración, hace una llamada mínima y genera ítems `.mini` con un texto de muestra midiendo cuántos
+respetan el formato, el tiempo y el costo aproximado. Precios públicos por millón de tokens a septiembre
+de 2026 (entrada / salida, USD); verifícalos antes de decidir:
 
 | Proveedor | `CLOUD_MODEL` | Entrada | Salida | Notas |
 |---|---|---|---|---|

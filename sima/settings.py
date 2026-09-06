@@ -174,15 +174,26 @@ if CLOUD_PROVIDER == "anthropic":
     CLOUD_API_BASE = env_text("CLOUD_API_BASE", "")
     CLOUD_MODEL = env_text("CLOUD_MODEL", "") or ANTHROPIC_MODEL
 else:
+    # Con CLOUD_PROVIDER conocido basta con la clave: endpoint y modelo tienen valor por defecto.
+    _PROVIDER_DEFAULTS = {
+        "deepseek": ("https://api.deepseek.com", "deepseek-v4-flash"),
+        "qwen": ("https://dashscope-intl.aliyuncs.com/compatible-mode/v1", "qwen-flash"),
+        "openai": ("https://api.openai.com/v1", "gpt-5-nano"),
+        "gemini": ("https://generativelanguage.googleapis.com/v1beta/openai/", "gemini-3.1-flash-lite"),
+        "groq": ("https://api.groq.com/openai/v1", "openai/gpt-oss-120b"),
+        "mistral": ("https://api.mistral.ai/v1", "mistral-small-latest"),
+    }
+    _default_base, _default_model = _PROVIDER_DEFAULTS.get(CLOUD_PROVIDER, ("https://api.deepseek.com", "deepseek-v4-flash"))
     CLOUD_API_KEY = env_text("CLOUD_API_KEY", "") or DEEPSEEK_API_KEY
-    CLOUD_API_BASE = env_text("CLOUD_API_BASE", "") or env_text("DEEPSEEK_API_BASE", "https://api.deepseek.com")
-    CLOUD_MODEL = env_text("CLOUD_MODEL", "") or env_text("DEEPSEEK_MODEL", "deepseek-v4-flash")
+    CLOUD_API_BASE = env_text("CLOUD_API_BASE", "") or env_text("DEEPSEEK_API_BASE", "") or _default_base
+    CLOUD_MODEL = env_text("CLOUD_MODEL", "") or env_text("DEEPSEEK_MODEL", "") or _default_model
 _CLOUD_LABELS = {
     "deepseek": "DeepSeek", "openai": "OpenAI", "gemini": "Gemini", "qwen": "Qwen",
     "groq": "Groq", "mistral": "Mistral", "anthropic": "Claude", "openai_compatible": "Nube",
 }
 CLOUD_LABEL = env_text("CLOUD_LABEL", "") or _CLOUD_LABELS.get(CLOUD_PROVIDER, CLOUD_PROVIDER.title() or "Nube")
-CLOUD_MAX_TOKENS = env_int("CLOUD_MAX_TOKENS", env_int("DEEPSEEK_MAX_TOKENS", 6000))
+# Gemini no acepta max_tokens en su endpoint compatible: 0 lo omite.
+CLOUD_MAX_TOKENS = env_int("CLOUD_MAX_TOKENS", env_int("DEEPSEEK_MAX_TOKENS", 0 if CLOUD_PROVIDER == "gemini" else 6000))
 CLOUD_API_TIMEOUT = env_int("CLOUD_API_TIMEOUT", env_int("DEEPSEEK_API_TIMEOUT", 120))
 CLOUD_GENERATION_TEMPERATURE = env_float("CLOUD_GENERATION_TEMPERATURE", env_float("DEEPSEEK_GENERATION_TEMPERATURE", 0.3))
 CLOUD_VERIFICATION_TEMPERATURE = env_float("CLOUD_VERIFICATION_TEMPERATURE", env_float("DEEPSEEK_VERIFICATION_TEMPERATURE", 0.2))

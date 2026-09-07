@@ -3,6 +3,12 @@
 Este documento existe para que puedas revisar el avance sin leer el código: qué cambió, cómo
 probar cada pieza en tu máquina en pocos minutos, y qué decisiones quedan en tus manos.
 
+## 0. Marco vigente
+
+**Título (6-sep-2026):** Notación compacta para la generación verificada de ítems IRT con modelos de lenguaje en una plataforma de microaprendizaje con evaluación adaptativa para la educación universitaria. Tesis en dos capas: la notación `.mini` y el pipeline de generación
+verificada son la contribución; SIMA es la plataforma donde se aplican y validan. Objetivos e indicadores en
+`docs/MARCO_TESIS.md`.
+
 ## 1. Avance medible
 
 | Indicador | Antes (retomar, 9a0a15b) | Ahora |

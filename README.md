@@ -255,7 +255,8 @@ diaria. El **plan de hoy** convierte la ruta de estudio en reglas sobre el perfi
 no has trabajado → subir una clase nueva. Aparece en el curso y en "Hoy en SIMA", junto con el progreso
 de la meta diaria (`UserPreference.daily_goal`, en preguntas + tarjetas).
 
-Guía de revisión paso a paso, métricas del avance y decisiones pendientes: `REVISION.md`.
+Guía de revisión paso a paso, métricas del avance y decisiones pendientes: `REVISION.md`. Título, objetivos e
+indicadores vigentes de la tesis: `docs/MARCO_TESIS.md`.
 
 ## Tests
 

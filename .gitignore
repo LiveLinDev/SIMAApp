@@ -43,3 +43,5 @@ logs/
 
 # reporte HTML generado por Archi (se regenera)
 docs/archimate/report/
+
+docs/archimate/*.bak

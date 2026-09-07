@@ -2,8 +2,10 @@
 
 `SIMA.archimate` es el modelo de arquitectura empresarial de SIMA en el formato nativo de
 [Archi](https://www.archimatetool.com/) (ArchiMate 3.2). Lo genera `build_model.py`, que es la fuente
-de verdad: si cambia la arquitectura, se edita el script y se vuelve a generar; el archivo
-`.archimate` no se edita a mano salvo para retocar la disposición de una vista.
+de verdad: si cambia la arquitectura, se edita el script y se vuelve a generar. Con `--merge` el script
+conserva lo que se editó en Archi (vistas "b" con ruteo MCP, bendpoints, colores) y solo agrega o actualiza
+los elementos, relaciones y vistas que define; `bash docs/archimate/render_views.sh` hace merge, valida con la
+línea de comandos de Archi y deja un PNG por vista en `docs/img/archimate/`.
 
 ## Contenido
 
@@ -14,7 +16,8 @@ de verdad: si cambia la arquitectura, se edita el script y se vuelve a generar; 
 | Aplicación | SIMA y sus componentes (vistas, núcleo adaptativo, pipeline, servicios de IA, cola y worker, refuerzo y resúmenes, créditos), cinco servicios de aplicación, interfaces, objetos de datos y los sistemas externos (proveedor de LLM, Whisper) |
 | Tecnología | servidor, software de sistema, worker, dispositivo del estudiante, red, servicios tecnológicos y artefactos |
 
-Cinco vistas con disposición calculada: motivación, negocio, aplicación, tecnología y una vista en capas.
+Siete vistas con disposición calculada: motivación, negocio, aplicación, tecnología, una vista en capas y los dos
+diagramas que pide la UPC (arquitectura lógica y arquitectura física), más las copias "b" con ruteo hecho en Archi.
 
 ## Abrir y exportar
 
@@ -33,6 +36,23 @@ jre\bin\java -cp plugins\org.eclipse.equinox.launcher_1.7.100.v20251111-0406.jar
 
 El reporte deja un PNG por vista en `report/<id>/images/`; copias con nombre legible en `docs/img/archimate/`.
 Validado el 7-sep-2026: el modelo carga sin errores y las cinco vistas se renderizan.
+
+## Arquitectura lógica y física (convención UPC, vistas 6 y 7)
+
+Lo que espera la carrera de Ingeniería de Software de la UPC, según las tesis del repositorio académico
+(asesores Barrientos, Burga, Bautista; p. ej. Baquerizo y Canales 2018: "documentos de arquitectura física y lógica,
+además de diagramas de componentes y de despliegue"; Aguilar y Guerrero 2025: "diseño de arquitectura lógica y
+física") y el sílabo de Arquitectura de Software (IS256/IS310: "documento de arquitectura con las vistas y diagramas
+apropiados"), es el par de vistas del modelo 4+1 de Kruchten adaptado al Taller de Proyecto:
+
+| Diagrama | Qué muestra | Notación habitual | En SIMA |
+|---|---|---|---|
+| **Arquitectura lógica** | capas de presentación, aplicación (lógica de negocio), dominio e infraestructura; módulos por capa; actores arriba; servicios externos aparte; una flecha entre capas adyacentes | bloques por capa (estilo C4 nivel 3 / UML de componentes) | vista **6**: cada caja es un módulo real de `learning/` (vistas, pipeline, servicios de IA, núcleo adaptativo, SM-2, plan diario, cola, créditos, recordatorios, portabilidad; modelos; ORM, cliente de LLM, parser .mini, Whisper, correo, archivos, configuración) |
+| **Arquitectura física** | dispositivos, red, nodos de despliegue, software de sistema y artefactos, con puertos y protocolos en las conexiones; zonas (cliente, red pública, nube, subred privada, externos) | UML de despliegue o diagrama de infraestructura con íconos del proveedor (el OE2 usó Azure) | vista **7**: navegador → DNS/TLS → Nginx :443 → Gunicorn+Django :8000 → PostgreSQL :5432 en subred privada; worker, Whisper local y cron dentro del mismo nodo; LLM y SMTP externos; nota con el entorno de desarrollo |
+
+En la memoria corresponden a "Figura 1. Arquitectura lógica de SIMA" y "Figura 3. Diagrama de despliegue"; en el
+documento OE2, a las secciones 3.3 (componentes lógicos) y 3.4 (arquitectura física). Ojo: la Figura 3 del OE2
+actual es una plantilla de otro proyecto (empresas, candidatos, Twilio) y debe reemplazarse por la vista 6.
 
 ## Edición asistida por IA con el plugin MCP (instalado)
 
@@ -60,5 +80,4 @@ Flujo aplicado el 7-sep-2026 sobre copias de las vistas (las originales del scri
 
 El modo `auto-layout-and-route` (ELK) se probó y se descartó: mejora las métricas pero reordena los grupos y
 rompe la convención de capas (negocio arriba, tecnología abajo). Las imágenes con ruteo están en
-`docs/img/archimate/mcp/`. Ojo: `build_model.py` regenera el archivo completo, así que las vistas "b" se pierden
-al regenerar; lo que persiste son los PNG y este procedimiento.
+`docs/img/archimate/mcp/`. Las vistas "b" quedaron guardadas en `SIMA.archimate`; `build_model.py --merge` las respeta.

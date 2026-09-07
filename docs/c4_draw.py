@@ -13,7 +13,7 @@ NL = chr(10)
 
 
 def wrap(text, width):
-    return NL.join(textwrap.wrap(text, width))
+    return NL.join(textwrap.wrap(text, width, break_long_words=False, break_on_hyphens=False))
 
 
 def box(ax, x, y, w, h, title, kind, desc="", color=SYSTEM, fs=11, radius=0.25):
@@ -113,7 +113,7 @@ for name, y, color, comps in layers:
     for k, (t, d) in enumerate(comps):
         x = 0.7 + k * (14.6 / n)
         ax.add_patch(FancyBboxPatch((x, y + 0.12), w, 1.05, boxstyle="round,pad=0.02,rounding_size=0.12", fc=color, ec="none"))
-        ax.text(x + w / 2, y + 0.92, wrap(t, 17), ha="center", va="center", color="white", fontsize=7.8, fontweight="bold", family=FONT)
+        ax.text(x + w / 2, y + 0.92, wrap(t, 17), ha="center", va="center", color="white", fontsize=7.0 if len(t) > 16 else 7.8, fontweight="bold", family=FONT)
         ax.text(x + w / 2, y + 0.42, wrap(d, 22), ha="center", va="center", color="white", fontsize=6.8, family=FONT)
 for y1, y2 in ((7.35, 7.10), (5.55, 5.30), (3.75, 3.50)):
     ax.add_patch(FancyArrowPatch((8.0, y1), (8.0, y2), arrowstyle="-|>", mutation_scale=14, color="#444444", lw=1.2))

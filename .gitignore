@@ -40,3 +40,6 @@ pipeline_output.txt
 *.code-workspace
 # logs de la app
 logs/
+
+# reporte HTML generado por Archi (se regenera)
+docs/archimate/report/

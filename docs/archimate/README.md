@@ -34,9 +34,31 @@ jre\bin\java -cp plugins\org.eclipse.equinox.launcher_1.7.100.v20251111-0406.jar
 El reporte deja un PNG por vista en `report/<id>/images/`; copias con nombre legible en `docs/img/archimate/`.
 Validado el 7-sep-2026: el modelo carga sin errores y las cinco vistas se renderizan.
 
-## Edición asistida por IA (opcional)
+## Edición asistida por IA con el plugin MCP (instalado)
 
-Existen servidores MCP para Archi que permiten que un asistente cree y modifique elementos y vistas
-en el modelo abierto (por ejemplo, el plugin `archi-mcp-server` publicado en GitHub, que expone un
-endpoint HTTP local). Son plugins de terceros que ejecutan código dentro de Archi: instalarlos es una
-decisión del equipo. Este modelo no los necesita; se regenera con el script.
+Archi tiene instalado el plugin **ArchiMate MCP Server** v1.8.0 (`fanievh/archi-mcp-server`, licencia MIT) en
+`D:\tools\Archi\dropins`. Expone el modelo abierto en Archi por HTTP local (`http://127.0.0.1:18090/mcp`,
+solo loopback) con 69 herramientas: consultar, crear, anidar, ruteo ortogonal con evasión de obstáculos,
+evaluación objetiva de la disposición (`assess-layout`) y exportación a PNG/SVG.
+
+Uso:
+
+1. Abrir el modelo en Archi y, en la barra de menú, **MCP Server → Start MCP Server**.
+2. **Approval Mode** (mismo menú) decide si cada cambio del asistente queda en cola para aprobarlo en la vista
+   *Pending Approvals* o se aplica directo. Es un control del humano: el asistente no puede cambiarlo.
+3. Claude Code lo encuentra por el `.mcp.json` del repo (`archi` → `http://127.0.0.1:18090/mcp`).
+4. El plugin **no guarda el modelo**: tras una sesión hay que guardar en Archi (Ctrl+S).
+
+Flujo aplicado el 7-sep-2026 sobre copias de las vistas (las originales del script se conservan):
+
+| Vista | Original | Con ruteo MCP | Qué se hizo |
+|---|---|---|---|
+| 2b. Negocio | pobre (14 terminales diagonales) | aceptable | `auto-route-connections` con `autoNudge` |
+| 3b. Aplicación | pobre (15 terminales, 10 cruces por cajas) | aceptable | ídem |
+| 4b. Tecnología | pobre (hub con 8 asignaciones) | disposición excelente | software y artefactos **anidados** dentro del nodo `Servidor de SIMA` (la contención reemplaza las asignaciones nodo→parte, como recomienda el ArchiMate Cookbook), `auto-connect-view` sin Assignment/Composition, ruteo |
+| 5b. Capas | pobre (9 terminales diagonales) | buena | ruteo |
+
+El modo `auto-layout-and-route` (ELK) se probó y se descartó: mejora las métricas pero reordena los grupos y
+rompe la convención de capas (negocio arriba, tecnología abajo). Las imágenes con ruteo están en
+`docs/img/archimate/mcp/`. Ojo: `build_model.py` regenera el archivo completo, así que las vistas "b" se pierden
+al regenerar; lo que persiste son los PNG y este procedimiento.

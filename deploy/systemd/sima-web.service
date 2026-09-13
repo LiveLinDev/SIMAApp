@@ -22,13 +22,13 @@ WorkingDirectory=/srv/sima/app
 Environment=DJANGO_SETTINGS_MODULE=sima.settings
 Environment=PYTHONUNBUFFERED=1
 Environment=HOME=/srv/sima
-# 3 procesos x 2 hilos. --timeout 300: algunas vistas llaman a la IA de forma
+# 2 procesos x 2 hilos (Droplet de 1 vCPU / 2 GB; con 2 vCPU y 4 GB se puede subir a 3). --timeout 300: algunas vistas llaman a la IA de forma
 # sincrona (reparar transcripcion / coherencia de una clase) y con reintentos
 # ante 429 de Groq pueden tardar varios minutos. El trabajo pesado (pipeline de
 # clases, refuerzos, resumenes) va al servicio sima-worker, no aqui.
 ExecStart=/srv/sima/venv/bin/gunicorn sima.wsgi:application \
     --bind 127.0.0.1:8000 \
-    --workers 3 \
+    --workers 2 \
     --threads 2 \
     --timeout 300 \
     --graceful-timeout 30 \

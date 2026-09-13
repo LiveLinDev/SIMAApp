@@ -82,11 +82,33 @@ Si el repositorio es **privado**, el VPS necesita permiso de lectura: crea una *
 | Clave SSH en tu PC | `ssh-keygen -t ed25519` | Si |
 | Respaldo de la BD local (`sima_platform`) | Seccion 10 | Opcional (si quieres llevar tus datos) |
 
+### 0.0 Perfil del servidor provisional del equipo: DigitalOcean Droplet 1 vCPU / 2 GB / 70 GB
+
+El kit ya viene ajustado a este Droplet. Resumen de lo que cambia frente al perfil de 4 GB descrito abajo:
+
+| Ajuste | Valor para 1 vCPU / 2 GB | Dónde |
+|---|---|---|
+| Imagen del Droplet | Ubuntu 24.04 LTS x64, con tu clave SSH | Panel de DigitalOcean |
+| Swap | 4 GB (el bootstrap lo crea) | `SWAP_SIZE=4G` (defecto) |
+| Procesos web | 2 procesos gunicorn x 2 hilos | `deploy/systemd/sima-web.service` |
+| Memoria máxima del worker | 1400M | `deploy/systemd/sima-worker.service` |
+| Modelo de Whisper | `tiny` (audios cortos, de hasta ~20 min) | `WHISPER_MODEL` en `.env` |
+| Trabajos pendientes por usuario | 2 | `SIMA_MAX_PENDING_JOBS` en `.env` |
+| Firewall | UFW en el Droplet; opcional, Cloud Firewall de DigitalOcean con 22, 80 y 443 | Sección 1 |
+
+Recomendaciones para la demostración:
+
+- **Usa clases en texto** para el guion de validación: con 1 vCPU la transcripción de audio es lenta
+  (un audio de 10 min puede tardar 5 a 15 min con `tiny`). Deja una clase con audio ya procesada.
+- Si el worker muere por memoria al transcribir (sección 13), instala sin Whisper con `INSTALL_WHISPER=0`
+  o redimensiona el Droplet a 2 vCPU / 4 GB solo durante la presentación.
+- El disco de 70 GB sobra: torch, Whisper y dependencias ocupan ~1,5 GB y los respaldos diarios pesan poco.
+
 ### 0.3 Tamano del VPS y memoria de Whisper
 
 Minimo recomendado: **Ubuntu 24.04 LTS, 2 vCPU, 4 GB RAM, 25 GB de disco**.
 
-- La web (3 procesos gunicorn) + PostgreSQL + Nginx usan ~600-900 MB.
+- La web (2 procesos gunicorn en el Droplet de 2 GB; 3 en uno de 4 GB) + PostgreSQL + Nginx usan ~500-900 MB.
 - **Whisper corre en la CPU del VPS** dentro de `sima-worker`. Solo importar `torch`
   ya cuesta 300-500 MB. Memoria aproximada durante una transcripcion:
 
@@ -100,7 +122,7 @@ Minimo recomendado: **Ubuntu 24.04 LTS, 2 vCPU, 4 GB RAM, 25 GB de disco**.
   Un audio largo suma memoria (1 h de audio ~ 250 MB solo de muestras). En CPU, una
   hora de audio puede tardar de 20 a 60 minutos con `base`.
 - Con 4 GB crea un **swapfile de 4 GB** (el bootstrap lo hace si no hay swap) y usa
-  `WHISPER_MODEL=base` (o `tiny` con 2 GB). El servicio del worker tiene `MemoryMax=2500M`
+  `WHISPER_MODEL=base` (o `tiny` con 2 GB). El servicio del worker tiene `MemoryMax=1400M` (súbelo a 2500M con 4 GB)
   para que, si Whisper se desborda, muera el worker y no la web ni PostgreSQL.
 - Disco: torch CPU + Whisper + dependencias ocupan ~1,5 GB; el modelo `base`, 140 MB.
 - **Clases solo de texto no necesitan Whisper.** Con `INSTALL_WHISPER=0` en el bootstrap

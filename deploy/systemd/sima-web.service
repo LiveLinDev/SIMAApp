@@ -1,0 +1,50 @@
+# SIMA — aplicacion web Django servida por gunicorn en 127.0.0.1:8000.
+# Nginx (deploy/nginx/sima.conf) hace de proxy y sirve /static/.
+#
+# Instalar:  sudo cp deploy/systemd/sima-web.service /etc/systemd/system/
+#            sudo systemctl daemon-reload && sudo systemctl enable --now sima-web
+# Logs:      journalctl -u sima-web -f
+#
+# No hace falta EnvironmentFile: sima/settings.py lee /srv/sima/app/.env por su
+# cuenta (y sus valores pisan cualquier Environment= de aqui).
+
+[Unit]
+Description=SIMA web (gunicorn)
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=notify
+NotifyAccess=main
+User=sima
+Group=sima
+WorkingDirectory=/srv/sima/app
+Environment=DJANGO_SETTINGS_MODULE=sima.settings
+Environment=PYTHONUNBUFFERED=1
+Environment=HOME=/srv/sima
+# 3 procesos x 2 hilos. --timeout 300: algunas vistas llaman a la IA de forma
+# sincrona (reparar transcripcion / coherencia de una clase) y con reintentos
+# ante 429 de Groq pueden tardar varios minutos. El trabajo pesado (pipeline de
+# clases, refuerzos, resumenes) va al servicio sima-worker, no aqui.
+ExecStart=/srv/sima/venv/bin/gunicorn sima.wsgi:application \
+    --bind 127.0.0.1:8000 \
+    --workers 3 \
+    --threads 2 \
+    --timeout 300 \
+    --graceful-timeout 30 \
+    --max-requests 1000 \
+    --max-requests-jitter 100 \
+    --access-logfile - \
+    --error-logfile -
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=always
+RestartSec=5
+KillMode=mixed
+TimeoutStopSec=40
+# Endurecimiento basico
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target

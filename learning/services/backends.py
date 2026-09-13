@@ -39,18 +39,24 @@ def cloud_backend_available() -> bool:
     return is_real_cloud_key(getattr(settings, "CLOUD_API_KEY", ""))
 
 
+def local_backend_enabled() -> bool:
+    """False cuando no hay modelo local (LOCAL_AI_ENABLED=False), como en un VPS sin GPU."""
+    return bool(getattr(settings, "LOCAL_AI_ENABLED", True))
+
+
 def get_available_backends() -> dict:
     """
     Backends de IA disponibles.
     - cloud: proveedor externo configurado con CLOUD_* (o el alias heredado DEEPSEEK_*).
-    - local: siempre se ofrece; asume una API compatible con OpenAI en LOCAL_API_BASE.
+    - local: API compatible con OpenAI en LOCAL_API_BASE; se desactiva con LOCAL_AI_ENABLED=False.
     """
     cloud_ok = cloud_backend_available()
+    local_ok = local_backend_enabled()
     provider = getattr(settings, "CLOUD_PROVIDER", "openai_compatible")
     return {
         "cloud": cloud_ok,
-        "local": True,
-        "default": "cloud" if cloud_ok else "local",
+        "local": local_ok,
+        "default": "cloud" if cloud_ok or not local_ok else "local",
         "cloud_provider": provider if cloud_ok else "",
         "cloud_label": getattr(settings, "CLOUD_LABEL", "Nube"),
         "cloud_model": getattr(settings, "CLOUD_MODEL", ""),
@@ -78,6 +84,10 @@ def resolve_backend(backend: str = "auto") -> str:
     backend = normalize_backend(backend)
     if backend == "auto":
         return get_available_backends()["default"]
+    if backend == "local" and not local_backend_enabled() and cloud_backend_available():
+        # Varias etapas (reparar transcripcion, coherencia, consultas de verificacion) piden "local";
+        # sin modelo local se atienden con el proveedor en la nube en vez de fallar en silencio.
+        return "cloud"
     return backend
 
 

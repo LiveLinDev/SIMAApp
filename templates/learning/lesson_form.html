@@ -44,9 +44,10 @@
     <legend class="backend-label">Donde quieres generar?</legend>
     <p class="backend-note">Local usa un modelo en este equipo. La nube ({{ backends.cloud_label }}) consume mas creditos y solo se activa con CLOUD_API_KEY configurada.</p>
     <div class="backend-options">
-      <label class="backend-option" id="lbl-local">
+      <label class="backend-option {% if not backends.local %}backend-option--disabled{% endif %}" id="lbl-local">
         <input type="radio" name="backend" value="local"
           {% if backends.default == 'local' %}checked{% endif %}
+          {% if not backends.local %}disabled{% endif %}
           onchange="updateBackendUI()">
         <span class="backend-card">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -54,7 +55,11 @@
           </svg>
           <span>
             <strong>Modelo local</strong>
-            <small>{{ local_model }} · {{ local_credit_estimate.amount }} creditos aprox.</small>
+            {% if backends.local %}
+              <small>{{ local_model }} · {{ local_credit_estimate.amount }} creditos aprox.</small>
+            {% else %}
+              <small class="disabled-note">No disponible en este servidor</small>
+            {% endif %}
           </span>
         </span>
       </label>

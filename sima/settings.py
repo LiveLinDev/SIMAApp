@@ -7,7 +7,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 def load_dotenv():
-    env_path = BASE_DIR / ".env"
+    # SIMA_ENV_FILE (opcional) elige otro archivo de entorno, p. ej. para probar
+    # `check --deploy` con valores de produccion sin tocar el .env real.
+    custom_env = os.getenv("SIMA_ENV_FILE", "").strip()
+    env_path = Path(custom_env) if custom_env else BASE_DIR / ".env"
     if not env_path.exists():
         return
     for line in env_path.read_text(encoding="utf-8").splitlines():
@@ -90,7 +93,9 @@ def database_config():
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-only-change-me")
 DEBUG = env_bool("DJANGO_DEBUG", True)
-ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "0.0.0.0,127.0.0.1,localhost").split(",")
+ALLOWED_HOSTS = [
+    h.strip() for h in os.getenv("DJANGO_ALLOWED_HOSTS", "0.0.0.0,127.0.0.1,localhost").split(",") if h.strip()
+]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -148,6 +153,8 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
+# Destino de `collectstatic` (lo sirve Nginx en produccion). DJANGO_STATIC_ROOT lo cambia.
+STATIC_ROOT = Path(env_text("DJANGO_STATIC_ROOT")) if env_text("DJANGO_STATIC_ROOT") else BASE_DIR / "staticfiles"
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
@@ -210,6 +217,8 @@ CLOUD_VERIFICATION_TEMPERATURE = env_float("CLOUD_VERIFICATION_TEMPERATURE", env
 CLOUD_DIRECT_MINI = env_bool("CLOUD_DIRECT_MINI", env_bool("DEEPSEEK_DIRECT_MINI", False))
 
 # ── Backend local (API compatible con OpenAI: Ollama, LM Studio, llama-server) ─
+# LOCAL_AI_ENABLED=False: no hay modelo local (p. ej. en el VPS); las etapas que piden "local" usan el proveedor en la nube
+LOCAL_AI_ENABLED = env_bool("LOCAL_AI_ENABLED", True)
 LOCAL_API_BASE = env_text("LOCAL_API_BASE", "http://127.0.0.1:8003/v1")
 LOCAL_API_KEY = env_text("LOCAL_API_KEY", "local")
 LOCAL_MODEL = env_text("LOCAL_MODEL", "") or CLOUD_MODEL

@@ -1,0 +1,18 @@
+# SIMA — temporizador diario de recordatorios (18:00 hora de Lima).
+# Instalar:  sudo cp deploy/systemd/sima-reminders.* /etc/systemd/system/
+#            sudo systemctl daemon-reload && sudo systemctl enable --now sima-reminders.timer
+# Ver:       systemctl list-timers sima-reminders.timer
+
+[Unit]
+Description=SIMA recordatorios de estudio diarios
+
+[Timer]
+# La zona horaria en OnCalendar funciona en Ubuntu 22.04 y 24.04 (systemd >= 245).
+OnCalendar=*-*-* 18:00:00 America/Lima
+# Si el VPS estaba apagado a esa hora, se ejecuta al arrancar.
+Persistent=true
+RandomizedDelaySec=120
+Unit=sima-reminders.service
+
+[Install]
+WantedBy=timers.target

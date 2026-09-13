@@ -1,0 +1,21 @@
+# SIMA — envio diario de recordatorios de estudio por correo.
+# Lo dispara sima-reminders.timer; no se habilita por si solo.
+# Probar a mano:  sudo systemctl start sima-reminders && journalctl -u sima-reminders -n 50
+
+[Unit]
+Description=SIMA recordatorios de estudio (send_study_reminders)
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=oneshot
+User=sima
+Group=sima
+WorkingDirectory=/srv/sima/app
+Environment=DJANGO_SETTINGS_MODULE=sima.settings
+Environment=PYTHONUNBUFFERED=1
+Environment=HOME=/srv/sima
+ExecStart=/srv/sima/venv/bin/python manage.py send_study_reminders
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full

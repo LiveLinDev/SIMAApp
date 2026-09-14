@@ -99,7 +99,20 @@ class Command(BaseCommand):
             self.ok("hay una clave real de nube configurada")
         else:
             self.fail("CLOUD_API_KEY no tiene una clave real: la nube no esta disponible")
-        for package, why in (("openai", "proveedores compatibles con OpenAI"), ("whisper", "transcripcion de audio"), ("psycopg", "PostgreSQL")):
+        from learning.services.transcription import remote_status, transcription_backend
+
+        transcription = transcription_backend()
+        packages = [("openai", "proveedores compatibles con OpenAI"), ("psycopg", "PostgreSQL")]
+        if transcription == "remote":
+            status = remote_status()
+            if status.get("reachable"):
+                self.ok(f"transcripcion remota alcanzable (Whisper {status.get('model', '')} en el equipo de transcripcion)")
+            else:
+                self.warn("transcripcion remota no alcanzable: enciende la PC con iniciar-transcripcion-remota.bat "
+                          "(las clases en texto funcionan igual)")
+        else:
+            packages.insert(1, ("whisper", "transcripcion de audio"))
+        for package, why in packages:
             if importlib.util.find_spec(package):
                 self.ok(f"paquete {package} instalado ({why})")
             elif package == "openai" and provider != "anthropic":

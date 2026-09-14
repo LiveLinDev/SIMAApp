@@ -66,3 +66,25 @@ class PortabilityTests(TestCase):
     def test_rejects_unknown_format(self):
         with self.assertRaises(ValueError):
             portability.import_course(self.user, {"format": "otro", "course": {}})
+
+
+class FixtureRestoreTests(TestCase):
+    def test_loaddata_with_profiles_does_not_duplicate(self):
+        import json
+        import tempfile
+
+        from django.contrib.auth import get_user_model
+        from django.core.management import call_command
+
+        from learning.models import Profile, UserPreference
+
+        user = get_user_model().objects.create_user("respaldo", password="x-12345678")
+        Profile.objects.filter(user=user).update(credit_balance=77)
+        with tempfile.NamedTemporaryFile("w+", suffix=".json", delete=False, encoding="utf-8") as fh:
+            call_command("dumpdata", "auth.user", "learning.profile", "learning.userpreference", stdout=fh)
+            path = fh.name
+        get_user_model().objects.all().delete()
+        call_command("loaddata", path, verbosity=0)
+        self.assertEqual(Profile.objects.get(user__username="respaldo").credit_balance, 77)
+        self.assertEqual(UserPreference.objects.filter(user__username="respaldo").count(), 1)
+        json.load(open(path, encoding="utf-8"))

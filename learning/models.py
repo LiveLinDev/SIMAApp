@@ -786,6 +786,9 @@ class LessonJob(models.Model):
 
 @receiver(post_save, sender=User)
 def create_profile(sender, instance, created, **kwargs):
+    if kwargs.get("raw"):
+        # loaddata / import de respaldos: el perfil y las preferencias vienen en los mismos datos
+        return
     if created:
         Profile.objects.create(user=instance)
         UserPreference.objects.create(user=instance)

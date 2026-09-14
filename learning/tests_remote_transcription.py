@@ -116,5 +116,6 @@ class RemoteTranscriptionTests(SimpleTestCase):
         with override_settings(TRANSCRIPTION_BACKEND="", TRANSCRIPTION_FALLBACK=""):
             with mock.patch.object(transcription, "transcribe_local", return_value=("local", [])) as local:
                 self.assertEqual(transcription.transcribe_audio_detailed(self.audio), ("local", []))
+            # dentro del override: el .env de quien corre las pruebas puede usar otro backend
+            self.assertEqual(transcription.transcription_backend(), "local")
         local.assert_called_once()
-        self.assertEqual(transcription.transcription_backend(), "local")

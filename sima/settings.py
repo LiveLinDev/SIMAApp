@@ -253,6 +253,17 @@ WHISPER_REMOTE_TIMEOUT = env_int("WHISPER_REMOTE_TIMEOUT", 3600)
 # cloud envia el audio a un tercero: usar solo si se acepta ese intercambio de privacidad.
 TRANSCRIPTION_FALLBACK = env_text("TRANSCRIPTION_FALLBACK", "").lower()
 CLOUD_TRANSCRIPTION_MODEL = env_text("CLOUD_TRANSCRIPTION_MODEL", "whisper-large-v3-turbo")
+# Whisper API privada del equipo (TRANSCRIPTION_BACKEND=api). La clave va solo en el .env privado del backend.
+# El cliente solo acepta el hostname autorizado (learning/services/whisper_api.py: AUTHORIZED_HOSTS).
+WHISPER_API_BASE_URL = env_text("WHISPER_API_BASE_URL", "https://whisper-api.aquelarredemujeres.com")
+WHISPER_API_KEY = env_text("WHISPER_API_KEY", "")
+WHISPER_API_MODEL = env_text("WHISPER_API_MODEL", "whisper-1")
+WHISPER_API_POLL_INTERVAL_SECONDS = env_float("WHISPER_API_POLL_INTERVAL_SECONDS", 4.0)
+WHISPER_API_REQUEST_TIMEOUT_SECONDS = env_float("WHISPER_API_REQUEST_TIMEOUT_SECONDS", 620.0)
+WHISPER_API_MAX_WAIT_SECONDS = env_float("WHISPER_API_MAX_WAIT_SECONDS", 9000.0)
+WHISPER_API_READY_WAIT_SECONDS = env_float("WHISPER_API_READY_WAIT_SECONDS", 180.0)
+# El servidor admite 30 solicitudes protegidas por minuto (el polling cuenta): se deja margen.
+WHISPER_API_MAX_CALLS_PER_MINUTE = env_int("WHISPER_API_MAX_CALLS_PER_MINUTE", 28)
 LOCAL_TASK_QUEUE_MAXSIZE = env_int("LOCAL_TASK_QUEUE_MAXSIZE", 20)
 LOCAL_TASK_WORKERS = env_int("LOCAL_TASK_WORKERS", 1)
 # thread: worker en hilos dentro del proceso web (por defecto). db: proceso aparte `manage.py run_worker`.

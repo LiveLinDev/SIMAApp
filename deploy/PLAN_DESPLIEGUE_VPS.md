@@ -869,3 +869,26 @@ El script mantiene el 8080 hasta comprobar que `https://sima.pmoluna.com/salud/`
 ### 16.4 Acceso de mantenimiento
 
 La llave SSH usada para configurar el servidor queda limitada a `git push` sobre `/srv/sima/repo.git`: no abre shell ni puede tocar Luna. Para retirarla del todo, borra en `~/.ssh/authorized_keys` de `erick` la línea que termina en `sima_admin@pc-erick`.
+
+## 17. Transcripción con Whisper API del equipo
+
+Alternativa al túnel SSH de la sección 15: el VPS llama por HTTPS a una Whisper API privada que corre en una PC con GPU del equipo, publicada con Cloudflare Tunnel. El VPS no necesita túnel ni tener la PC de Erick encendida.
+
+- Motor: `TRANSCRIPTION_BACKEND=api`. Cliente en `learning/services/whisper_api.py`.
+- Modo asíncrono: crea el trabajo (`POST /v1/transcriptions`, 202), consulta cada 3 a 5 s y termina en `completed` o `failed`.
+- Cada clase guarda el identificador del trabajo. Si el worker se reinicia, retoma ese trabajo en vez de subir el audio otra vez.
+- Seguridad: la clave vive solo en el `.env` privado. El cliente solo acepta `https://whisper-api.aquelarredemujeres.com`, no sigue redirecciones y no escribe la clave en logs ni errores.
+- Límites respetados: 95 MiB por archivo, 2 horas de audio, 30 solicitudes por minuto (el cliente usa 28) y `Retry-After`.
+- El hostname definitivo del servicio aún no está activo; se agrega a `AUTHORIZED_HOSTS` solo cuando el administrador lo confirme.
+
+En el VPS:
+
+```bash
+sudo bash /srv/sima/app/deploy/configurar_whisper_api.sh
+```
+
+Pide la clave sin mostrarla, la guarda en el `.env` (permisos 600), activa el motor y reinicia SIMA. Prueba real opcional con un audio corto y no sensible:
+
+```bash
+sudo -u sima -H /srv/sima/venv/bin/python /srv/sima/app/manage.py check_whisper_api /ruta/audio.mp3
+```

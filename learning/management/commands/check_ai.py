@@ -99,11 +99,21 @@ class Command(BaseCommand):
             self.ok("hay una clave real de nube configurada")
         else:
             self.fail("CLOUD_API_KEY no tiene una clave real: la nube no esta disponible")
-        from learning.services.transcription import remote_status, transcription_backend
+        from learning.services.transcription import api_status, remote_status, transcription_backend
 
         transcription = transcription_backend()
         packages = [("openai", "proveedores compatibles con OpenAI"), ("psycopg", "PostgreSQL")]
-        if transcription == "remote":
+        if transcription == "api":
+            if not getattr(settings, "WHISPER_API_KEY", ""):
+                self.fail("TRANSCRIPTION_BACKEND=api pero falta WHISPER_API_KEY en el .env privado")
+            status = api_status()
+            if status.get("ready"):
+                self.ok("Whisper API lista (servicio privado de transcripcion)")
+            elif status.get("reachable"):
+                self.warn("Whisper API responde pero aun no esta lista (modelo o GPU cargando)")
+            else:
+                self.warn(f"Whisper API no alcanzable ({status.get('error', 'sin respuesta')}); las clases en texto funcionan igual")
+        elif transcription == "remote":
             status = remote_status()
             if status.get("reachable"):
                 self.ok(f"transcripcion remota alcanzable (Whisper {status.get('model', '')} en el equipo de transcripcion)")

@@ -61,8 +61,10 @@ def process_lesson_job(job_id: int, backend: str = "auto"):
             if not job.transcript:
                 from .vocabulary import whisper_prompt
 
-                job.transcript, whisper_segments = transcribe_audio_detailed(job.audio.path, prompt=whisper_prompt(job))
-                job.save(update_fields=["transcript", "updated_at"])
+                job.transcript, whisper_segments = transcribe_audio_detailed(
+                    job.audio.path, prompt=whisper_prompt(job), **_transcription_job_options(job))
+                job.transcription_job_id = ""
+                job.save(update_fields=["transcript", "transcription_job_id", "updated_at"])
                 if requested_backend != "local":
                     whisper_segments = _review_transcript_vocabulary(job, requested_backend, whisper_segments)
                 _sync_transcript_record(job, segments=whisper_segments)
@@ -321,6 +323,29 @@ def _job_context_for_ai(job: LessonJob, include_mini: bool = False, include_tran
     if include_mini and job.toon_output.strip():
         parts.append(f"MINI_GENERADO:\n{job.toon_output.strip()}")
     return "\n\n".join(parts)
+
+
+def _transcription_job_options(job: LessonJob) -> dict:
+    """Enlaza la clase con el trabajo de Whisper API: lo retoma si ya existe, lo recuerda al crearlo y corta la
+    espera si la clase se elimina. Los demas backends ignoran estas opciones."""
+
+    def remember(remote_id: str):
+        job.transcription_job_id = remote_id
+        job.save(update_fields=["transcription_job_id", "updated_at"])
+        job.processing_log = _append_log(job.processing_log, "Audio enviado a Whisper API", f"Trabajo {remote_id}.")
+        job.save(update_fields=["processing_log", "updated_at"])
+
+    def status_changed(remote_job):
+        labels = {"queued": "En cola en Whisper API", "processing": "Whisper API transcribiendo"}
+        if remote_job.status in labels:
+            _set_stage(job, labels[remote_job.status], f"Trabajo {remote_job.id}.")
+
+    return {
+        "resume_job_id": job.transcription_job_id or None,
+        "on_submitted": remember,
+        "on_status": status_changed,
+        "should_cancel": lambda: not LessonJob.objects.filter(pk=job.pk).exists(),
+    }
 
 
 def _review_transcript_vocabulary(job: LessonJob, backend: str, segments: list[dict] | None):

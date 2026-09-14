@@ -755,6 +755,8 @@ class LessonJob(models.Model):
     source_text = models.TextField(blank=True)
     audio = models.FileField(upload_to="audio/", blank=True)
     transcript = models.TextField(blank=True)
+    # Trabajo creado en Whisper API para este audio: permite retomarlo tras un corte sin subir el audio de nuevo.
+    transcription_job_id = models.CharField(max_length=64, blank=True)
     generation_prompt = models.TextField(blank=True)
     toon_output = models.TextField(blank=True)
     verification_prompt = models.TextField(blank=True)

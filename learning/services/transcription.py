@@ -4,6 +4,8 @@ Backends (TRANSCRIPTION_BACKEND):
 - local:  Whisper se carga en este mismo proceso.
 - remote: el audio se envia a `manage.py serve_whisper`, que corre en otra maquina (por ejemplo la PC del
           equipo, alcanzada desde el VPS por un tunel SSH inverso en 127.0.0.1:9000).
+- api:    Whisper API privada del equipo (PC con GPU publicada por HTTPS), con trabajos asincronos.
+          Cliente en services/whisper_api.py.
 TRANSCRIPTION_FALLBACK (opcional) define que hacer si el backend principal falla: local o cloud.
 """
 from __future__ import annotations
@@ -19,6 +21,7 @@ BACKEND_LABELS = {
     "local": "Whisper en este servidor",
     "remote": "Whisper en el equipo de transcripcion (tunel SSH)",
     "cloud": "API de Whisper del proveedor en la nube",
+    "api": "Whisper API del equipo (servicio privado)",
 }
 
 
@@ -53,29 +56,65 @@ def transcribe_audio(audio_path, prompt: str = ""):
     return text
 
 
-def transcribe_audio_detailed(audio_path, prompt: str = "") -> tuple[str, list[dict]]:
+def transcribe_audio_detailed(audio_path, prompt: str = "", **job_options) -> tuple[str, list[dict]]:
     """Texto completo y segmentos con marcas de tiempo (start, end, text) segun el backend configurado.
 
     prompt: contexto del curso (nombre y terminos tecnicos). Whisper lo usa para escribir bien esos terminos.
+    job_options (solo backend api): resume_job_id, on_submitted(job_id), should_cancel(), on_status(job).
     """
     primary = transcription_backend()
     fallback = (getattr(settings, "TRANSCRIPTION_FALLBACK", "") or "").strip().lower()
     prompt = clean_prompt(prompt)
     try:
-        return _run_backend(primary, audio_path, prompt)
+        return _run_backend(primary, audio_path, prompt, **job_options)
     except Exception as exc:  # noqa: BLE001
-        if not fallback or fallback == primary or fallback not in BACKEND_LABELS:
+        if not fallback or fallback == primary or fallback not in BACKEND_LABELS or _is_cancel(exc):
             raise
         logger.warning("Transcripcion %s fallo (%s); usando respaldo %s", primary, exc, fallback)
-        return _run_backend(fallback, audio_path, prompt)
+        return _run_backend(fallback, audio_path, prompt, **job_options)
 
 
-def _run_backend(backend: str, audio_path, prompt: str = "") -> tuple[str, list[dict]]:
+def _is_cancel(exc: Exception) -> bool:
+    from .whisper_api import WhisperApiCancelled
+
+    return isinstance(exc, WhisperApiCancelled) or isinstance(exc.__cause__, WhisperApiCancelled)
+
+
+def _run_backend(backend: str, audio_path, prompt: str = "", **job_options) -> tuple[str, list[dict]]:
+    if backend == "api":
+        return transcribe_api(audio_path, prompt=prompt, **job_options)
     if backend == "remote":
         return transcribe_remote(audio_path, prompt=prompt)
     if backend == "cloud":
         return transcribe_cloud(audio_path, prompt=prompt)
     return transcribe_local(audio_path, prompt=prompt)
+
+
+# ---------------------------------------------------------------------------------------------- api
+def transcribe_api(audio_path, prompt: str = "", resume_job_id: str | None = None, on_submitted=None,
+                   should_cancel=None, on_status=None) -> tuple[str, list[dict]]:
+    """Whisper API privada en modo asincrono. Los errores se convierten en mensajes entendibles."""
+    from ..segments import normalize_whisper_result
+    from .whisper_api import WhisperApiCancelled, WhisperApiError, client_from_settings
+
+    try:
+        with client_from_settings() as client:
+            result = client.transcribe(
+                audio_path, language=whisper_language() or None, prompt=prompt or None,
+                response_format="verbose_json", resume_job_id=resume_job_id, on_submitted=on_submitted,
+                should_cancel=should_cancel, on_status=on_status,
+            )
+    except WhisperApiCancelled:
+        raise
+    except WhisperApiError as exc:
+        raise TranscriptionUnavailable(f"Whisper API: {exc}") from exc
+    return normalize_whisper_result(result.as_whisper_dict())
+
+
+def api_status() -> dict:
+    from .whisper_api import service_status
+
+    return service_status(getattr(settings, "WHISPER_API_BASE_URL", ""))
 
 
 def whisper_options(prompt: str = "", language: str | None = None) -> dict:

@@ -196,10 +196,12 @@ def health(request):
     status["cloud_backend"] = bool(getattr(settings, "CLOUD_API_KEY", ""))
     status["cloud_model"] = getattr(settings, "CLOUD_MODEL", "")
     status["whisper_model"] = getattr(settings, "WHISPER_MODEL", "")
-    from ..services.transcription import remote_status, transcription_backend
+    from ..services.transcription import api_status, remote_status, transcription_backend
 
     status["transcription_backend"] = transcription_backend()
     if status["transcription_backend"] == "remote":
         # la PC de transcripcion apagada no degrada el sitio: solo afecta a las clases con audio
         status["transcription_remote"] = remote_status()
+    elif status["transcription_backend"] == "api":
+        status["transcription_api"] = api_status()
     return JsonResponse(status, status=200 if status["status"] == "ok" else 503)

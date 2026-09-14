@@ -137,6 +137,28 @@ class DbWorkerTests(TransactionTestCase):
 
     @patch("learning.services.call_ai", return_value=RAW)
     @patch("learning.services.resolve_backend", return_value="local")
+    def test_split_workers_do_not_block_or_requeue_each_other(self, _rb, _ai):
+        lesson = LessonJob.objects.create(user=self.user, course=self.course, title="Audio largo", mode=LessonJob.Mode.API,
+                                          status=LessonJob.Status.QUEUED, source_text="x" * 300)
+        LessonJob.objects.filter(pk=lesson.pk).update(created_at=timezone.now() - timedelta(minutes=5))
+        summary_job = summaries.create_summary_job(self.user, self.course, lesson=self.job)
+
+        # el worker de estudio no ve la clase aunque sea mas antigua: toma el resumen de inmediato
+        self.assertEqual(job_queue.claim_next_job("summary,reinforcement")[:2], ("summary", summary_job.pk))
+        self.assertEqual(job_queue.claim_next_job(["lesson"])[:2], ("lesson", lesson.pk))
+        self.assertIsNone(job_queue.claim_next_job("lesson"))
+
+        # al arrancar, cada worker solo reencola sus propios tipos
+        LessonJob.objects.filter(pk=lesson.pk).update(updated_at=timezone.now() - timedelta(hours=5))
+        SummaryJob.objects.filter(pk=summary_job.pk).update(updated_at=timezone.now() - timedelta(hours=5))
+        self.assertEqual(job_queue.reset_stale_processing(60, kinds="summary,reinforcement"), 1)
+        lesson.refresh_from_db()
+        self.assertEqual(lesson.status, LessonJob.Status.PROCESSING)
+        with self.assertRaises(ValueError):
+            job_queue.parse_kinds("lesson,videos")
+
+    @patch("learning.services.call_ai", return_value=RAW)
+    @patch("learning.services.resolve_backend", return_value="local")
     def test_run_worker_once_processes_queue(self, _rb, _ai):
         summaries.create_summary_job(self.user, self.course)
         out = StringIO()

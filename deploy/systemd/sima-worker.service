@@ -1,5 +1,6 @@
-# SIMA — worker de trabajos en segundo plano (SIMA_QUEUE_MODE=db).
-# Procesa clases (Whisper + IA), refuerzos y resumenes que el web deja en cola.
+# SIMA — worker de CLASES en segundo plano (SIMA_QUEUE_MODE=db).
+# Procesa las clases (transcripcion + IA). Los resumenes y refuerzos van en sima-worker-study.service,
+# asi una clase larga esperando su transcripcion no bloquea al resto.
 #
 # Instalar:  sudo cp deploy/systemd/sima-worker.service /etc/systemd/system/
 #            sudo systemctl daemon-reload && sudo systemctl enable --now sima-worker
@@ -10,7 +11,7 @@
 # --stale-minutes sin actividad (ver PLAN_DESPLIEGUE_VPS.md, seccion 13).
 
 [Unit]
-Description=SIMA worker (manage.py run_worker)
+Description=SIMA worker de clases (manage.py run_worker --kinds lesson)
 After=network.target postgresql.service
 Wants=postgresql.service
 
@@ -23,7 +24,7 @@ Environment=DJANGO_SETTINGS_MODULE=sima.settings
 Environment=PYTHONUNBUFFERED=1
 # HOME: Whisper guarda sus modelos en ~/.cache/whisper
 Environment=HOME=/srv/sima
-ExecStart=/srv/sima/venv/bin/python manage.py run_worker --interval 3 --stale-minutes 120
+ExecStart=/srv/sima/venv/bin/python manage.py run_worker --kinds lesson --interval 3 --stale-minutes 180
 Restart=always
 RestartSec=10
 # SIGINT = Ctrl+C: run_worker lo captura y termina de forma ordenada.

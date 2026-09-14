@@ -1,0 +1,23 @@
+{# Resumen en curso: solo el avance (la pagina se recarga sola cada 6 s) #}
+<section class="sm-card sm-progress" aria-live="polite">
+  <div class="sm-progress__head">
+    <span class="sm-progress__dot" aria-hidden="true"></span>
+    <strong>{{ progress.title }}</strong>
+  </div>
+  <div class="sm-progress__bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ progress.percent }}">
+    <span style="width: {{ progress.percent }}%"></span>
+  </div>
+  <p class="sm-progress__step">{{ progress.step }}</p>
+  <p class="muted">Puedes seguir estudiando; esta página se actualiza sola.</p>
+</section>
+<style>
+  .sm-progress { display: grid; gap: 12px; border-left: 4px solid var(--acid); }
+  .sm-progress__head { display: flex; align-items: center; gap: 10px; }
+  .sm-progress__dot { width: 10px; height: 10px; border-radius: 50%; background: var(--acid); animation: smPulse 1.2s ease-in-out infinite; }
+  .sm-progress__bar { height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; }
+  .sm-progress__bar span { display: block; height: 100%; border-radius: 99px; background: var(--acid); transition: width .4s; }
+  .sm-progress__step { margin: 0; font-weight: 600; }
+  .sm-progress .muted { margin: 0; font-size: .9rem; }
+  @keyframes smPulse { 50% { opacity: .35; } }
+  @media (prefers-reduced-motion: reduce) { .sm-progress__dot { animation: none; } }
+</style>

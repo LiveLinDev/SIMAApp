@@ -151,6 +151,42 @@ class FullClassSummaryTests(TestCase):
         self.assertEqual(call_ai.call_count, 1)
 
 
+class SummaryProgressTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user("prog", password="x")
+        Profile.objects.update_or_create(user=self.user, defaults={"plan": Plan.FREE, "credit_balance": 50})
+        self.course = Course.objects.create(user=self.user, name="Anatomía")
+        self.job = LessonJob.objects.create(user=self.user, course=self.course, title="Corazón", mode=LessonJob.Mode.API,
+                                            status=LessonJob.Status.CORRECTED, corrected_output=MINI, transcript="El corazon bombea. " * 40)
+        self.client.force_login(self.user)
+
+    def test_pending_summary_page_shows_only_progress(self):
+        from learning.models import SummaryJob
+
+        with patch("learning.job_queue.enqueue_summary_job"):
+            summary_job = summaries.create_summary_job(self.user, self.course, lesson=self.job)
+        page = self.client.get(f"/clase/{self.job.pk}/resumen/")
+        self.assertContains(page, "En cola")
+        self.assertContains(page, "Empieza en unos segundos.")
+        for text in ("Aún no hay resumen", "Todavía no se puede resumir", "Generar resumen ("):
+            self.assertNotContains(page, text)
+
+        summary_job.status = SummaryJob.Status.PROCESSING
+        summary_job.processing_log = summaries._job_log(summary_job.processing_log, "Procesando", "Leyendo la parte 2 de 4.")
+        summary_job.save()
+        progress = summaries.summary_job_progress(summary_job)
+        self.assertEqual(progress["title"], "Preparando tu resumen")
+        self.assertEqual(progress["step"], "Leyendo la parte 2 de 4.")
+        self.assertContains(self.client.get(f"/clase/{self.job.pk}/resumen/"), "Leyendo la parte 2 de 4.")
+
+    def test_class_without_content_explains_why(self):
+        empty = LessonJob.objects.create(user=self.user, course=self.course, title="Vacía", mode=LessonJob.Mode.API,
+                                         status=LessonJob.Status.PROCESSING)
+        page = self.client.get(f"/clase/{empty.pk}/resumen/")
+        self.assertContains(page, "Todavía no se puede resumir")
+        self.assertNotContains(page, "Aún no hay resumen")
+
+
 class ConceptsAndPdfTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user("pdf", password="x")

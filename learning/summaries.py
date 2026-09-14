@@ -428,6 +428,36 @@ def latest_summary_job(course: Course, lesson: LessonJob | None = None) -> Summa
     return qs.first()
 
 
+def summary_job_progress(job: SummaryJob | None) -> dict | None:
+    """Estado legible de un resumen en curso: titulo, paso actual y cuantos trabajos de estudio van antes."""
+    if job is None:
+        return None
+    from .models import ReinforcementJob
+
+    if job.status == SummaryJob.Status.QUEUED:
+        ahead = sum(
+            model.objects.filter(status__in=[status.QUEUED, status.PROCESSING], created_at__lt=job.created_at).count()
+            for model, status in ((SummaryJob, SummaryJob.Status), (ReinforcementJob, ReinforcementJob.Status))
+        )
+        step = (f"{ahead} resumen{'es' if ahead != 1 else ''} o refuerzo{'s' if ahead != 1 else ''} antes que el tuyo."
+                if ahead else "Empieza en unos segundos.")
+        return {"title": "En cola", "step": step, "percent": 10}
+    detail = ""
+    for line in reversed((job.processing_log or "").splitlines()):
+        match = re.match(r"^\[[\d:]+\]\s+Procesando(?:\s+-\s+(.*))?$", line.strip())
+        if match:
+            detail = (match.group(1) or "").strip()
+            break
+    percent = 35
+    part = re.search(r"parte (\d+) de (\d+)", detail)
+    if part:
+        done, total = int(part.group(1)), max(int(part.group(2)), 1)
+        percent = 20 + int(65 * (done - 1) / total)
+    elif detail.startswith("Escribiendo"):
+        percent = 90
+    return {"title": "Preparando tu resumen", "step": detail or "Leyendo la clase.", "percent": percent}
+
+
 def create_summary_job(user, course: Course, lesson: LessonJob | None = None, backend: str = "auto") -> SummaryJob:
     """Valida, cobra los creditos y deja el trabajo en la cola. Si ya hay uno pendiente, lo devuelve sin cobrar."""
     from .services import resolve_backend

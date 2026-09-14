@@ -67,7 +67,7 @@ manage check
 log "Reinicio de servicios"
 # Unidades por si cambiaron en el repo
 changed_units=0
-for unit in sima-web.service sima-worker.service sima-reminders.service sima-reminders.timer; do
+for unit in sima-web.service sima-worker.service sima-worker-study.service sima-reminders.service sima-reminders.timer; do
     if ! cmp -s "$APP_DIR/deploy/systemd/$unit" "/etc/systemd/system/$unit"; then
         install -m 644 "$APP_DIR/deploy/systemd/$unit" /etc/systemd/system/
         changed_units=1
@@ -82,6 +82,8 @@ if [[ "$SKIP_WORKER_RESTART" == "1" ]]; then
 else
     # Si hay un trabajo en curso, reiniciar lo corta; se reencola solo (ver plan, seccion 13).
     systemctl restart sima-worker
+    systemctl enable --now sima-worker-study >/dev/null 2>&1 || true
+    systemctl restart sima-worker-study
 fi
 systemctl restart sima-reminders.timer
 

@@ -12,10 +12,7 @@
 
 <div class="sm-shell">
   {% if pending_job %}
-  <section class="sm-card sm-card--pending">
-    <strong>{{ pending_job.get_status_display }}</strong>
-    <p class="muted">Estamos preparando tu resumen. Puedes seguir estudiando mientras tanto.</p>
-  </section>
+    {% include "learning/_summary_progress.html" %}
   {% elif last_job and last_job.status == 'error' %}
   <section class="sm-card sm-card--error">
     <strong>No pudimos generar el resumen</strong>
@@ -24,10 +21,15 @@
   {% endif %}
   {% if summary %}
     {% include "learning/_summary_body.html" with summary=summary %}
-  {% else %}
+  {% elif not pending_job %}
   <section class="sm-card sm-card--empty">
+    {% if can_generate %}
     <h2>Aún no hay resumen</h2>
     <p class="muted">Genera uno con los conceptos clave de la clase.</p>
+    {% else %}
+    <h2>Todavía no se puede resumir</h2>
+    <p class="muted">La clase necesita su transcripción o apuntes. Vuelve cuando termine de procesarse.</p>
+    {% endif %}
   </section>
   {% endif %}
 
@@ -39,10 +41,8 @@
         {% if summary %}Regenerar resumen{% else %}Generar resumen{% endif %} ({{ summary_cost }} créditos)
       </button>
     </form>
-    {% else %}
-    <p class="muted">Esta clase aún no tiene suficiente contenido para resumir.</p>
     {% endif %}
-    {% if summary %}
+    {% if summary and not pending_job %}
       <a class="secondary-button" href="{% url 'class_summary_pdf' job.pk %}">Descargar PDF</a>
     {% endif %}
     {% if summary and job.course %}

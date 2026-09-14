@@ -38,7 +38,7 @@ PY
 get_env() { grep -E "^$1=" "$ENV_FILE" | tail -1 | cut -d= -f2- || true; }
 
 log "Topes de memoria (systemd drop-ins)"
-install -d /etc/systemd/system/sima-web.service.d /etc/systemd/system/sima-worker.service.d
+install -d /etc/systemd/system/sima-web.service.d /etc/systemd/system/sima-worker.service.d \n    /etc/systemd/system/sima-worker-study.service.d
 cat > /etc/systemd/system/sima-web.service.d/10-limites.conf <<'CONF'
 [Service]
 MemoryHigh=450M
@@ -49,6 +49,12 @@ cat > /etc/systemd/system/sima-worker.service.d/10-limites.conf <<'CONF'
 [Service]
 MemoryHigh=550M
 MemoryMax=700M
+OOMScoreAdjust=500
+CONF
+cat > /etc/systemd/system/sima-worker-study.service.d/10-limites.conf <<'CONF'
+[Service]
+MemoryHigh=300M
+MemoryMax=450M
 OOMScoreAdjust=500
 CONF
 systemctl daemon-reload
@@ -72,6 +78,7 @@ fi
 
 log "Reinicio de SIMA"
 systemctl restart sima-web sima-worker
+systemctl restart sima-worker-study 2>/dev/null || true
 for i in $(seq 1 20); do
     curl -fsS -o /dev/null -H "Host: 127.0.0.1" -H "X-Forwarded-Proto: https" http://127.0.0.1:8000/salud/ && break
     sleep 1

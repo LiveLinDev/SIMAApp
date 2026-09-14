@@ -140,15 +140,38 @@ def _job_tables():
     )
 
 
-def claim_next_job():
+JOB_KINDS = ("lesson", "reinforcement", "summary")
+
+
+def parse_kinds(value) -> tuple[str, ...]:
+    """'lesson' o 'summary,reinforcement' -> tupla validada. Vacio = todos los tipos."""
+    if not value:
+        return JOB_KINDS
+    items = value.split(",") if isinstance(value, str) else list(value)
+    kinds = tuple(dict.fromkeys(item.strip().lower() for item in items if item and item.strip()))
+    unknown = [kind for kind in kinds if kind not in JOB_KINDS]
+    if unknown or not kinds:
+        raise ValueError(f"Tipos de trabajo no validos: {', '.join(unknown) or 'ninguno'} (usa {', '.join(JOB_KINDS)})")
+    return kinds
+
+
+def _tables_for(kinds=None):
+    selected = parse_kinds(kinds)
+    return [table for table in _job_tables() if table[0] in selected]
+
+
+def claim_next_job(kinds=None):
     """
-    Reclama el trabajo QUEUED mas antiguo entre las tres tablas y lo marca
+    Reclama el trabajo QUEUED mas antiguo entre las tablas de `kinds` (todas por defecto) y lo marca
     PROCESSING en la misma transaccion (select_for_update con skip_locked,
     asi varios workers no se pisan). Devuelve (kind, id, backend) o None.
+
+    Con dos workers (uno para clases y otro para resumenes y refuerzos) una clase larga esperando su
+    transcripcion no bloquea los resumenes ni los refuerzos.
     """
     with transaction.atomic():
         best = None
-        for kind, model, status in _job_tables():
+        for kind, model, status in _tables_for(kinds):
             row = model.objects.select_for_update(skip_locked=True).filter(status=status.QUEUED).order_by("created_at").first()
             if row is not None and (best is None or row.created_at < best[1].created_at):
                 best = (kind, row, status)
@@ -176,11 +199,15 @@ def process_claimed(kind: str, job_id: int, backend: str = "auto"):
         close_old_connections()
 
 
-def reset_stale_processing(minutes: int = 120) -> int:
-    """Trabajos PROCESSING sin actividad reciente (worker caido) vuelven a QUEUED."""
+def reset_stale_processing(minutes: int = 120, kinds=None) -> int:
+    """Trabajos PROCESSING sin actividad reciente (worker caido) vuelven a QUEUED.
+
+    Solo toca los tipos del worker que arranca: asi reiniciar el worker de resumenes no devuelve a la cola una
+    clase que el worker de clases sigue procesando.
+    """
     cutoff = timezone.now() - timedelta(minutes=max(1, int(minutes)))
     total = 0
-    for kind, model, status in _job_tables():
+    for kind, model, status in _tables_for(kinds):
         for row in model.objects.filter(status=status.PROCESSING, updated_at__lt=cutoff):
             row.status = status.QUEUED
             fields = ["status", "updated_at"]

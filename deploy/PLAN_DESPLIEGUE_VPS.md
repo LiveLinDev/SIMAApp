@@ -892,3 +892,18 @@ Pide la clave sin mostrarla, la guarda en el `.env` (permisos 600), activa el mo
 ```bash
 sudo -u sima -H /srv/sima/venv/bin/python /srv/sima/app/manage.py check_whisper_api /ruta/audio.mp3
 ```
+
+## 18. Dos workers: clases y estudio
+
+La cola de la base de datos se atiende con dos servicios:
+
+| Servicio | Trabajos | Memoria máxima |
+|---|---|---|
+| `sima-worker` | Clases: transcripción, preguntas y verificación (`--kinds lesson`) | 700 MB |
+| `sima-worker-study` | Resúmenes y refuerzos (`--kinds summary,reinforcement`) | 450 MB |
+
+Una clase larga esperando su transcripción ya no deja en espera los resúmenes ni los refuerzos. Al arrancar, cada worker solo devuelve a la cola sus propios trabajos atascados. `update.sh` instala y reinicia ambos servicios.
+
+```bash
+journalctl -u sima-worker-study -f
+```

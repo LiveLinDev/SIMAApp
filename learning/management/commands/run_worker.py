@@ -3,7 +3,7 @@ import time
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
-from learning.job_queue import claim_next_job, process_claimed, queue_mode, reset_stale_processing
+from learning.job_queue import JOB_KINDS, claim_next_job, parse_kinds, process_claimed, queue_mode, reset_stale_processing
 
 
 class Command(BaseCommand):
@@ -18,6 +18,11 @@ class Command(BaseCommand):
         parser.add_argument("--max-jobs", type=int, default=0, help="Termina tras procesar N trabajos (0 = sin limite).")
         parser.add_argument("--stale-minutes", type=int, default=120, help="Trabajos en PROCESSING sin actividad por mas de N minutos vuelven a la cola (default 120).")
         parser.add_argument("--force", action="store_true", help="Correr aunque SIMA_QUEUE_MODE no sea 'db' (riesgo de procesar dos veces).")
+        parser.add_argument(
+            "--kinds", default="",
+            help=f"Tipos de trabajo que atiende este worker, separados por coma ({', '.join(JOB_KINDS)}). "
+                 "Vacio = todos. Ejemplo: un worker con --kinds lesson y otro con --kinds summary,reinforcement.",
+        )
 
     def handle(self, *args, **options):
         if queue_mode() != "db" and not options["force"]:
@@ -25,14 +30,21 @@ class Command(BaseCommand):
                 "SIMA_QUEUE_MODE=%r: el proceso web ya tiene su propio worker en memoria. "
                 "Pon SIMA_QUEUE_MODE=db en .env (y reinicia el web) o usa --force." % queue_mode()
             )
-        stale = reset_stale_processing(options["stale_minutes"])
+        try:
+            kinds = parse_kinds(options["kinds"])
+        except ValueError as exc:
+            raise CommandError(str(exc)) from None
+        stale = reset_stale_processing(options["stale_minutes"], kinds=kinds)
         if stale:
             self.stdout.write(f"{stale} trabajo(s) atascados en PROCESSING volvieron a la cola.")
-        self.stdout.write(f"Worker listo (modo {queue_mode()}, backend por defecto {getattr(settings, 'CLOUD_MODEL', '')}). Ctrl+C para salir.")
+        self.stdout.write(
+            f"Worker listo (modo {queue_mode()}, trabajos: {', '.join(kinds)}, "
+            f"backend por defecto {getattr(settings, 'CLOUD_MODEL', '')}). Ctrl+C para salir."
+        )
         processed = 0
         try:
             while True:
-                claimed = claim_next_job()
+                claimed = claim_next_job(kinds)
                 if claimed is None:
                     if options["once"]:
                         break

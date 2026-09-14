@@ -25,8 +25,8 @@ i<N>|<bloom>|<topic>|<enunciado>|<opA>,<opB>,<opC>,<opD>|<a>,<b>,<c>|<difficulty
 ### Ejemplo (2 items):
 ```
 a|m=IRT3PL|d=20260503|n=2|l=es|t=fotosintesis|bd=1,1,0,0,0,0|cat=0,-3,3,0.3,10,SH
-i1|L1|Organelo|La fotosintesis ocurre en ____|raices,cloroplastos*,flores,tallo|0.9,-1.2,0.25|1|Fund,0.2,low
-i2|L3|Presion|Al aumentar presion atmosferica el punto de ebullicion del agua ____|aumenta*,disminuye,no cambia,desaparece|1.5,0.3,0.25|3|Fisica,0.2,medium
+i1|L1|Organelo|La fotosíntesis ocurre en ____|raíces,cloroplastos*,flores,tallo|0.9,-1.2,0.25|1|Fund,0.2,low
+i2|L3|Presión|Al aumentar la presión atmosférica, el punto de ebullición del agua ____|aumenta*,disminuye,no cambia,desaparece|1.5,0.3,0.25|3|Física,0.2,medium
 ```
 
 ---
@@ -158,6 +158,14 @@ Cada alternativa debe poder reemplazar a la correcta sin romper la gramatica.
 NUNCA generes un enunciado que sea solo una afirmacion sin hueco y sin signo de interrogacion.
 Siempre usa ? o ____.
 
+**Regla 5: Ortografia correcta (el estudiante lee estos textos)**
+Aunque estas instrucciones esten escritas sin tildes, los items van en espanol correcto:
+- Tildes, ñ y signos de apertura: "¿Qué síntoma...?", "fisiología", "caquexia".
+- Terminos tecnicos con su ortografia de libro de texto, aunque la transcripcion los traiga
+  mal escritos o partidos: "hemoglovina" -> "hemoglobina", "esterno cleido mastoideo" ->
+  "esternocleidomastoideo", "siervos" -> "ciervos" si el tema son animales.
+- Si el contenido incluye VOCABULARIO_DEL_CURSO, usa exactamente esa ortografia.
+
 ---
 
 ## OUTPUT
@@ -184,6 +192,7 @@ REQUERIDO:
 - Opciones correctas distribuidas en A/B/C/D (~25% cada una)
 - topic exacto del contenido (sin inventar)
 - La opcion correcta marcada con `*` al final de su texto
+- Enunciados, opciones y topic con tildes y ortografia correcta del area (Regla 5)
 - Ser exhaustivo: mejor 25 items buenos que 10 items con conceptos omitidos
 - Cada item debe tener sentido completo usando el contexto global de la clase
 - Si la transcripcion es ambigua, prioriza conceptos claros del resto del contenido

@@ -59,8 +59,12 @@ def process_lesson_job(job_id: int, backend: str = "auto"):
         if job.audio:
             _set_stage(job, "Transcribiendo audio con Whisper", f"Archivo: {job.audio.name}. {transcription_label()}.")
             if not job.transcript:
-                job.transcript, whisper_segments = transcribe_audio_detailed(job.audio.path)
+                from .vocabulary import whisper_prompt
+
+                job.transcript, whisper_segments = transcribe_audio_detailed(job.audio.path, prompt=whisper_prompt(job))
                 job.save(update_fields=["transcript", "updated_at"])
+                if requested_backend != "local":
+                    whisper_segments = _review_transcript_vocabulary(job, requested_backend, whisper_segments)
                 _sync_transcript_record(job, segments=whisper_segments)
             _discard_processed_audio(job)
 
@@ -304,6 +308,12 @@ def _job_context_for_ai(job: LessonJob, include_mini: bool = False, include_tran
     parts = [f"TITULO: {job.title}"]
     if job.tags:
         parts.append(f"ETIQUETAS: {job.tags}")
+    if job.course_id:
+        from .vocabulary import course_terms
+
+        terms = course_terms(job.course)
+        if terms:
+            parts.append("VOCABULARIO_DEL_CURSO (ortografia correcta): " + ", ".join(terms))
     if job.source_text.strip():
         parts.append(f"TEXTO_ORIGINAL:\n{job.source_text.strip()}")
     if include_transcript and job.transcript.strip():
@@ -311,6 +321,50 @@ def _job_context_for_ai(job: LessonJob, include_mini: bool = False, include_tran
     if include_mini and job.toon_output.strip():
         parts.append(f"MINI_GENERADO:\n{job.toon_output.strip()}")
     return "\n\n".join(parts)
+
+
+def _review_transcript_vocabulary(job: LessonJob, backend: str, segments: list[dict] | None):
+    """Corrige terminos tecnicos mal transcritos con el vocabulario del curso (no reescribe la clase)."""
+    from .vocabulary import correct_segments, correct_transcript_vocabulary, learn_terms
+
+    if not getattr(settings, "TRANSCRIPT_VOCABULARY_CORRECTION", True) or not (job.transcript or "").strip():
+        return segments
+    _set_stage(job, "Revisando términos técnicos", "Se buscan palabras mal transcritas usando el vocabulario del curso.")
+
+    def progress(index, total):
+        if total > 1:
+            _set_stage(job, "Revisando términos técnicos", f"Parte {index}/{total}.")
+
+    before = job.transcript
+    try:
+        result = correct_transcript_vocabulary(before, course=job.course, title=job.title, backend=backend, on_progress=progress)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Revision de vocabulario del job %s fallo: %s", job.pk, exc)
+        job.processing_log = _append_log(job.processing_log, "Revisión de términos omitida", clean_ai_error(exc))
+        job.save(update_fields=["processing_log", "updated_at"])
+        return segments
+
+    applied = result["applied"]
+    fixes = sum(item["count"] for item in applied)
+    if applied:
+        job.transcript = result["text"]
+        trace = {"backend": backend, "changed": True, "chunks": result["chunks"], "vocabulary": applied[:60]}
+        job.transcript_repair_trace = [
+            *_safe_trace_list(job.transcript_repair_trace),
+            _transcript_repair_entry(before, job.transcript, trace, backend, "vocabulario del curso"),
+        ][-8:]
+        learned = learn_terms(job.course, result["learned_terms"])
+        examples = ", ".join(f"{item['before']} → {item['after']}" for item in applied[:5])
+        detail = f"{fixes} corrección(es) en {len(applied)} término(s): {examples}."
+        if learned:
+            detail += f" {len(learned)} término(s) nuevo(s) en el vocabulario del curso."
+    else:
+        detail = "No se encontraron términos mal transcritos."
+    if result["errors"]:
+        detail += f" {result['errors']} parte(s) no se pudieron revisar."
+    job.processing_log = _append_log(job.processing_log, "Términos técnicos revisados", detail)
+    job.save(update_fields=["transcript", "transcript_repair_trace", "processing_log", "updated_at"])
+    return correct_segments(segments, applied)
 
 
 def _auto_repair_transcript(job: LessonJob):

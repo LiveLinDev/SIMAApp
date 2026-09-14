@@ -20,6 +20,7 @@ REGLAS:
 - Mantiene dudas razonables sin inventar: si una palabra no se puede inferir con seguridad, dejala como esta o suaviza la frase sin cambiar el significado.
 - Corrige acentos, puntuacion, concordancia, cortes raros y palabras foneticamente deformadas.
 - Usa el CONTEXTO como pista, no como permiso para fabricar datos.
+- Si el CONTEXTO trae VOCABULARIO_DEL_CURSO, escribe esos terminos exactamente asi cuando la transcripcion los deforme.
 - No cambies palabras tecnicas validas: "datos" debe conservarse si el tema real es estadistica, programacion o ciencia de datos.
 
 CHECK FINAL:

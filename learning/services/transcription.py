@@ -35,30 +35,60 @@ def transcription_label(backend: str | None = None) -> str:
     return BACKEND_LABELS.get(backend or transcription_backend(), BACKEND_LABELS["local"])
 
 
-def transcribe_audio(audio_path):
-    text, _segments = transcribe_audio_detailed(audio_path)
+# Whisper usa como mucho los ultimos ~224 tokens del prompt inicial: basta con el curso y sus terminos.
+PROMPT_MAX_CHARS = 700
+
+
+def whisper_language() -> str:
+    return (getattr(settings, "WHISPER_LANGUAGE", "es") or "").strip().lower()
+
+
+def clean_prompt(prompt: str) -> str:
+    text = " ".join((prompt or "").split())
+    return text[:PROMPT_MAX_CHARS]
+
+
+def transcribe_audio(audio_path, prompt: str = ""):
+    text, _segments = transcribe_audio_detailed(audio_path, prompt=prompt)
     return text
 
 
-def transcribe_audio_detailed(audio_path) -> tuple[str, list[dict]]:
-    """Texto completo y segmentos con marcas de tiempo (start, end, text) segun el backend configurado."""
+def transcribe_audio_detailed(audio_path, prompt: str = "") -> tuple[str, list[dict]]:
+    """Texto completo y segmentos con marcas de tiempo (start, end, text) segun el backend configurado.
+
+    prompt: contexto del curso (nombre y terminos tecnicos). Whisper lo usa para escribir bien esos terminos.
+    """
     primary = transcription_backend()
     fallback = (getattr(settings, "TRANSCRIPTION_FALLBACK", "") or "").strip().lower()
+    prompt = clean_prompt(prompt)
     try:
-        return _run_backend(primary, audio_path)
+        return _run_backend(primary, audio_path, prompt)
     except Exception as exc:  # noqa: BLE001
         if not fallback or fallback == primary or fallback not in BACKEND_LABELS:
             raise
         logger.warning("Transcripcion %s fallo (%s); usando respaldo %s", primary, exc, fallback)
-        return _run_backend(fallback, audio_path)
+        return _run_backend(fallback, audio_path, prompt)
 
 
-def _run_backend(backend: str, audio_path) -> tuple[str, list[dict]]:
+def _run_backend(backend: str, audio_path, prompt: str = "") -> tuple[str, list[dict]]:
     if backend == "remote":
-        return transcribe_remote(audio_path)
+        return transcribe_remote(audio_path, prompt=prompt)
     if backend == "cloud":
-        return transcribe_cloud(audio_path)
-    return transcribe_local(audio_path)
+        return transcribe_cloud(audio_path, prompt=prompt)
+    return transcribe_local(audio_path, prompt=prompt)
+
+
+def whisper_options(prompt: str = "", language: str | None = None) -> dict:
+    """Argumentos para whisper.transcribe: idioma fijo (evita que lo detecte mal) y contexto del curso."""
+    options = {}
+    language = whisper_language() if language is None else language
+    if language:
+        options["language"] = language
+    if prompt:
+        options["initial_prompt"] = clean_prompt(prompt)
+        # sin condicionar en el texto previo, un error de una parte no se arrastra al resto de la clase
+        options["condition_on_previous_text"] = False
+    return options
 
 
 # ---------------------------------------------------------------------------------------------- local
@@ -77,11 +107,11 @@ def load_whisper_model(model_name: str | None = None):
     return _MODEL_CACHE[name]
 
 
-def transcribe_local(audio_path, model_name: str | None = None) -> tuple[str, list[dict]]:
+def transcribe_local(audio_path, model_name: str | None = None, prompt: str = "") -> tuple[str, list[dict]]:
     from ..segments import normalize_whisper_result
 
     model = load_whisper_model(model_name)
-    return normalize_whisper_result(model.transcribe(str(audio_path)))
+    return normalize_whisper_result(model.transcribe(str(audio_path), **whisper_options(prompt)))
 
 
 # ---------------------------------------------------------------------------------------------- remote
@@ -89,7 +119,9 @@ def _remote_base() -> str:
     return (getattr(settings, "WHISPER_REMOTE_URL", "") or "http://127.0.0.1:9000").rstrip("/")
 
 
-def _remote_headers(filename: str = "") -> dict:
+def _remote_headers(filename: str = "", prompt: str = "") -> dict:
+    import base64
+
     headers = {}
     token = getattr(settings, "WHISPER_REMOTE_TOKEN", "")
     if token:
@@ -97,10 +129,16 @@ def _remote_headers(filename: str = "") -> dict:
     if filename:
         headers["X-Filename"] = Path(filename).name.encode("ascii", "ignore").decode() or "audio"
         headers["Content-Type"] = "application/octet-stream"
+        language = whisper_language()
+        if language:
+            headers["X-Whisper-Language"] = language
+        if prompt:
+            # base64: las cabeceras HTTP no admiten tildes ni enes
+            headers["X-Whisper-Prompt"] = base64.b64encode(clean_prompt(prompt).encode("utf-8")).decode("ascii")
     return headers
 
 
-def transcribe_remote(audio_path) -> tuple[str, list[dict]]:
+def transcribe_remote(audio_path, prompt: str = "") -> tuple[str, list[dict]]:
     import httpx
 
     from ..segments import normalize_whisper_result
@@ -109,7 +147,7 @@ def transcribe_remote(audio_path) -> tuple[str, list[dict]]:
     timeout = httpx.Timeout(float(getattr(settings, "WHISPER_REMOTE_TIMEOUT", 3600)), connect=10.0)
     try:
         with open(audio_path, "rb") as fh:
-            response = httpx.post(url, content=fh, headers=_remote_headers(str(audio_path)), timeout=timeout)
+            response = httpx.post(url, content=fh, headers=_remote_headers(str(audio_path), prompt=prompt), timeout=timeout)
     except (httpx.ConnectError, httpx.ConnectTimeout, httpx.RemoteProtocolError) as exc:
         raise TranscriptionUnavailable(
             "El equipo de transcripcion no responde. Verifica que la PC este encendida con "
@@ -142,7 +180,7 @@ def remote_status(timeout: float = 2.0) -> dict:
 
 
 # ---------------------------------------------------------------------------------------------- cloud
-def transcribe_cloud(audio_path) -> tuple[str, list[dict]]:
+def transcribe_cloud(audio_path, prompt: str = "") -> tuple[str, list[dict]]:
     """API de transcripcion compatible con OpenAI (Groq: whisper-large-v3-turbo). El audio sale a un tercero."""
     from openai import OpenAI
 
@@ -152,11 +190,17 @@ def transcribe_cloud(audio_path) -> tuple[str, list[dict]]:
     if not cloud_backend_available():
         raise TranscriptionUnavailable("No hay proveedor en la nube configurado para transcribir (CLOUD_API_KEY).")
     client = OpenAI(api_key=settings.CLOUD_API_KEY, base_url=normalize_openai_base_url(settings.CLOUD_API_BASE) or None)
+    extra = {}
+    if whisper_language():
+        extra["language"] = whisper_language()
+    if prompt:
+        extra["prompt"] = clean_prompt(prompt)
     with open(audio_path, "rb") as fh:
         result = client.audio.transcriptions.create(
             model=getattr(settings, "CLOUD_TRANSCRIPTION_MODEL", "whisper-large-v3-turbo"),
             file=fh,
             response_format="verbose_json",
+            **extra,
         )
     data = result.model_dump() if hasattr(result, "model_dump") else dict(result)
     return normalize_whisper_result(data)

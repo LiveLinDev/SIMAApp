@@ -190,12 +190,13 @@ def class_map(request, pk):
         session = _sync_class_session_for_job(job)
     topics = []
     concepts = []
-    if job.tags:
-        for tag in job.tags.split(","):
-            _add_map_term(topics, tag)
-    if job.course and job.course.main_topics:
-        for topic in job.course.main_topics:
-            _add_map_term(topics, topic)
+    # Conceptos: solo los del resumen de la clase, que salen de leer la clase completa. Sin resumen el mapa
+    # muestra los temas de las preguntas; ya no se arman conceptos con respuestas o enunciados recortados.
+    from ..summaries import class_summary_for
+
+    class_summary = class_summary_for(job) if job.course_id else None
+    for concept in (class_summary.key_concepts if class_summary else []) or []:
+        _add_map_term(concepts, concept, max_words=6, max_chars=70)
 
     bloom_counts = {}
     if job.corrected_output or job.toon_output:
@@ -203,17 +204,10 @@ def class_map(request, pk):
         assessment = _parse(job.corrected_output or job.toon_output)
         for item in assessment.items:
             _add_map_term(topics, item.topic)
-            correct = next((opt.get("text", "") for opt in item.options if opt.get("correct")), "")
-            _add_map_term(concepts, correct, max_words=7, max_chars=90)
-            for term in _extract_statement_terms(item.statement):
-                _add_map_term(concepts, term, max_words=4, max_chars=70)
             bloom_counts[item.bloom] = bloom_counts.get(item.bloom, 0) + 1
     cards = list(Flashcard.objects.filter(class_session=session) if session else [])
     for card in cards:
         _add_map_term(topics, card.topic)
-        _add_map_term(concepts, card.answer, max_words=7, max_chars=90)
-        for term in _extract_statement_terms(card.question):
-            _add_map_term(concepts, term, max_words=4, max_chars=70)
     max_bloom = max(bloom_counts.values()) if bloom_counts else 1
     bloom_chart_data = [
         {"label": BLOOM_LABELS.get(level, level), "count": count, "pct": round((count / max_bloom) * 100) if max_bloom else 0}
@@ -222,7 +216,7 @@ def class_map(request, pk):
     return render(request, "learning/class_map.html", {
         "job": job,
         "topics": sorted(topics, key=str.lower),
-        "concepts": sorted(concepts, key=str.lower)[:24],
+        "concepts": concepts[:24],
         "bloom_chart_data": bloom_chart_data,
         "card_count": len(concepts),
         "is_owner": job.user_id == request.user.id,

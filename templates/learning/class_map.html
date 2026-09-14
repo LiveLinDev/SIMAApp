@@ -46,6 +46,13 @@
   </div>
   {% endif %}
 
+  {% if topics and not concepts and is_owner %}
+  <div class="cm-section">
+    <h3>Conceptos clave</h3>
+    <a class="cd-link" href="{% url 'class_summary' job.pk %}">Generar el resumen de la clase →</a>
+  </div>
+  {% endif %}
+
   {% if not topics and not concepts %}
   <div class="empty-state-mini">
     <p>Aún no hay temas para esta clase.</p>

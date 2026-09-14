@@ -11,3 +11,4 @@ psycopg[binary]>=3.2.3
 ddgs>=9.14
 # Servidor WSGI de produccion (solo Linux; en Windows se omite con el marcador)
 gunicorn>=23.0; sys_platform != "win32"
+reportlab>=3.6,<5

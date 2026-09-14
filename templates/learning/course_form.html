@@ -52,13 +52,18 @@
       </div>
     </div>
 
-    <details class="flow-more" {% if form.main_topics_text.errors or form.description.errors or form.student_goal.errors or course %}open{% endif %}>
+    <details class="flow-more" {% if form.main_topics_text.errors or form.vocabulary.errors or form.description.errors or form.student_goal.errors or course %}open{% endif %}>
       <summary>Más detalles</summary>
       <div class="flow-more__body">
         <div class="flow-field">
           <label for="{{ form.main_topics_text.id_for_label }}">Temas <span class="flow-optional">separados por comas</span></label>
           {{ form.main_topics_text }}
           {{ form.main_topics_text.errors }}
+        </div>
+        <div class="flow-field">
+          <label for="{{ form.vocabulary.id_for_label }}">Vocabulario <span class="flow-optional">términos difíciles, separados por comas</span></label>
+          {{ form.vocabulary }}
+          {{ form.vocabulary.errors }}
         </div>
         <div class="flow-field">
           <label for="{{ form.student_goal.id_for_label }}">Tu objetivo</label>

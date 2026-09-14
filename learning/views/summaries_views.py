@@ -115,3 +115,31 @@ def course_summary(request, pk):
         "can_generate": bool(class_summaries) or LessonJob.objects.filter(course=course).exclude(transcript="", source_text="").exists(),
         "summary_cost": summaries.estimate_summary_cost("auto").amount,
     })
+
+
+@login_required
+def class_summary_pdf(request, pk):
+    from ..pdf_export import safe_filename, summary_pdf
+
+    job = get_object_or_404(LessonJob, pk=pk, user=request.user)
+    summary = summaries.class_summary_for(job)
+    if summary is None:
+        raise Http404("La clase aun no tiene resumen.")
+    subtitle = " · ".join(filter(None, [job.course.name if job.course_id else "", job.title, "Resumen de la clase"]))
+    response = HttpResponse(summary_pdf(job.title, subtitle, summary), content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="resumen-{safe_filename(job.title, f"clase-{job.pk}")}.pdf"'
+    return response
+
+
+@login_required
+def course_summary_pdf(request, pk):
+    from ..pdf_export import safe_filename, summary_pdf
+
+    course = get_object_or_404(Course, pk=pk, user=request.user)
+    summary = summaries.course_summary_for(course)
+    if summary is None:
+        raise Http404("El curso aun no tiene resumen.")
+    subtitle = " · ".join(filter(None, [course.name, course.academic_period, "Resumen del curso"]))
+    response = HttpResponse(summary_pdf(course.name, subtitle, summary), content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="resumen-{safe_filename(course.name, f"curso-{course.pk}")}.pdf"'
+    return response

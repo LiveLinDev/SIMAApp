@@ -73,6 +73,7 @@ class CourseForm(forms.ModelForm):
             "level",
             "student_goal",
             "exam_date",
+            "vocabulary",
         )
         labels = {
             "name": "Nombre del curso",
@@ -82,6 +83,7 @@ class CourseForm(forms.ModelForm):
             "level": "Nivel",
             "student_goal": "Objetivo de estudio",
             "exam_date": "Próximo examen",
+            "vocabulary": "Vocabulario",
         }
         widgets = {
             "exam_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
@@ -90,6 +92,7 @@ class CourseForm(forms.ModelForm):
             "description": forms.Textarea(attrs={"rows": 2, "placeholder": "Qué cubre este curso"}),
             "instructor": forms.TextInput(attrs={"placeholder": "Opcional"}),
             "student_goal": forms.Textarea(attrs={"rows": 2, "placeholder": "Ej: aprobar el parcial"}),
+            "vocabulary": forms.Textarea(attrs={"rows": 3, "placeholder": "Ej: hemoglobina, taquicardia, esternocleidomastoideo"}),
         }
 
     def __init__(self, *args, **kwargs):

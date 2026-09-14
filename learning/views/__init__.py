@@ -55,6 +55,7 @@ from .lessons import (  # noqa: F401
     delete_lesson,
     rename_lesson,
     download_json,
+    download_pdf,
 )
 from .study import (  # noqa: F401
     flashcards,
@@ -101,5 +102,7 @@ from .practice import (  # noqa: F401
 from .summaries_views import (  # noqa: F401
     _register_summary_review,
     class_summary,
+    class_summary_pdf,
     course_summary,
+    course_summary_pdf,
 )

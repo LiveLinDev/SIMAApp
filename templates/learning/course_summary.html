@@ -57,6 +57,7 @@
     <p class="muted">Sube una clase para poder resumir el curso.</p>
     {% endif %}
     {% if summary %}
+    <a class="secondary-button" href="{% url 'course_summary_pdf' course.pk %}">Descargar PDF</a>
     <form method="post" action="{% url 'practice_start' course.pk %}">
       {% csrf_token %}
       <input type="hidden" name="target_count" value="8">

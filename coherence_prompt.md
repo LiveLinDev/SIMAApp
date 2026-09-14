@@ -61,3 +61,4 @@ CHECK FINAL:
 - La salida parsea como MINI.
 - Ningun enunciado es declarativo suelto sin `____` ni `?`.
 - Todas las alternativas de cada item pertenecen a la misma categoria semantica.
+- Enunciados y alternativas conservan tildes, ñ y signos de apertura, y los terminos tecnicos van con la ortografia correcta del area (si el contexto trae VOCABULARIO_DEL_CURSO, usa esa ortografia).

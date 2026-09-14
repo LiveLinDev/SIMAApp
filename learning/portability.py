@@ -18,7 +18,7 @@ from .models import Course, Flashcard, LessonJob, Summary
 FORMAT = "sima-course/1"
 LESSON_FIELDS = ("title", "tags", "mode", "status", "source_text", "transcript", "toon_output", "corrected_output",
                  "verification_output", "ai_backend", "verification_mode", "visibility")
-COURSE_FIELDS = ("name", "academic_period", "description", "instructor", "main_topics", "level", "student_goal")
+COURSE_FIELDS = ("name", "academic_period", "description", "instructor", "main_topics", "vocabulary", "level", "student_goal")
 
 
 def _iso(value):

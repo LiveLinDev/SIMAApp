@@ -42,6 +42,9 @@
     {% else %}
     <p class="muted">Esta clase aún no tiene suficiente contenido para resumir.</p>
     {% endif %}
+    {% if summary %}
+      <a class="secondary-button" href="{% url 'class_summary_pdf' job.pk %}">Descargar PDF</a>
+    {% endif %}
     {% if summary and job.course %}
       <a class="secondary-button" href="{% url 'course_summary' job.course.pk %}">Ver resumen del curso</a>
       <form method="post" action="{% url 'practice_start' job.course.pk %}">

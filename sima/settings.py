@@ -237,6 +237,12 @@ LOCAL_API_TIMEOUT = env_int("LOCAL_API_TIMEOUT", 7200)
 LOCAL_TRANSCRIPT_REPAIR_CHUNK_WORDS = env_int("LOCAL_TRANSCRIPT_REPAIR_CHUNK_WORDS", 500)
 LOCAL_CHUNK_WORDS = env_int("LOCAL_CHUNK_WORDS", 2000)
 WHISPER_MODEL = os.getenv("WHISPER_MODEL", "base")
+# Idioma de las clases: fijarlo evita que Whisper lo detecte mal en los primeros segundos. Vacio = autodeteccion.
+WHISPER_LANGUAGE = env_text("WHISPER_LANGUAGE", "es").lower()
+# Tras transcribir, un modelo revisa la transcripcion por partes y corrige terminos tecnicos mal escritos
+# usando el vocabulario del curso; las correcciones se aplican en toda la clase y se suman al vocabulario.
+TRANSCRIPT_VOCABULARY_CORRECTION = env_bool("TRANSCRIPT_VOCABULARY_CORRECTION", True)
+TRANSCRIPT_VOCABULARY_CHUNK_WORDS = env_int("TRANSCRIPT_VOCABULARY_CHUNK_WORDS", 1800)
 # Transcripcion: local (Whisper en este servidor) o remote (servicio `manage.py serve_whisper` en otra
 # maquina, p. ej. la PC del equipo alcanzada por un tunel SSH inverso, para no cargar Whisper en un VPS pequeno).
 TRANSCRIPTION_BACKEND = env_text("TRANSCRIPTION_BACKEND", "local").lower()

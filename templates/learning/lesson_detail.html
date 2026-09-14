@@ -32,7 +32,7 @@
     <button class="icon-btn" title="Compartir" onclick="openShareModal()">
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
     </button>
-    <button class="icon-btn" title="Descargar preguntas" onclick="window.location='{% url 'download_json' job.pk %}'">
+    <button class="icon-btn" title="Descargar preguntas en PDF" onclick="window.location='{% url 'download_pdf' job.pk %}'">
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
     </button>
     {% endif %}
@@ -180,13 +180,13 @@
         </span>
       </button>
       {% endif %}
-      <a class="study-action-btn study-action-btn--download" href="{% url 'download_json' job.pk %}">
+      <a class="study-action-btn study-action-btn--download" href="{% url 'download_pdf' job.pk %}">
         <span class="btn-icon" aria-hidden="true">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         </span>
         <span>
           <strong>Descargar</strong>
-          <small>Copia de tus preguntas</small>
+          <small>Preguntas en PDF</small>
         </span>
       </a>
       <button class="study-action-btn study-action-btn--items" type="button" onclick="toggleAdvanced(); document.getElementById('advanced-panel').scrollIntoView({behavior:'smooth'})">
@@ -214,12 +214,12 @@
 
   {% if bloom_stats %}
   <div class="study-meta-card">
-    <h3>Conceptos clave</h3>
+    <h3>{% if concepts_from_summary %}Conceptos clave{% else %}Temas{% endif %}</h3>
     <div class="study-meta-row">
       {% for topic in key_topics %}
         <span class="study-badge study-badge--tag">{{ topic }}</span>
       {% empty %}
-        <span class="study-badge">Sin conceptos identificados</span>
+        <span class="study-badge">Sin temas identificados</span>
       {% endfor %}
     </div>
   </div>

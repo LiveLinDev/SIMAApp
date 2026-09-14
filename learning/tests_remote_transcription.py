@@ -11,7 +11,11 @@ from learning.management.commands.serve_whisper import build_handler
 from learning.services import transcription
 
 
-def fake_transcriber(path):
+RECEIVED_OPTIONS = []
+
+
+def fake_transcriber(path, **options):
+    RECEIVED_OPTIONS.append(options)
     with open(path, "rb") as fh:
         size = len(fh.read())
     return {
@@ -66,6 +70,21 @@ class RemoteTranscriptionTests(SimpleTestCase):
         self.assertEqual(text, "clase de prueba (4096 bytes)")
         self.assertEqual([s["text"] for s in segments], ["Hola clase.", "Hoy vemos priones."])
         self.assertEqual(segments[1]["start"], 2.5)
+
+    def test_course_context_and_language_reach_the_pc(self):
+        RECEIVED_OPTIONS.clear()
+        prompt = "Clase universitaria de Anatomía. Términos: esternocleidomastoideo, hemoglobina."
+        with override_settings(TRANSCRIPTION_BACKEND="remote", WHISPER_REMOTE_URL=self.url(), WHISPER_REMOTE_TOKEN=self.token,
+                               TRANSCRIPTION_FALLBACK="", WHISPER_LANGUAGE="es"):
+            transcription.transcribe_audio_detailed(self.audio, prompt=prompt)
+        self.assertEqual(RECEIVED_OPTIONS[-1], {"language": "es", "prompt": prompt})
+
+    def test_whisper_options_fix_language_and_use_prompt(self):
+        with override_settings(WHISPER_LANGUAGE="es"):
+            options = transcription.whisper_options("Términos: taquicardia")
+        self.assertEqual(options["language"], "es")
+        self.assertEqual(options["initial_prompt"], "Términos: taquicardia")
+        self.assertFalse(options["condition_on_previous_text"])
 
     def test_wrong_token_is_rejected(self):
         with override_settings(TRANSCRIPTION_BACKEND="remote", WHISPER_REMOTE_URL=self.url(), WHISPER_REMOTE_TOKEN="otro",

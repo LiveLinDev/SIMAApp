@@ -193,10 +193,12 @@ def lesson_detail(request, pk):
         for item in assessment.items:
             if item.topic:
                 key_topics.add(item.topic)
-    if job.tags:
-        key_topics.update(t.strip() for t in job.tags.split(",") if t.strip())
-    if job.course and job.course.main_topics:
-        key_topics.update(job.course.main_topics)
+    # Conceptos del resumen de ESTA clase (los escribe el modelo leyendo la clase completa). Sin resumen se
+    # muestran los temas de sus preguntas; los temas generales del curso y las etiquetas no se mezclan aqui.
+    class_summary = summaries.class_summary_for(job) if job.course_id else None
+    concepts_from_summary = bool(class_summary and class_summary.key_concepts)
+    if concepts_from_summary:
+        key_topics = list(class_summary.key_concepts)
 
     # calcular paso actual del pipeline
     pipeline_step = 0
@@ -217,7 +219,8 @@ def lesson_detail(request, pk):
         "item_count": item_count,
         "cat_params": cat_params,
         "bloom_stats": bloom_stats,
-        "key_topics": sorted(key_topics),
+        "key_topics": key_topics if concepts_from_summary else sorted(key_topics, key=str.lower),
+        "concepts_from_summary": concepts_from_summary,
         "practice_sessions": adaptive.PracticeSession.objects.filter(user=request.user, lesson=job)[:8],
         "class_summary": summaries.class_summary_for(job),
         "pipeline_step": pipeline_step,
@@ -611,3 +614,18 @@ def download_json(request, pk):
     )
     response["Content-Disposition"] = f'attachment; filename="clase-{job.pk}.json"'
     return response
+
+
+def _pdf_response(content: bytes, filename: str) -> HttpResponse:
+    response = HttpResponse(content, content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="{filename}.pdf"'
+    return response
+
+
+@login_required
+def download_pdf(request, pk):
+    """Preguntas de la clase en PDF, con la hoja de respuestas al final."""
+    from ..pdf_export import questions_pdf, safe_filename
+
+    job = get_object_or_404(LessonJob, pk=pk, user=request.user)
+    return _pdf_response(questions_pdf(job), f"preguntas-{safe_filename(job.title, f'clase-{job.pk}')}")

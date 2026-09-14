@@ -174,6 +174,10 @@ class Course(models.Model):
     description = models.TextField(blank=True)
     instructor = models.CharField(max_length=160, blank=True)
     main_topics = models.JSONField(default=list, blank=True)
+    vocabulary = models.TextField(
+        blank=True,
+        help_text="Terminos tecnicos del curso separados por comas. Mejoran la transcripcion y se amplian solos al corregir clases.",
+    )
     level = models.CharField(max_length=20, choices=Level.choices, default=Level.INTRODUCTORY)
     student_goal = models.TextField(blank=True)
     exam_date = models.DateField(null=True, blank=True, help_text="Proxima evaluacion: activa la cuenta regresiva y el simulacro en el plan.")

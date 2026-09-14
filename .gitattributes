@@ -5,3 +5,5 @@
 deploy/** text eol=lf
 # scripts de Windows: siempre CRLF (cmd.exe falla con goto/etiquetas en LF)
 *.bat text eol=crlf
+*.ttf binary
+*.pdf binary

@@ -26,9 +26,20 @@ from .models import ClassSession, Course, CreditLedgerEntry, LessonJob, Profile,
 
 logger = logging.getLogger(__name__)
 
+# Una clase que entra en CLASS_SOURCE_CHARS se resume en una sola llamada. Una clase mas larga se divide en
+# partes de ~CLASS_PART_WORDS palabras: de cada parte salen notas y el resumen final se escribe con las notas
+# de TODAS las partes, asi cubre la clase completa y no solo el inicio.
 CLASS_SOURCE_CHARS = 9000
+CLASS_PART_WORDS = 1300
+MAX_CLASS_PARTS = 12
 COURSE_SOURCE_CHARS = 12000
 MAX_COURSE_CLASSES = 8
+
+CONCEPT_RULES = (
+    "Cada c| es un termino o concepto tecnico de la clase (1 a 5 palabras), escrito con la ortografia "
+    "correcta del area, como aparece en un libro de texto. No uses frases, preguntas, verbos sueltos ni "
+    "palabras genericas como 'importancia', 'ejemplo' o 'tema'."
+)
 
 
 class SummaryUnavailable(RuntimeError):
@@ -38,22 +49,99 @@ class SummaryUnavailable(RuntimeError):
 # ---------------------------------------------------------------------------
 # Prompts
 # ---------------------------------------------------------------------------
-def build_class_summary_prompt(title: str, transcript: str, mini_text: str) -> str:
+def _vocabulary_line(vocabulary: list[str] | None) -> str:
+    if not vocabulary:
+        return ""
+    return "VOCABULARIO DEL CURSO (usa esta ortografia): " + ", ".join(vocabulary[:80]) + "\n\n"
+
+
+def build_class_summary_prompt(title: str, transcript: str, mini_text: str, vocabulary: list[str] | None = None) -> str:
     source = (transcript or "").strip()[:CLASS_SOURCE_CHARS]
     items = _mini_stems(mini_text)
     items_block = "\n".join(f"- {s}" for s in items[:25]) if items else "(sin preguntas generadas)"
     return (
         "Eres un asistente de estudio universitario. Resume la siguiente clase en espanol, "
-        "de forma fiel al contenido (no inventes datos que no esten en la transcripcion).\n\n"
+        "de forma fiel al contenido (no inventes datos que no esten en la transcripcion). "
+        "La transcripcion es automatica: si un termino tecnico esta mal escrito, escribelo correctamente.\n\n"
         "Responde SOLO con lineas en este formato, sin texto adicional:\n"
         "t|<titulo breve de la clase>\n"
-        "c|<concepto clave> (entre 3 y 8 lineas c|, una idea por linea)\n"
+        "c|<concepto clave> (entre 4 y 10 lineas c|)\n"
         "p|<parrafo del resumen> (entre 3 y 6 lineas p|, cada una un parrafo de 2 a 4 oraciones)\n"
         "r|<que conviene repasar primero y por que> (1 a 3 lineas r|)\n\n"
+        f"{CONCEPT_RULES}\n\n"
         f"CLASE: {title}\n\n"
+        f"{_vocabulary_line(vocabulary)}"
         f"TRANSCRIPCION:\n{source}\n\n"
         f"PREGUNTAS QUE SE EVALUAN SOBRE ESTA CLASE:\n{items_block}\n"
     )
+
+
+def build_class_part_notes_prompt(title: str, part: str, index: int, total: int, vocabulary: list[str] | None = None) -> str:
+    return (
+        "Eres un asistente de estudio universitario. Esta es una parte de la transcripcion automatica de una clase. "
+        "Toma notas fieles de TODO lo que se explica en esta parte, en espanol, sin inventar datos. "
+        "Si un termino tecnico esta mal escrito, escribelo correctamente.\n\n"
+        "Responde SOLO con lineas en este formato:\n"
+        "n|<idea explicada, con los datos concretos: definiciones, valores, causas, ejemplos> (entre 4 y 10 lineas n|)\n"
+        "c|<concepto clave de esta parte> (entre 2 y 6 lineas c|)\n\n"
+        f"{CONCEPT_RULES}\n\n"
+        f"CLASE: {title}\n"
+        f"PARTE {index} DE {total}\n\n"
+        f"{_vocabulary_line(vocabulary)}"
+        f"TRANSCRIPCION:\n{part}\n"
+    )
+
+
+def build_class_summary_from_notes_prompt(title: str, notes: list[tuple[int, list[str], list[str]]], mini_text: str,
+                                         vocabulary: list[str] | None = None) -> str:
+    total = len(notes)
+    blocks = []
+    for index, ideas, concepts in notes:
+        lines = "\n".join(f"- {idea}" for idea in ideas) or "- (sin notas)"
+        blocks.append(f"[Parte {index} de {total}]\n{lines}" + (f"\nConceptos: {', '.join(concepts)}" if concepts else ""))
+    items = _mini_stems(mini_text)
+    items_block = "\n".join(f"- {s}" for s in items[:25]) if items else "(sin preguntas generadas)"
+    return (
+        "Eres un asistente de estudio universitario. Con las notas de TODAS las partes de una clase, escribe su "
+        "resumen en espanol. Debe cubrir la clase completa en orden, de la primera a la ultima parte, sin inventar datos.\n\n"
+        "Responde SOLO con lineas en este formato, sin texto adicional:\n"
+        "t|<titulo breve de la clase>\n"
+        "c|<concepto clave> (entre 6 y 12 lineas c|, repartidos entre todas las partes)\n"
+        f"p|<parrafo del resumen> (entre {min(max(total, 3), 8)} y {min(max(total + 2, 5), 10)} lineas p|, "
+        "cada una un parrafo de 2 a 4 oraciones; ninguna parte puede quedar fuera)\n"
+        "r|<que conviene repasar primero y por que> (1 a 3 lineas r|)\n\n"
+        f"{CONCEPT_RULES}\n\n"
+        f"CLASE: {title}\n\n"
+        f"{_vocabulary_line(vocabulary)}"
+        f"NOTAS POR PARTE:\n" + "\n\n".join(blocks) + "\n\n"
+        f"PREGUNTAS QUE SE EVALUAN SOBRE ESTA CLASE:\n{items_block}\n"
+    )
+
+
+def parse_part_notes(raw: str) -> tuple[list[str], list[str]]:
+    ideas, concepts = [], []
+    for line in (raw or "").splitlines():
+        line = line.strip().strip("`").lstrip("-* ").strip()
+        if len(line) < 3 or line[1] != "|":
+            continue
+        tag, value = line[0].lower(), line[2:].strip()
+        if not value:
+            continue
+        if tag == "n":
+            ideas.append(value)
+        elif tag == "c":
+            concepts.append(value)
+    return ideas, concepts
+
+
+def split_class_parts(source: str) -> list[str]:
+    from .services.generation import chunk_content
+
+    words = source.split()
+    part_words = CLASS_PART_WORDS
+    if len(words) > part_words * MAX_CLASS_PARTS:
+        part_words = -(-len(words) // MAX_CLASS_PARTS)  # techo: nunca mas de MAX_CLASS_PARTS llamadas
+    return chunk_content(source, max_words=part_words)
 
 
 def build_course_summary_prompt(course: Course, sections: list[tuple[str, str]], weak_topics: list[str]) -> str:
@@ -85,6 +173,22 @@ def _mini_stems(mini_text: str) -> list[str]:
 # ---------------------------------------------------------------------------
 # Parseo de la respuesta
 # ---------------------------------------------------------------------------
+def clean_concepts(concepts: list[str], limit: int = 12) -> list[str]:
+    """Descarta conceptos que son frases largas, preguntas o duplicados."""
+    cleaned, seen = [], set()
+    for concept in concepts:
+        value = " ".join(str(concept).split()).strip(" .;:-\"'")
+        value = re.sub(r"^\d+[.)]\s*", "", value)
+        if not value or "?" in value or len(value.split()) > 6 or len(value) > 70:
+            continue
+        key = value.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        cleaned.append(value[:1].upper() + value[1:])
+    return cleaned[:limit]
+
+
 def parse_summary_response(raw: str, fallback_title: str = "Resumen") -> dict:
     title, concepts, paragraphs, review = "", [], [], []
     for line in (raw or "").splitlines():
@@ -108,7 +212,7 @@ def parse_summary_response(raw: str, fallback_title: str = "Resumen") -> dict:
     content = "\n\n".join(paragraphs)
     if review:
         content += "\n\nQue repasar primero:\n" + "\n".join(f"- {r}" for r in review)
-    return {"title": title or fallback_title, "key_concepts": concepts[:12], "content": content.strip(), "review": review}
+    return {"title": title or fallback_title, "key_concepts": clean_concepts(concepts), "content": content.strip(), "review": review}
 
 
 # ---------------------------------------------------------------------------
@@ -147,11 +251,34 @@ def check_class_summary(job: LessonJob):
         raise SummaryUnavailable("La clase debe pertenecer a un curso para generar su resumen.")
 
 
-def build_class_summary(job: LessonJob, backend: str) -> dict:
-    """Llama al modelo y devuelve el resumen parseado (sin cobrar ni guardar)."""
-    from .services import call_ai  # import perezoso: services carga dependencias pesadas
+def build_class_summary(job: LessonJob, backend: str, on_progress=None) -> dict:
+    """Llama al modelo y devuelve el resumen parseado (sin cobrar ni guardar).
 
-    raw = call_ai(build_class_summary_prompt(job.title, _class_source(job), job.corrected_output or job.toon_output), backend=backend, role="generation")
+    on_progress(texto): avisa el avance cuando la clase es larga y se resume por partes.
+    """
+    from .services import call_ai  # import perezoso: services carga dependencias pesadas
+    from .vocabulary import course_terms
+
+    source = _class_source(job)
+    mini_text = job.corrected_output or job.toon_output
+    vocabulary = course_terms(job.course) if job.course_id else []
+    if len(source) <= CLASS_SOURCE_CHARS:
+        raw = call_ai(build_class_summary_prompt(job.title, source, mini_text, vocabulary), backend=backend, role="generation")
+    else:
+        parts = split_class_parts(source)
+        notes = []
+        for index, part in enumerate(parts, start=1):
+            if on_progress:
+                on_progress(f"Leyendo la parte {index} de {len(parts)}.")
+            part_raw = call_ai(build_class_part_notes_prompt(job.title, part, index, len(parts), vocabulary),
+                               backend=backend, role="generation", max_tokens=1500)
+            ideas, concepts = parse_part_notes(part_raw)
+            if not ideas:
+                raise RuntimeError(f"El modelo no devolvio notas para la parte {index} de {len(parts)}.")
+            notes.append((index, ideas, concepts))
+        if on_progress:
+            on_progress(f"Escribiendo el resumen con las {len(parts)} partes.")
+        raw = call_ai(build_class_summary_from_notes_prompt(job.title, notes, mini_text, vocabulary), backend=backend, role="generation")
     parsed = parse_summary_response(raw, fallback_title=f"Resumen de {job.title}")
     if not parsed["content"]:
         raise RuntimeError("El modelo no devolvio contenido para el resumen.")
@@ -196,22 +323,42 @@ def course_summary_for(course: Course) -> Summary | None:
 
 
 def _course_sections(course: Course) -> list[tuple[str, str]]:
-    """Resumenes de clase si existen; si no, extractos de las transcripciones mas recientes."""
+    """Una seccion por clase: su resumen si existe; si no, un extracto repartido de toda su transcripcion."""
+    summaries_by_session = {
+        s.class_session_id: s
+        for s in Summary.objects.filter(course=course, kind=Summary.Kind.STRUCTURED).exclude(class_session=None)
+    }
+    jobs = list(LessonJob.objects.filter(course=course).exclude(transcript="", source_text="").order_by("created_at"))
+    jobs = jobs[-MAX_COURSE_CLASSES:]
+    sessions = {
+        s.legacy_lesson_job_id: s.pk
+        for s in ClassSession.objects.filter(legacy_lesson_job__in=jobs)
+    }
+    pending = [job for job in jobs if sessions.get(job.pk) not in summaries_by_session]
+    per_class = max(COURSE_SOURCE_CHARS // max(len(pending), 1), 1500) if pending else 0
     sections = []
-    class_summaries = Summary.objects.filter(course=course, kind=Summary.Kind.STRUCTURED).select_related("class_session").order_by("created_at")
-    for s in class_summaries[:MAX_COURSE_CLASSES]:
-        head = s.class_session.title if s.class_session_id else s.title
-        concepts = ", ".join(s.key_concepts or [])
-        sections.append((head, (f"Conceptos: {concepts}\n" if concepts else "") + s.content))
-    if sections:
-        return sections
-    jobs = LessonJob.objects.filter(course=course).exclude(transcript="", source_text="").order_by("created_at")[:MAX_COURSE_CLASSES]
-    per_class = max(COURSE_SOURCE_CHARS // max(len(jobs), 1), 1500)
     for job in jobs:
+        summary = summaries_by_session.get(sessions.get(job.pk))
+        if summary is not None:
+            concepts = ", ".join(summary.key_concepts or [])
+            sections.append((job.title, (f"Conceptos: {concepts}\n" if concepts else "") + summary.content))
+            continue
         text = (job.transcript or job.source_text).strip()
         if text:
-            sections.append((job.title, text[:per_class]))
+            sections.append((job.title, _spread_excerpt(text, per_class)))
+    if not sections:
+        for s in Summary.objects.filter(course=course, kind=Summary.Kind.STRUCTURED).order_by("created_at")[:MAX_COURSE_CLASSES]:
+            sections.append((s.title, s.content))
     return sections
+
+
+def _spread_excerpt(text: str, max_chars: int) -> str:
+    """Extracto de inicio, medio y final (no solo el inicio) cuando la clase no tiene resumen propio."""
+    if len(text) <= max_chars:
+        return text
+    third = max_chars // 3
+    middle = len(text) // 2
+    return " […] ".join([text[:third], text[middle - third // 2: middle + third // 2], text[-third:]])
 
 
 def check_course_summary(course: Course) -> list[tuple[str, str]]:
@@ -332,7 +479,11 @@ def run_summary_job(job: SummaryJob) -> SummaryJob:
         if job.kind == SummaryJob.Kind.CLASS:
             check_class_summary(job.lesson)
             session = _class_session_for(job.lesson, create=True)
-            parsed = build_class_summary(job.lesson, job.backend)
+            def progress(detail):
+                job.processing_log = _job_log(job.processing_log, "Procesando", detail)
+                job.save(update_fields=["processing_log", "updated_at"])
+
+            parsed = build_class_summary(job.lesson, job.backend, on_progress=progress)
             summary = store_class_summary(job.lesson, session, parsed)
         else:
             parsed = build_course_summary(job.user, job.course, job.backend)

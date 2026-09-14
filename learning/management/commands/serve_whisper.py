@@ -65,6 +65,7 @@ def build_handler(transcriber, token: str, model_name: str, log=print):
             if self.path.rstrip("/") != "/transcribe":
                 return self._json(404, {"error": "ruta no encontrada"})
             if not self._authorized():
+                self._drain_small_body()
                 return self._json(401, {"error": "token invalido"})
             try:
                 length = int(self.headers.get("Content-Length", "0"))
@@ -89,11 +90,12 @@ def build_handler(transcriber, token: str, model_name: str, log=print):
                                 break
                             out.write(data)
                             remaining -= len(data)
+                options = self._whisper_options()
                 started = time.monotonic()
                 with lock:  # una transcripcion a la vez: Whisper usa toda la CPU o GPU
                     state["busy"] = True
                     try:
-                        result = transcriber(path)
+                        result = transcriber(path, **options) if options else transcriber(path)
                     finally:
                         state["busy"] = False
                 state["served"] += 1
@@ -113,6 +115,33 @@ def build_handler(transcriber, token: str, model_name: str, log=print):
                     os.remove(path)
                 except OSError:
                     pass
+
+        def _drain_small_body(self, limit: int = 1024 * 1024):
+            """Lee (y descarta) un cuerpo pequeno antes de rechazar: si queda sin leer, Windows corta la conexion
+            y el cliente no alcanza a ver el 401."""
+            try:
+                length = int(self.headers.get("Content-Length", "0"))
+            except ValueError:
+                length = 0
+            if 0 < length <= limit:
+                self.rfile.read(length)
+            self.close_connection = True
+
+        def _whisper_options(self) -> dict:
+            """Idioma y contexto del curso enviados por el VPS (el prompt viaja en base64)."""
+            import base64
+
+            options = {}
+            language = (self.headers.get("X-Whisper-Language") or "").strip().lower()
+            if language.isalpha() and len(language) <= 8:
+                options["language"] = language
+            encoded = self.headers.get("X-Whisper-Prompt") or ""
+            if encoded:
+                try:
+                    options["prompt"] = base64.b64decode(encoded, validate=True).decode("utf-8")[:1000]
+                except (ValueError, UnicodeDecodeError):
+                    pass
+            return options
 
         def _copy_chunked(self, out):
             total = 0
@@ -150,8 +179,10 @@ class Command(BaseCommand):
             self.stderr.write(self.style.WARNING("Escuchando fuera de 127.0.0.1: cualquiera en la red podra llamar al servicio."))
         model_name = options["model"] or settings.WHISPER_MODEL
 
-        def transcriber(path):
-            return load_whisper_model(model_name).transcribe(path)
+        from learning.services.transcription import whisper_options
+
+        def transcriber(path, prompt="", language=None):
+            return load_whisper_model(model_name).transcribe(path, **whisper_options(prompt, language))
 
         if not options["no_preload"]:
             self.stdout.write(f"Cargando Whisper '{model_name}'...")

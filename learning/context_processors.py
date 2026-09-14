@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db.models import Count, Q
 
 from .models import ClassSession, Course, LessonJob, Profile, UserPreference
@@ -55,3 +56,8 @@ def sidebar_data(request):
         },
         "sidebar_active_tab": active_tab,
     }
+
+
+def site_flags(request):
+    """Banderas del sitio que cambian la navegacion publica (p. ej. ocultar "Crear cuenta")."""
+    return {"registration_mode": getattr(settings, "SIMA_REGISTRATION", "open")}

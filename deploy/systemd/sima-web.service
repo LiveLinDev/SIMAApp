@@ -41,6 +41,10 @@ Restart=always
 RestartSec=5
 KillMode=mixed
 TimeoutStopSec=40
+# Comparte el VPS con otras apps: tope de memoria y, si falta RAM, que el kernel cierre SIMA antes que al resto.
+MemoryHigh=450M
+MemoryMax=600M
+OOMScoreAdjust=300
 # Endurecimiento basico
 NoNewPrivileges=true
 PrivateTmp=true

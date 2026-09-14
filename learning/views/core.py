@@ -66,6 +66,8 @@ def mini_benchmark(request):
 
 
 def register(request):
+    if getattr(settings, "SIMA_REGISTRATION", "open") == "closed":
+        return render(request, "registration/register.html", {"form": None, "registration_closed": True}, status=403)
     if request.method == "POST":
         form = RegisterForm(request.POST)
         if form.is_valid():
@@ -163,8 +165,18 @@ def plans(request):
     return render(request, "learning/plans.html", {"form": form, "plans": get_plan_details(), "profile": profile})
 
 
+def _health_details_allowed(request) -> bool:
+    """Detalles de /salud/ (modelos, transcripcion): personal del sitio o una peticion local directa a gunicorn.
+
+    Nginx siempre agrega X-Forwarded-For, asi que una peticion de internet nunca cuenta como local.
+    """
+    if request.user.is_authenticated and request.user.is_staff:
+        return True
+    return request.META.get("REMOTE_ADDR") in {"127.0.0.1", "::1"} and "HTTP_X_FORWARDED_FOR" not in request.META
+
+
 def health(request):
-    """Estado minimo para monitoreo: BD, cola y backend configurado. Sin datos sensibles."""
+    """Estado para monitoreo. En publico solo BD y cola; los detalles de IA quedan para el personal."""
     from ..job_queue import queue_snapshot
 
     status = {"status": "ok"}
@@ -179,6 +191,8 @@ def health(request):
     except Exception as exc:  # noqa: BLE001
         status["status"] = "degraded"
         status["queue"] = f"error: {exc.__class__.__name__}"
+    if not _health_details_allowed(request):
+        return JsonResponse(status, status=200 if status["status"] == "ok" else 503)
     status["cloud_backend"] = bool(getattr(settings, "CLOUD_API_KEY", ""))
     status["cloud_model"] = getattr(settings, "CLOUD_MODEL", "")
     status["whisper_model"] = getattr(settings, "WHISPER_MODEL", "")

@@ -8,10 +8,35 @@ from .models import Course, LessonJob, Plan, PlanCatalog
 
 class RegisterForm(UserCreationForm):
     email = forms.EmailField(required=True)
+    invite_code = forms.CharField(
+        label="Código de invitación",
+        max_length=64,
+        required=False,
+        widget=forms.TextInput(attrs={"autocomplete": "off"}),
+    )
 
     class Meta:
         model = User
         fields = ("username", "email", "password1", "password2")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from django.conf import settings
+
+        self.requires_invite = getattr(settings, "SIMA_REGISTRATION", "open") == "invite"
+        if self.requires_invite:
+            self.fields["invite_code"].required = True
+        else:
+            del self.fields["invite_code"]
+
+    def clean_invite_code(self):
+        from django.conf import settings
+        from django.utils.crypto import constant_time_compare
+
+        code = (self.cleaned_data.get("invite_code") or "").strip()
+        if not constant_time_compare(code, getattr(settings, "SIMA_INVITE_CODE", "")):
+            raise forms.ValidationError("El código de invitación no es válido.")
+        return code
 
 
 class PlanForm(forms.Form):

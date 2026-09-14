@@ -29,9 +29,11 @@ RestartSec=10
 # SIGINT = Ctrl+C: run_worker lo captura y termina de forma ordenada.
 KillSignal=SIGINT
 TimeoutStopSec=60
-# Si Whisper se come la RAM, que muera el worker y no el resto del VPS.
-# Ajusta al tamano de tu VPS: 2 GB de RAM -> 1400M (con swap de 4 GB); 4 GB de RAM -> 2500M.
-MemoryMax=1400M
+# Si el worker se come la RAM, que muera el worker y no el resto del VPS.
+# Con transcripcion remota o en la nube el worker usa menos de 150 MB: 700M deja margen de sobra.
+# Si instalas Whisper en el propio VPS sube el tope: 2 GB de RAM -> 1400M (con swap); 4 GB -> 2500M.
+MemoryHigh=550M
+MemoryMax=700M
 OOMScoreAdjust=500
 NoNewPrivileges=true
 PrivateTmp=true

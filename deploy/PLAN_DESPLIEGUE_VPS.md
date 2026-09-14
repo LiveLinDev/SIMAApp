@@ -823,3 +823,49 @@ audio corto y mira el progreso en la ventana del servicio de la PC.
 | Se quiere volver a Whisper en el VPS | — | `INSTALL_WHISPER=1` en el bootstrap y `TRANSCRIPTION_BACKEND=local` (requiere más RAM) |
 
 En Azure (sección 14) la opción natural es `TRANSCRIPTION_BACKEND=local` en una VM con más memoria.
+
+## 16. Seguridad en el VPS compartido y HTTPS
+
+El droplet también aloja Luna y el simulador, así que SIMA debe ocupar poco y exponer lo mínimo.
+
+### 16.1 Estado revisado
+
+| Puerto público | Servicio | Dueño |
+|---|---|---|
+| 80 y 443 | Luna (api.pmoluna.com, detrás del proxy de Cloudflare) | Luna |
+| 2222 | SSH solo con llave, sin root | Servidor |
+| 3002 | simulador-produce | Simulador |
+| 8080 | SIMA sin cifrar, **provisional** hasta el paso 16.3 | SIMA |
+
+Gunicorn (8000), el túnel de Whisper (9000) y PostgreSQL (5432) solo escuchan en 127.0.0.1.
+
+### 16.2 Endurecimiento (una vez)
+
+```bash
+sudo bash /srv/sima/app/deploy/harden_vps.sh
+```
+
+- Topes de memoria con drop-ins de systemd: sima-web 600 MB y sima-worker 700 MB, con prioridad para que el kernel cierre SIMA antes que Luna si falta RAM.
+- `server_tokens off` en Nginx: las cabeceras dejan de mostrar la versión.
+- Registro por invitación: `SIMA_REGISTRATION=invite` con un código aleatorio que el script imprime al final. Sin el código nadie crea cuentas ni gasta la clave de Groq. `closed` cierra el registro por completo.
+
+`/salud/` responde en público solo el estado de la base y de la cola. Los modelos de IA y el estado de la transcripción remota los ve el personal (usuarios `is_staff`) o una consulta local directa a gunicorn, como la de `update.sh`.
+
+### 16.3 HTTPS con el subdominio de Cloudflare
+
+1. En Cloudflare, zona `pmoluna.com` → **DNS** → **Records** → **Add record**:
+   - Type `A`, Name `sima`, IPv4 `162.243.33.172`, TTL `Auto`.
+   - **Proxy status: DNS only (nube gris).** Así certbot valida el dominio directo contra el VPS y las subidas de audio de hasta 200 MB no chocan con el límite de 100 MB del proxy gratuito.
+   - No cambies **SSL/TLS → Overview**: ese modo es de toda la zona y afecta a Luna.
+2. Espera a que resuelva (`getent hosts sima.pmoluna.com` en el VPS debe mostrar la IP).
+3. En el VPS:
+
+```bash
+sudo bash /srv/sima/app/deploy/enable_https.sh sima.pmoluna.com
+```
+
+El script mantiene el 8080 hasta comprobar que `https://sima.pmoluna.com/salud/` responde. Después quita el 8080 de Nginx y de UFW, activa cookies seguras, HSTS de una hora y la redirección a HTTPS. Si falla antes, el sitio sigue en `http://162.243.33.172:8080`. El certificado se renueva solo con el `certbot.timer` que ya usa Luna.
+
+### 16.4 Acceso de mantenimiento
+
+La llave SSH usada para configurar el servidor queda limitada a `git push` sobre `/srv/sima/repo.git`: no abre shell ni puede tocar Luna. Para retirarla del todo, borra en `~/.ssh/authorized_keys` de `erick` la línea que termina en `sima_admin@pc-erick`.

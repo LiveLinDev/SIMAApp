@@ -38,7 +38,7 @@
         {% else %}
           <a class="nav-link {% if current == 'mini_landing' %}is-active{% endif %}" href="{% url 'mini_landing' %}">.mini</a>
           <a class="nav-link {% if current == 'login' %}is-active{% endif %}" href="{% url 'login' %}">Entrar</a>
-          <a class="nav-pill" href="{% url 'register' %}">Crear cuenta</a>
+          {% if registration_mode != "closed" %}<a class="nav-pill" href="{% url 'register' %}">Crear cuenta</a>{% endif %}
         {% endif %}
       </nav>
       {% endwith %}

@@ -9,8 +9,8 @@
     <h1 class="lp-title">Sube tu clase. <span>Estudia lo que te falta.</span></h1>
     <p class="lp-lead">SIMA convierte tus clases en preguntas, tarjetas y resúmenes, y te dice qué repasar cada día.</p>
     <div class="lp-actions">
-      <a class="lp-btn lp-btn--primary" href="{% url 'register' %}">Empezar gratis</a>
-      <a class="lp-btn lp-btn--ghost" href="{% url 'login' %}">Ya tengo cuenta</a>
+      {% if registration_mode != "closed" %}<a class="lp-btn lp-btn--primary" href="{% url 'register' %}">Empezar gratis</a>{% endif %}
+      <a class="lp-btn {% if registration_mode == 'closed' %}lp-btn--primary{% else %}lp-btn--ghost{% endif %}" href="{% url 'login' %}">{% if registration_mode == "closed" %}Entrar{% else %}Ya tengo cuenta{% endif %}</a>
     </div>
     <ul class="lp-points">
       <li>Audio o texto</li>
@@ -114,7 +114,7 @@
       <h3>{{ plan.label }}</h3>
       <p class="lp-plan__price">${{ plan.price }}<small>/mes</small></p>
       <p class="lp-plan__credits">{% if key == "unlimited" %}Créditos ilimitados{% else %}{{ plan.credits }} créditos{% endif %}</p>
-      <a class="lp-btn {% if key == 'pro' %}lp-btn--primary{% else %}lp-btn--ghost{% endif %}" href="{% url 'register' %}">Elegir</a>
+      <a class="lp-btn {% if key == 'pro' %}lp-btn--primary{% else %}lp-btn--ghost{% endif %}" href="{% if registration_mode == 'closed' %}{% url 'login' %}{% else %}{% url 'register' %}{% endif %}">Elegir</a>
     </article>
     {% endfor %}
   </div>
@@ -123,7 +123,7 @@
 
 <section class="lp-cta">
   <h2>Tu próxima clase puede ser tu mejor repaso.</h2>
-  <a class="lp-btn lp-btn--primary" href="{% url 'register' %}">Crear cuenta gratis</a>
+  {% if registration_mode == "closed" %}<a class="lp-btn lp-btn--primary" href="{% url 'login' %}">Entrar</a>{% else %}<a class="lp-btn lp-btn--primary" href="{% url 'register' %}">Crear cuenta gratis</a>{% endif %}
 </section>
 
 <footer class="lp-footer">

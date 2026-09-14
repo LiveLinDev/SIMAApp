@@ -1,7 +1,14 @@
 {% extends "base.html" %}
-{% block title %}Registro - SIMA{% endblock %}
+{% block title %}Crear cuenta · SIMA{% endblock %}
 {% block content %}
 <section class="auth-panel">
+  {% if registration_closed %}
+  <div>
+    <h1>Registro cerrado</h1>
+    <p class="muted">Por ahora SIMA solo está abierto para cuentas invitadas.</p>
+  </div>
+  <p class="muted center"><a href="{% url 'login' %}">Entrar con mi cuenta</a></p>
+  {% else %}
   <div>
     <p class="eyebrow">Empieza gratis</p>
     <h1>Crea tu cuenta</h1>
@@ -12,5 +19,6 @@
     <button class="primary-button" type="submit">Registrarme</button>
   </form>
   <p class="muted center">¿Ya tienes cuenta? <a href="{% url 'login' %}">Entrar</a></p>
+  {% endif %}
 </section>
 {% endblock %}

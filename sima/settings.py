@@ -130,6 +130,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "learning.context_processors.sidebar_data",
+                "learning.context_processors.site_flags",
             ],
         },
     },
@@ -281,6 +282,15 @@ EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
 DEFAULT_FROM_EMAIL = env_text("DEFAULT_FROM_EMAIL", "SIMA <no-reply@sima.local>")
 # URL publica para los enlaces de los correos (sin barra final), p. ej. https://sima.midominio.pe
 SIMA_SITE_URL = env_text("SIMA_SITE_URL", "")
+
+# Registro de cuentas: "open" (cualquiera), "invite" (pide SIMA_INVITE_CODE) o "closed".
+# En un servidor publico conviene "invite": cada cuenta nueva recibe creditos que gastan la clave de IA.
+SIMA_REGISTRATION = env_text("SIMA_REGISTRATION", "open").lower()
+if SIMA_REGISTRATION not in {"open", "invite", "closed"}:
+    SIMA_REGISTRATION = "closed"
+SIMA_INVITE_CODE = env_text("SIMA_INVITE_CODE", "")
+if SIMA_REGISTRATION == "invite" and not SIMA_INVITE_CODE:
+    SIMA_REGISTRATION = "closed"  # sin codigo definido nadie podria registrarse: mejor cerrado y explicito
 
 # ── Seguridad en produccion (DJANGO_DEBUG=0) ─────────────────────────────────
 if not DEBUG and SECRET_KEY == "dev-only-change-me":

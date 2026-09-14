@@ -11,6 +11,6 @@
     {{ form.as_p }}
     <button class="primary-button" type="submit">Entrar</button>
   </form>
-  <p class="muted center">¿No tienes cuenta? <a href="{% url 'register' %}">Crear una gratis</a></p>
+  {% if registration_mode != "closed" %}<p class="muted center">¿No tienes cuenta? <a href="{% url 'register' %}">Crear una gratis</a></p>{% endif %}
 </section>
 {% endblock %}

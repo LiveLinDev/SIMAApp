@@ -1,432 +1,161 @@
 {% extends "base.html" %}
-{% block title %}Nueva clase - SIMA{% endblock %}
+{% block title %}Nueva clase · SIMA{% endblock %}
 {% block content %}
-<section class="page-head">
-  <p class="eyebrow">{% if mode == "api" %}Crear clase{% else %}Manual gratis{% endif %}</p>
-  <h1>Nueva clase</h1>
-  {% if mode == "api" and profile %}
-    <p class="muted">Te quedan {{ profile.remaining_classes }} clases este mes.</p>
-    <p class="muted">Creditos disponibles: {{ profile.credits_label }}.</p>
-  {% endif %}
-</section>
+<section class="flow-page">
+  <header class="flow-head">
+    {% with back_course=form.initial.course|add:0 %}
+    {% if back_course %}
+      <a class="flow-back" href="{% url 'course_detail' back_course %}">← Volver al curso</a>
+    {% else %}
+      <a class="flow-back" href="{% url 'dashboard' %}">← Mis cursos</a>
+    {% endif %}
+    {% endwith %}
+    <h1>Nueva clase</h1>
+    {% if mode == "api" and profile %}
+      <p class="flow-sub">Créditos: {{ profile.credits_label }}</p>
+    {% endif %}
+  </header>
 
-<form method="post" enctype="multipart/form-data" class="form-card" id="lesson-form">
+<form method="post" enctype="multipart/form-data" class="flow-card" id="lesson-form">
   {% csrf_token %}
 
   {% if mode == "api" %}
-  {% if credit_estimate %}
-  <div class="message">
-    Esta clase consumira desde {{ credit_estimate.amount }} creditos si usas audio y generacion completa.
+  {% if form.non_field_errors %}<div class="flow-error">{{ form.non_field_errors }}</div>{% endif %}
+
+  <div class="flow-row">
+    <div class="flow-field">
+      <label for="{{ form.course.id_for_label }}">Curso</label>
+      {{ form.course }}
+      {{ form.course.errors }}
+    </div>
+    <div class="flow-field">
+      <label for="{{ form.title.id_for_label }}">Título</label>
+      {{ form.title }}
+      {{ form.title.errors }}
+    </div>
   </div>
-  {% endif %}
 
-  <p>
-    {{ form.course.label_tag }}
-    {{ form.course }}
-    {{ form.course.errors }}
-    <small class="field-hint">Cada clase debe pertenecer a un curso para conservar contexto y progreso.</small>
-  </p>
-
-  <p>
-    {{ form.title.label_tag }}
-    {{ form.title }}
-    {{ form.title.errors }}
-  </p>
-
-  <p>
-    {{ form.tags.label_tag }}
-    {{ form.tags }}
-    {{ form.tags.errors }}
-    <small class="field-hint">Opcional: separalas con comas.</small>
-  </p>
-
-  <fieldset class="backend-selector backend-selector--primary">
-    <legend class="backend-label">Donde quieres generar?</legend>
-    <p class="backend-note">Local usa un modelo en este equipo. La nube ({{ backends.cloud_label }}) consume mas creditos y solo se activa con CLOUD_API_KEY configurada.</p>
-    <div class="backend-options">
-      <label class="backend-option {% if not backends.local %}backend-option--disabled{% endif %}" id="lbl-local">
-        <input type="radio" name="backend" value="local"
-          {% if backends.default == 'local' %}checked{% endif %}
-          {% if not backends.local %}disabled{% endif %}
-          onchange="updateBackendUI()">
-        <span class="backend-card">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/>
-          </svg>
-          <span>
-            <strong>Modelo local</strong>
-            {% if backends.local %}
-              <small>{{ local_model }} · {{ local_credit_estimate.amount }} creditos aprox.</small>
-            {% else %}
-              <small class="disabled-note">No disponible en este servidor</small>
-            {% endif %}
-          </span>
-        </span>
-      </label>
-
-      <label class="backend-option {% if not backends.cloud %}backend-option--disabled{% endif %}" id="lbl-cloud">
-        <input type="radio" name="backend" value="cloud"
-          {% if backends.default == 'cloud' %}checked{% endif %}
-          {% if not backends.cloud %}disabled{% endif %}
-          onchange="updateBackendUI()">
-        <span class="backend-card">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
-          </svg>
-          <span>
-            <strong>Nube · {{ backends.cloud_label }}</strong>
-            {% if backends.cloud %}
-              <small>{{ backends.cloud_model }} · {{ cloud_credit_estimate.amount }} creditos aprox.</small>
-            {% else %}
-              <small class="disabled-note">Deshabilitado: falta CLOUD_API_KEY en .env</small>
-            {% endif %}
-          </span>
-        </span>
-      </label>
-    </div>
-  </fieldset>
-
-  <fieldset class="input-mode-selector">
-    <legend class="backend-label">Que vas a usar?</legend>
-    <div class="backend-options">
-      <label class="backend-option" id="lbl-mode-text">
+  <div class="flow-field">
+    <span class="flow-label">Contenido</span>
+    <div class="flow-seg" role="radiogroup" aria-label="Tipo de contenido">
+      <label class="flow-seg__opt" id="lbl-mode-text">
         <input type="radio" name="input_mode" value="text" checked onchange="updateInputMode()">
-        <span class="backend-card">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/>
-          </svg>
-          <span>
-            <strong>Texto</strong>
-            <small>Pega el contenido de tu clase.</small>
-          </span>
-        </span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8"/></svg>
+        Texto
       </label>
-
-      <label class="backend-option" id="lbl-mode-audio">
+      <label class="flow-seg__opt" id="lbl-mode-audio">
         <input type="radio" name="input_mode" value="audio" onchange="updateInputMode()">
-        <span class="backend-card">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/>
-          </svg>
-          <span>
-            <strong>Audio</strong>
-            <small>Sube un audio o grabalo aqui.</small>
-          </span>
-        </span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></svg>
+        Audio
       </label>
     </div>
-  </fieldset>
+  </div>
 
-  <div id="source-text-block">
-    <p>
-      {{ form.source_text.label_tag }}
-      {{ form.source_text }}
-      {{ form.source_text.errors }}
-    </p>
+  <div id="source-text-block" class="flow-field">
+    {{ form.source_text }}
+    {{ form.source_text.errors }}
   </div>
 
   <div id="audio-block" hidden>
-    <p>
-      {{ form.audio.label_tag }}
+    <label class="flow-drop" id="audio-drop" for="id_audio">
       {{ form.audio }}
-      {{ form.audio.errors }}
-    </p>
-    <div class="mobile-recorder" id="mobile-recorder">
-      <div class="recorder-topline">
+      <span class="flow-drop__icon" aria-hidden="true">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+      </span>
+      <strong>Elige un audio</strong>
+      <small>o arrástralo aquí · MP3, M4A, WAV</small>
+      <span class="flow-drop__file" id="audio-file-name"></span>
+    </label>
+    {{ form.audio.errors }}
+
+    <div class="flow-recorder" id="mobile-recorder">
+      <div class="flow-recorder__status">
         <span class="record-dot" id="record-dot" aria-hidden="true"></span>
-        <strong id="record-status">Listo para grabar</strong>
+        <strong id="record-status">Sin audio</strong>
         <span class="record-time" id="record-time">00:00</span>
       </div>
-      <div class="recorder-actions">
-        <button class="recorder-btn recorder-btn--record" type="button" id="record-start">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <circle cx="12" cy="12" r="7"/>
-          </svg>
+      <div class="flow-recorder__actions">
+        <button class="flow-btn flow-btn--record" type="button" id="record-start">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="7"/></svg>
           Grabar
         </button>
-        <button class="recorder-btn" type="button" id="record-stop" disabled>
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="7" y="7" width="10" height="10" rx="1.5"/>
-          </svg>
-          Detener
-        </button>
-        <button class="recorder-btn" type="button" id="record-clear" disabled>
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/>
-          </svg>
-          Limpiar
-        </button>
+        <button class="flow-btn flow-btn--ghost" type="button" id="record-stop" disabled>Detener</button>
+        <button class="flow-btn flow-btn--ghost" type="button" id="record-clear" disabled>Quitar</button>
       </div>
       <audio id="record-preview" controls playsinline hidden></audio>
-      <p class="recorder-hint" id="record-hint">Al detener, el audio queda listo para subir.</p>
+      <p class="flow-recorder__hint" id="record-hint"></p>
     </div>
   </div>
 
-  <details class="advanced-settings">
-    <summary class="advanced-summary">
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5z"/>
-        <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.03-1.56 1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 8a1.7 1.7 0 0 0-.34-1.88l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 8.97 3.6 1.7 1.7 0 0 0 10 2.04V2a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 8c.22.63.8 1.03 1.47 1.03H21a2 2 0 1 1 0 4h-.09A1.7 1.7 0 0 0 19.4 15z"/>
-      </svg>
-      Ajustes
-    </summary>
-    <div class="advanced-settings__body">
-  <fieldset class="backend-selector" id="verification-selector">
-    <legend class="backend-label">Revision final</legend>
-    <p class="backend-note">Controla como se revisan las preguntas antes de guardar.</p>
-    <div class="backend-options">
-      <label class="backend-option" id="lbl-verify-web">
-        <input type="radio" name="verification_mode" value="web"
-          {% if verification_default_mode == 'web' %}checked{% endif %}
-          onchange="updateVerificationUI()">
-        <span class="backend-card">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 0 20"/><path d="M12 2a15.3 15.3 0 0 0 0 20"/>
-          </svg>
-          <span>
-            <strong>Fuentes web</strong>
-            <small>Usa lo actual: URLs configuradas y contexto externo.</small>
-          </span>
-        </span>
-      </label>
+  <details class="flow-more">
+    <summary>Opciones</summary>
+    <div class="flow-more__body">
+      <div class="flow-field">
+        <label for="{{ form.tags.id_for_label }}">Etiquetas <span class="flow-optional">opcional</span></label>
+        {{ form.tags }}
+        {{ form.tags.errors }}
+      </div>
 
-      <label class="backend-option" id="lbl-verify-eduqg">
-        <input type="radio" name="verification_mode" value="eduqg"
-          {% if verification_default_mode == 'eduqg' %}checked{% endif %}
-          onchange="updateVerificationUI()">
-        <span class="backend-card">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"/>
-          </svg>
-          <span>
-            <strong>Material local</strong>
-            <small>Usa archivos de referencia del equipo.</small>
-          </span>
-        </span>
-      </label>
+      {% if backends.local and backends.cloud %}
+      <div class="flow-field">
+        <span class="flow-label">Generar con</span>
+        <div class="flow-seg">
+          <label class="flow-seg__opt" id="lbl-cloud">
+            <input type="radio" name="backend" value="cloud" {% if backends.default == 'cloud' %}checked{% endif %} onchange="updateBackendUI()">
+            Nube
+          </label>
+          <label class="flow-seg__opt" id="lbl-local">
+            <input type="radio" name="backend" value="local" {% if backends.default == 'local' %}checked{% endif %} onchange="updateBackendUI()">
+            Este equipo
+          </label>
+        </div>
+      </div>
+      {% else %}
+      <input type="hidden" name="backend" value="{{ backends.default }}">
+      {% endif %}
 
-      <label class="backend-option" id="lbl-verify-hybrid">
-        <input type="radio" name="verification_mode" value="hybrid"
-          {% if verification_default_mode == 'hybrid' %}checked{% endif %}
-          onchange="updateVerificationUI()">
-        <span class="backend-card">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2v20"/><path d="M2 12h20"/><path d="m4.93 4.93 14.14 14.14"/><path d="m19.07 4.93-14.14 14.14"/>
-          </svg>
-          <span>
-            <strong>Mixto</strong>
-            <small>Combina web y material local.</small>
-          </span>
-        </span>
-      </label>
-    </div>
-  </fieldset>
+      <div class="flow-field" id="verification-selector">
+        <span class="flow-label">Revisar preguntas con</span>
+        <div class="flow-seg">
+          <label class="flow-seg__opt" id="lbl-verify-web">
+            <input type="radio" name="verification_mode" value="web" {% if verification_default_mode == 'web' %}checked{% endif %} onchange="updateVerificationUI()">
+            Internet
+          </label>
+          <label class="flow-seg__opt" id="lbl-verify-eduqg">
+            <input type="radio" name="verification_mode" value="eduqg" {% if verification_default_mode == 'eduqg' %}checked{% endif %} onchange="updateVerificationUI()">
+            Material propio
+          </label>
+          <label class="flow-seg__opt" id="lbl-verify-hybrid">
+            <input type="radio" name="verification_mode" value="hybrid" {% if verification_default_mode == 'hybrid' %}checked{% endif %} onchange="updateVerificationUI()">
+            Ambos
+          </label>
+        </div>
+      </div>
     </div>
   </details>
   {% else %}
   {{ form.as_p }}
   {% endif %}
 
-  <button class="primary-button" type="submit" id="submit-btn">
-    {% if mode == "api" %}Crear clase{% else %}Crear prompts{% endif %}
-  </button>
+  <div class="flow-submit">
+    {% if mode == "api" and credit_estimate %}
+      <small>Usa unos {{ credit_estimate.amount }} créditos</small>
+    {% endif %}
+    <button class="flow-btn flow-btn--primary" type="submit" id="submit-btn">
+      {% if mode == "api" %}Crear clase{% else %}Crear prompts{% endif %}
+    </button>
+  </div>
 
   {% if mode == "api" %}
-  <div id="processing-status" hidden>
-    <p class="processing-label">Preparando tu clase...</p>
+  <div id="processing-status" class="flow-progress" hidden>
     <div class="processing-bar"><div class="processing-bar__fill"></div></div>
-    <p class="processing-steps" id="processing-step">Revisando contenido...</p>
+    <p class="processing-steps" id="processing-step">Leyendo tu clase…</p>
   </div>
   {% endif %}
 </form>
+</section>
 
 {% if mode == "api" %}
-<style>
-  .backend-selector { margin: 20px 0; border: none; padding: 0; }
-  .backend-selector--primary {
-    margin: 2px 0 10px;
-    padding: 14px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: rgba(255, 255, 255, .025);
-  }
-  .input-mode-selector { margin: 6px 0 10px; border: none; padding: 0; }
-  .backend-label { font-weight: 600; margin: 0 0 4px; font-size: .9rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; display: block; }
-  .backend-note { margin: 0 0 12px; font-size: .8rem; color: var(--muted); padding: 8px 12px; background: var(--soft); border-radius: 8px; border-left: 3px solid var(--blue); }
-  .field-hint { display: block; margin-top: 5px; color: var(--muted); font-size: .78rem; }
-  .backend-options { display: flex; gap: 12px; flex-wrap: wrap; }
-  .backend-option { flex: 1; min-width: 200px; cursor: pointer; }
-  .backend-option input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
-  .backend-card {
-    display: flex; align-items: center; gap: 12px;
-    padding: 14px 16px; border-radius: 8px; border: 2px solid var(--line);
-    background: var(--surface); transition: all .2s;
-  }
-  .backend-option input:checked + .backend-card { border-color: var(--green); background: #f0fce8; }
-  .backend-card:hover { border-color: var(--green); }
-  .backend-card svg { flex-shrink: 0; color: var(--muted); }
-  .backend-option input:checked + .backend-card svg { color: var(--green-dark); }
-  .backend-card strong { display: block; font-size: .95rem; }
-  .backend-card small { display: block; font-size: .78rem; color: var(--muted); margin-top: 2px; }
-  .backend-option--disabled { opacity: .5; cursor: not-allowed; }
-  .backend-option--disabled .backend-card:hover { border-color: var(--line); }
-  .disabled-note { color: var(--red) !important; }
-  .advanced-settings {
-    margin: 12px 0 18px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: rgba(255, 255, 255, .025);
-  }
-  .advanced-summary {
-    min-height: 44px;
-    display: inline-flex;
-    align-items: center;
-    gap: 9px;
-    width: 100%;
-    padding: 0 12px;
-    color: var(--gray-200);
-    cursor: pointer;
-    font-weight: 900;
-    list-style: none;
-  }
-  .advanced-summary::-webkit-details-marker {
-    display: none;
-  }
-  .advanced-settings[open] .advanced-summary {
-    border-bottom: 1px solid var(--line);
-  }
-  .advanced-settings__body {
-    padding: 14px;
-  }
-  .advanced-settings .backend-selector {
-    margin: 0 0 16px;
-  }
-  .advanced-settings .backend-selector:last-child {
-    margin-bottom: 0;
-  }
-
-  .processing-label { margin: 16px 0 8px; font-weight: 600; color: var(--ink); }
-  .processing-bar { width: 100%; height: 10px; border-radius: 999px; background: var(--line); overflow: hidden; }
-  .processing-bar__fill {
-    height: 100%; width: 0%; background: var(--green); border-radius: 999px;
-    animation: indeterminate 2s ease-in-out infinite;
-  }
-  @keyframes indeterminate {
-    0%   { width: 0%;  margin-left: 0%; }
-    50%  { width: 60%; margin-left: 20%; }
-    100% { width: 0%;  margin-left: 100%; }
-  }
-  .processing-steps { margin: 6px 0 0; font-size: .85rem; color: var(--muted); }
-
-  .mobile-recorder {
-    display: grid;
-    gap: 12px;
-    margin: 12px 0;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: rgba(10, 10, 8, .54);
-    padding: 14px;
-  }
-  .recorder-topline {
-    display: grid;
-    grid-template-columns: 12px minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 10px;
-  }
-  .record-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--muted);
-  }
-  .record-dot.is-recording {
-    background: var(--red);
-    box-shadow: 0 0 0 6px rgba(255, 95, 87, .14);
-    animation: recordPulse 1.2s ease-in-out infinite;
-  }
-  @keyframes recordPulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.35); }
-  }
-  .record-time {
-    color: var(--acid);
-    font-family: var(--font-mono);
-    font-weight: 900;
-  }
-  .recorder-actions {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px;
-  }
-  .recorder-btn {
-    min-height: 48px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: rgba(255, 255, 255, .03);
-    color: var(--gray-200);
-    font-weight: 900;
-    cursor: pointer;
-  }
-  .recorder-btn--record {
-    border-color: rgba(255, 95, 87, .5);
-    color: var(--white);
-  }
-  .recorder-btn:disabled {
-    opacity: .45;
-    cursor: not-allowed;
-  }
-  .mobile-recorder audio {
-    width: 100%;
-  }
-  .recorder-hint {
-    margin: 0;
-    color: var(--muted);
-    font-size: .82rem;
-  }
-
-  @media (max-width: 720px) {
-    .form-card {
-      border-radius: 0;
-      margin-inline: -12px;
-      border-left: 0;
-      border-right: 0;
-      padding: 16px 12px 22px;
-    }
-    .backend-options {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-    }
-    .backend-option {
-      min-width: 0;
-    }
-    .backend-card {
-      min-height: 64px;
-      padding: 13px 12px;
-    }
-    .recorder-actions {
-      grid-template-columns: 1fr;
-    }
-    .recorder-btn {
-      min-height: 54px;
-      font-size: 1rem;
-    }
-    textarea {
-      min-height: 180px;
-    }
-    #submit-btn {
-      position: sticky;
-      bottom: 10px;
-      z-index: 20;
-      width: 100%;
-      min-height: 54px;
-    }
-  }
-</style>
 <script>
   function initFormSubmit() {
     var form   = document.getElementById('lesson-form');
@@ -441,18 +170,18 @@
     function showProgress(hasAudio, hasText) {
       var steps = [];
       if (hasAudio) {
-        steps.push('Preparando audio...');
+        steps.push('Subiendo audio…');
       }
-      steps.push('Revisando contenido...');
-      steps.push('Creando preguntas...');
+      steps.push('Leyendo tu clase…');
+      steps.push('Creando preguntas…');
       if (hasAudio || hasText) {
-        steps.push('Haciendo revision final...');
+        steps.push('Revisando preguntas…');
       }
-      steps.push('Casi listo...');
+      steps.push('Casi listo…');
 
       var stepIndex = 0;
       btn.disabled = true;
-      btn.textContent = 'Creando...';
+      btn.textContent = 'Creando…';
       status.hidden = false;
       stepEl.textContent = steps[0];
 
@@ -509,7 +238,7 @@
           document.write(html);
           document.close();
         }).catch(function () {
-          restoreSubmit('No se pudo subir la grabacion. Prueba otra vez o usa el campo de audio.');
+          restoreSubmit('No se pudo subir la grabación. Inténtalo otra vez.');
         });
         return;
       }
@@ -540,6 +269,21 @@
 
     if (!recorderBox || !audioInput || !startBtn || !stopBtn || !clearBtn || !preview || !status || !hint || !dot || !timeEl) {
       return;
+    }
+
+    var dropZone = document.getElementById('audio-drop');
+    var fileNameEl = document.getElementById('audio-file-name');
+    function setFileName(name) {
+      if (fileNameEl) fileNameEl.textContent = name || '';
+      if (dropZone) dropZone.classList.toggle('has-file', !!name);
+    }
+    if (dropZone) {
+      ['dragenter', 'dragover'].forEach(function (evt) {
+        dropZone.addEventListener(evt, function () { dropZone.classList.add('is-dragging'); });
+      });
+      ['dragleave', 'drop'].forEach(function (evt) {
+        dropZone.addEventListener(evt, function () { dropZone.classList.remove('is-dragging'); });
+      });
     }
 
     function preferredMime() {
@@ -599,10 +343,9 @@
       startBtn.disabled = false;
       dot.classList.remove('is-recording');
       setTime(0);
-      status.textContent = canRecord ? 'Listo para grabar' : 'Listo para audio';
-      hint.textContent = canRecord
-        ? 'Al detener, el audio queda listo para subir.'
-        : 'Toca Grabar para elegir o grabar un audio desde tu dispositivo.';
+      status.textContent = 'Sin audio';
+      hint.textContent = '';
+      setFileName('');
       revokePreviewUrl();
       stopTracks();
     }
@@ -611,8 +354,9 @@
       window.simaRecordedAudioFile = assignedToInput ? null : file;
       showPreview(file);
       clearBtn.disabled = false;
-      status.textContent = 'Audio listo';
-      hint.textContent = assignedToInput ? 'Listo para subir.' : 'Listo para subir al crear la clase.';
+      status.textContent = 'Grabación lista';
+      hint.textContent = '';
+      setFileName(file.name);
     }
 
     audioInput.addEventListener('change', function () {
@@ -625,14 +369,15 @@
       showPreview(file);
       clearBtn.disabled = false;
       status.textContent = 'Audio listo';
-      hint.textContent = file.name + ' listo para subir.';
+      hint.textContent = '';
+      setFileName(file.name);
     });
 
     clearBtn.addEventListener('click', resetRecorderUi);
 
     if (!canRecord) {
-      status.textContent = 'Listo para audio';
-      hint.textContent = 'Toca Grabar para elegir o grabar un audio desde tu dispositivo.';
+      status.textContent = 'Sin audio';
+      hint.textContent = '';
       startBtn.addEventListener('click', function () {
         audioInput.click();
       });
@@ -676,15 +421,15 @@
         stopBtn.disabled = false;
         clearBtn.disabled = true;
         dot.classList.add('is-recording');
-        status.textContent = 'Grabando';
-        hint.textContent = 'Manten esta pagina abierta mientras grabas.';
+        status.textContent = 'Grabando…';
+        hint.textContent = 'No cierres esta página mientras grabas.';
       } catch (err) {
         clearTimer();
         startBtn.disabled = false;
         stopBtn.disabled = true;
         dot.classList.remove('is-recording');
-        status.textContent = 'No se pudo usar el microfono';
-        hint.textContent = 'Activa el permiso o toca el campo de audio para subir uno.';
+        status.textContent = 'No hay acceso al micrófono';
+        hint.textContent = 'Permite el micrófono o elige un archivo.';
         stopTracks();
       }
     });
@@ -695,6 +440,13 @@
       startBtn.disabled = false;
       stopBtn.disabled = true;
       dot.classList.remove('is-recording');
+    });
+  }
+
+  function markSelected(name) {
+    document.querySelectorAll('input[name="' + name + '"]').forEach(function (radio) {
+      var label = radio.closest('label');
+      if (label) label.classList.toggle('is-selected', radio.checked);
     });
   }
 
@@ -713,39 +465,12 @@
       audioInput.disabled = !isAudio;
       if (!isAudio) audioInput.value = '';
     }
-    ['text', 'audio'].forEach(function(val) {
-      var radio = document.querySelector('input[name="input_mode"][value="' + val + '"]');
-      var lbl = document.getElementById('lbl-mode-' + val);
-      if (!radio || !lbl) return;
-      lbl.querySelector('.backend-card').style.borderColor = radio.checked ? 'var(--green)' : '';
-      lbl.querySelector('.backend-card').style.background = radio.checked ? '#f0fce8' : '';
-    });
+    markSelected('input_mode');
   }
 
-  function updateBackendUI() {
-    ['cloud', 'local'].forEach(function(val) {
-      var radio = document.querySelector('input[name="backend"][value="' + val + '"]');
-      var lbl = document.getElementById('lbl-' + val);
-      if (!radio || !lbl) return;
-      if (radio.checked) {
-        lbl.querySelector('.backend-card').style.borderColor = 'var(--green)';
-        lbl.querySelector('.backend-card').style.background = '#f0fce8';
-      } else {
-        lbl.querySelector('.backend-card').style.borderColor = '';
-        lbl.querySelector('.backend-card').style.background = '';
-      }
-    });
-  }
+  function updateBackendUI() { markSelected('backend'); }
 
-  function updateVerificationUI() {
-    ['web', 'eduqg', 'hybrid'].forEach(function(val) {
-      var radio = document.querySelector('input[name="verification_mode"][value="' + val + '"]');
-      var lbl = document.getElementById('lbl-verify-' + val);
-      if (!radio || !lbl) return;
-      lbl.querySelector('.backend-card').style.borderColor = radio.checked ? 'var(--green)' : '';
-      lbl.querySelector('.backend-card').style.background = radio.checked ? '#f0fce8' : '';
-    });
-  }
+  function updateVerificationUI() { markSelected('verification_mode'); }
 
   // init on load
   document.addEventListener('DOMContentLoaded', function() {

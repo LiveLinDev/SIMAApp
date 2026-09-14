@@ -1,594 +1,247 @@
 {% extends "base.html" %}
-{% block title %}{{ course.name }} - SIMA{% endblock %}
+{% block title %}{{ course.name }} · SIMA{% endblock %}
 {% block content %}
 
-<section class="course-hero">
-  <div class="course-hero-copy">
-    <div class="course-breadcrumb">
-      <a href="{% url 'dashboard' %}">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-        Inicio
-      </a>
-      <span>/</span>
-      <span>{{ course.academic_period|default:"Curso personal" }}</span>
-    </div>
+<section class="cd-head">
+  <div class="cd-head__main">
+    <a class="flow-back" href="{% url 'dashboard' %}">← Mis cursos</a>
     <h1>{{ course.name }}</h1>
-    {% if course.student_goal %}
-      <p class="course-goal">{{ course.student_goal }}</p>
-    {% elif course.description %}
-      <p class="course-goal">{{ course.description }}</p>
-    {% endif %}
-    <div class="course-meta-row">
-      <span class="course-level">{{ course.get_level_display }}</span>
-      {% if course.instructor %}<span class="course-instructor">{{ course.instructor }}</span>{% endif %}
+    <div class="cd-chips">
+      {% if course.academic_period %}<span class="cd-chip">{{ course.academic_period }}</span>{% endif %}
+      <span class="cd-chip">{{ course.get_level_display }}</span>
+      {% if course.instructor %}<span class="cd-chip">{{ course.instructor }}</span>{% endif %}
       {% if overview.exam_days_left is not None %}
-        <span class="course-exam {% if overview.exam_days_left <= 3 %}course-exam--soon{% endif %}">
-          {% if overview.exam_days_left < 0 %}Examen pasado ({{ course.exam_date|date:"d M" }}){% elif overview.exam_days_left == 0 %}Examen hoy{% elif overview.exam_days_left == 1 %}Examen manana{% else %}Examen en {{ overview.exam_days_left }} dias ({{ course.exam_date|date:"d M" }}){% endif %}
+        <span class="cd-chip cd-chip--exam {% if overview.exam_days_left <= 3 and overview.exam_days_left >= 0 %}is-soon{% endif %}">
+          {% if overview.exam_days_left < 0 %}Examen pasado{% elif overview.exam_days_left == 0 %}Examen hoy{% elif overview.exam_days_left == 1 %}Examen mañana{% else %}Examen en {{ overview.exam_days_left }} días{% endif %}
         </span>
       {% endif %}
-      <a class="course-tool" href="{% url 'course_edit' course.pk %}">Editar</a>
-      <form method="post" action="{% url 'course_archive' course.pk %}" class="course-tool-form" onsubmit="return confirm('Archivar «{{ course.name|escapejs }}»? No se borra nada y puedes restaurarlo desde Inicio.');">
-        {% csrf_token %}
-        <button class="course-tool" type="submit">Archivar</button>
-      </form>
     </div>
   </div>
-  <div class="course-hero-actions">
+  <div class="cd-head__actions">
     {% if can_use_api %}
-    <a class="primary-button" href="{% url 'api_lesson' %}?course={{ course.pk }}">
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-      Nueva clase
-    </a>
-    <a class="secondary-button" href="{% url 'free_lesson' %}?course={{ course.pk }}">Clase manual</a>
+      <a class="flow-btn flow-btn--primary" href="{% url 'api_lesson' %}?course={{ course.pk }}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        Nueva clase
+      </a>
     {% else %}
-    <a class="primary-button" href="{% url 'free_lesson' %}?course={{ course.pk }}">
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-      Clase manual
-    </a>
+      <a class="flow-btn flow-btn--primary" href="{% url 'free_lesson' %}?course={{ course.pk }}">Nueva clase</a>
     {% endif %}
+    {% if overview.bank_size %}
+      <form method="post" action="{% url 'practice_start' course.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="target_count" value="10">
+        <input type="hidden" name="focus" value="balanced">
+        <button class="flow-btn flow-btn--dark" type="submit">Practicar</button>
+      </form>
+    {% endif %}
+    {% if overview.due_cards %}
+      <a class="flow-btn flow-btn--ghost" href="{% url 'course_review' course.pk %}">Repasar · {{ overview.due_cards }}</a>
+    {% endif %}
+    <details class="cd-menu">
+      <summary aria-label="Más opciones">···</summary>
+      <div class="cd-menu__list">
+        <a href="{% url 'course_edit' course.pk %}">Editar curso</a>
+        <a href="{% url 'free_lesson' %}?course={{ course.pk }}">Clase manual</a>
+        {% if overview.bank_size %}<a href="{% url 'course_bank' course.pk %}">Banco de preguntas</a>{% endif %}
+        <form method="post" action="{% url 'course_archive' course.pk %}" onsubmit="return confirm('¿Archivar «{{ course.name|escapejs }}»? Puedes restaurarlo desde Mis cursos.');">
+          {% csrf_token %}
+          <button type="submit">Archivar</button>
+        </form>
+      </div>
+    </details>
   </div>
 </section>
 
-<div class="course-stats-bar">
-  <article class="stat-pill">
-    <strong>{{ stats.classes }}</strong>
-    <span>Clases</span>
-  </article>
-  <article class="stat-pill stat-pill--ready">
-    <strong>{{ stats.ready }}</strong>
-    <span>Listas</span>
-  </article>
-  <article class="stat-pill stat-pill--processing">
-    <strong>{{ stats.processing }}</strong>
-    <span>En proceso</span>
-  </article>
-  <article class="stat-pill stat-pill--quiz">
-    <strong>{{ stats.quizzes }}</strong>
-    <span>Intentos</span>
-  </article>
-</div>
-
-<div class="course-layout">
-  <div class="course-content">
-    <div class="section-toolbar" style="border-bottom:0;padding-bottom:8px;">
-      <div>
-        <p class="eyebrow">Contenido</p>
-        <h2>Clases del curso</h2>
-      </div>
+<div class="cd-layout">
+  <div class="cd-main">
+    <div class="cd-section-head">
+      <h2>Clases</h2>
+      <span class="cd-count">{{ stats.ready }} de {{ stats.classes }} listas{% if stats.processing %} · {{ stats.processing }} procesando{% endif %}</span>
     </div>
 
     {% if jobs %}
-    <div class="lesson-grid course-lesson-grid">
+    <ul class="cd-lessons">
       {% for job in jobs %}
-      <article class="lesson-card course-lesson-card">
-        <div class="lesson-card-header">
-          <h3>{{ job.title }}</h3>
-          <span class="status-dot status-dot--{{ job.status }}"></span>
-        </div>
-        <p class="lesson-meta">{{ job.updated_at|date:"d M Y" }}</p>
-        {% if job.tag_list %}
-        <div class="tag-row">
-          {% for tag in job.tag_list %}
-            <span>{{ tag }}</span>
-          {% endfor %}
-        </div>
-        {% endif %}
-        {% if job.corrected_output or job.toon_output %}
-          <a class="lesson-cta" href="{% url 'lesson_detail' job.pk %}">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v4"/><path d="M12 18v4"/><path d="M2 12h4"/><path d="M18 12h4"/></svg>
-            Estudiar
-          </a>
-        {% else %}
-          <a class="lesson-cta lesson-cta--secondary" href="{% url 'lesson_detail' job.pk %}">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4"/><path d="M12 18v4"/><path d="M2 12h4"/><path d="M18 12h4"/></svg>
-            Ver pipeline
-          </a>
-        {% endif %}
-      </article>
+      <li class="cd-lesson">
+        <a class="cd-lesson__link" href="{% url 'lesson_detail' job.pk %}">
+          <span class="cd-status cd-status--{{ job.status }}" aria-hidden="true"></span>
+          <span class="cd-lesson__text">
+            <strong>{{ job.title }}</strong>
+            <small>
+              {{ job.updated_at|date:"d M Y" }}
+              {% if job.status == "queued" or job.status == "processing" %} · Procesando{% elif job.status == "error" %} · Con error{% elif not job.corrected_output and not job.toon_output %} · Pendiente{% endif %}
+              {% for tag in job.tag_list %} · {{ tag }}{% endfor %}
+            </small>
+          </span>
+          <span class="cd-lesson__go">{% if job.corrected_output or job.toon_output %}Estudiar{% else %}Ver{% endif %} →</span>
+        </a>
+      </li>
       {% endfor %}
-    </div>
+    </ul>
     {% else %}
-    <div class="empty-state course-empty-state">
-      <div class="empty-state-icon">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-      </div>
-      <h3>Aun no hay clases en este curso</h3>
-      <p>Sube una grabacion o pega apuntes para empezar a construir el contexto del curso.</p>
+    <div class="cd-empty">
+      <h3>Aún no hay clases</h3>
+      <p>Sube el audio o el texto de tu primera clase.</p>
       {% if can_use_api %}
-      <a class="primary-button" href="{% url 'api_lesson' %}?course={{ course.pk }}">Crear primera clase</a>
+        <a class="flow-btn flow-btn--primary" href="{% url 'api_lesson' %}?course={{ course.pk }}">Agregar clase</a>
       {% else %}
-      <a class="primary-button" href="{% url 'free_lesson' %}?course={{ course.pk }}">Crear primera clase</a>
+        <a class="flow-btn flow-btn--primary" href="{% url 'free_lesson' %}?course={{ course.pk }}">Agregar clase</a>
       {% endif %}
     </div>
     {% endif %}
-  </div>
-
-  <aside class="course-sidebar">
-    {% if course.main_topics %}
-    <div class="course-panel">
-      <h3>Temas principales</h3>
-      <div class="topic-cloud">
-        {% for topic in course.main_topics %}
-          <span class="topic-chip">{{ topic }}</span>
-        {% endfor %}
-      </div>
-    </div>
-    {% endif %}
-
-    <div class="course-panel course-panel--accent" id="progreso-adaptativo">
-      <h3>Tu progreso en este curso</h3>
-      {% if overview.known %}
-        <p class="progress-label"><strong>Nivel {{ overview.level_value }} &middot; {{ overview.level_label }}</strong><br>{{ overview.answered_total }} respuestas en {{ overview.sessions_count }} sesiones</p>
-      {% else %}
-        <p class="progress-label">Aun no tienes nivel en este curso: una primera practica lo estima.</p>
-      {% endif %}
-      {% if overview.weak_topics %}
-        <p class="progress-label">Temas debiles</p>
-        <div class="topic-cloud">{% for t in overview.weak_topics %}<span class="topic-chip topic-chip--weak">{{ t }}</span>{% endfor %}</div>
-      {% endif %}
-      {% if overview.strong_topics %}
-        <p class="progress-label">Dominados</p>
-        <div class="topic-cloud">{% for t in overview.strong_topics %}<span class="topic-chip">{{ t }}</span>{% endfor %}</div>
-      {% endif %}
-      {% if overview.bank_size or overview.bank_pending_classes %}
-      <form method="post" action="{% url 'practice_start' course.pk %}" class="practice-form">
-        {% csrf_token %}
-        <label>Preguntas
-          <select name="target_count">
-            <option value="5">5</option>
-            <option value="10" selected>10</option>
-            <option value="15">15</option>
-          </select>
-        </label>
-        <input type="hidden" name="focus" value="balanced">
-        <button class="primary-button" type="submit">Practicar</button>
-      </form>
-      {% if overview.exam_items >= 5 %}
-      <form method="post" action="{% url 'practice_start' course.pk %}" class="practice-form">
-        {% csrf_token %}
-        <input type="hidden" name="target_count" value="{{ overview.exam_items }}">
-        <input type="hidden" name="focus" value="exam">
-        <button class="secondary-button" type="submit">Simulacro ({{ overview.exam_items }} preguntas, nota sobre 20)</button>
-      </form>
-      {% endif %}
-      {% if overview.at_risk_topics %}
-      <p class="progress-label">En riesgo de olvido</p>
-      <div class="topic-cloud">{% for r in overview.at_risk_topics %}<span class="topic-chip topic-chip--risk" title="retencion estimada {{ r.retention|floatformat:2 }}">{{ r.topic }}</span>{% endfor %}</div>
-      <form method="post" action="{% url 'practice_start' course.pk %}" class="practice-form">
-        {% csrf_token %}
-        <input type="hidden" name="target_count" value="6">
-        <input type="hidden" name="focus" value="risk">
-        <button class="secondary-button" type="submit">Repasar antes de olvidar</button>
-      </form>
-      {% endif %}
-      {% if overview.weak_topics %}
-      <form method="post" action="{% url 'practice_start' course.pk %}" class="practice-form">
-        {% csrf_token %}
-        <input type="hidden" name="target_count" value="8">
-        <input type="hidden" name="focus" value="weak">
-        <button class="secondary-button" type="submit">Reforzar temas debiles</button>
-      </form>
-      <form method="post" action="{% url 'reinforcement_start' course.pk %}" class="practice-form">
-        {% csrf_token %}
-        <button class="secondary-button" type="submit">Generar refuerzo ({{ overview.reinforcement_cost }} creditos)</button>
-      </form>
-      {% endif %}
-      {% if overview.bank_size %}<p class="progress-label"><a href="{% url 'course_bank' course.pk %}">{{ overview.bank_size }} preguntas en el banco del curso</a>{% if overview.calibrated_count %} &middot; {{ overview.calibrated_count }} calibradas{% endif %}</p>{% endif %}
-      {% else %}
-        <p class="progress-label">El banco de preguntas se llena con cada clase lista.</p>
-      {% endif %}
-    </div>
-
-    <div class="course-panel" id="progreso-semanal">
-      <h3>Ultimas dos semanas</h3>
-      {% if overview.progress.has_data %}
-        {{ overview.progress.svg }}
-        <p class="progress-label">
-          {{ overview.progress.stats.current.answered }} respuestas esta semana
-          {% if overview.progress.stats.current.accuracy is not None %}&middot; {{ overview.progress.stats.current.accuracy }}% de acierto{% endif %}
-          {% if overview.progress.stats.theta_delta is not None %}&middot; habilidad {% if overview.progress.stats.theta_delta >= 0 %}+{% endif %}{{ overview.progress.stats.theta_delta }} vs. semana anterior{% endif %}
-          &middot; {{ overview.progress.stats.current.active_days }} dia{{ overview.progress.stats.current.active_days|pluralize }} activo{{ overview.progress.stats.current.active_days|pluralize }}
-        </p>
-        <p class="progress-legend"><span class="lg lg--acid"></span> aciertos <span class="lg lg--line"></span> respuestas <span class="lg lg--ink"></span> habilidad estimada</p>
-      {% else %}
-        <p class="progress-label">Cuando practiques, aqui veras tus respuestas por dia y como evoluciona tu habilidad.</p>
-      {% endif %}
-    </div>
-
-    <div class="course-panel" id="resumen-curso">
-      <h3>Resumen del curso</h3>
-      {% if overview.course_summary %}
-        <p class="progress-label"><strong>{{ overview.course_summary.title }}</strong><br>{{ overview.course_summary.content|truncatechars:220 }}</p>
-        <a class="secondary-button" href="{% url 'course_summary' course.pk %}">Leer resumen completo</a>
-      {% else %}
-        <p class="progress-label">{% if overview.class_summary_count %}{{ overview.class_summary_count }} resumen{{ overview.class_summary_count|pluralize:"es" }} de clase listos para integrar.{% else %}Integra tus clases en un documento por temas que senala que repasar primero.{% endif %}</p>
-        <a class="secondary-button" href="{% url 'course_summary' course.pk %}">Generar resumen del curso</a>
-      {% endif %}
-    </div>
 
     {% if overview.plan %}
-    <div class="course-panel" id="plan-de-hoy">
+    <div class="cd-card" id="plan-de-hoy">
       <h3>Plan de hoy</h3>
-      <ul class="plan-list">
+      <ul class="cd-plan">
         {% for a in overview.plan %}
         <li>
-          <div class="plan-copy"><strong>{{ a.title }}</strong><span>{{ a.detail }}</span></div>
+          <div><strong>{{ a.title }}</strong><span>{{ a.detail }}</span></div>
           {% if a.post %}
           <form method="post" action="{{ a.post }}">
             {% csrf_token %}
             {% for k, v in a.fields.items %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
-            <button class="plan-go" type="submit">Ir</button>
+            <button class="cd-go" type="submit">Ir</button>
           </form>
           {% else %}
-          <a class="plan-go" href="{{ a.href }}">Ir</a>
+          <a class="cd-go" href="{{ a.href }}">Ir</a>
           {% endif %}
         </li>
         {% endfor %}
       </ul>
-      {% if overview.due_cards %}<p class="progress-label"><a href="{% url 'course_review' course.pk %}">{{ overview.due_cards }} tarjetas en la cola de repaso</a></p>{% endif %}
     </div>
     {% endif %}
 
+    {% if overview.recommendations %}
+    <div class="cd-card">
+      <h3>Recomendaciones</h3>
+      <ul class="cd-recs">
+        {% for rec in overview.recommendations %}
+        <li>
+          <strong>{{ rec.title }}</strong>
+          <span>{{ rec.message }}</span>
+          <form method="post" action="{% url 'recommendation_update' course.pk rec.pk %}" class="cd-recs__actions">
+            {% csrf_token %}
+            <button name="status" value="completed" type="submit">Hecho</button>
+            <button name="status" value="dismissed" type="submit" class="is-quiet">Omitir</button>
+          </form>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+  </div>
+
+  <aside class="cd-side">
+    <div class="cd-card cd-card--accent" id="progreso-adaptativo">
+      <h3>Tu nivel</h3>
+      {% if overview.known %}
+        <p class="cd-level"><strong>Nivel {{ overview.level_value }}</strong> · {{ overview.level_label }}</p>
+        <p class="cd-muted">{{ overview.answered_total }} respuestas · {{ overview.sessions_count }} sesiones</p>
+      {% else %}
+        <p class="cd-muted">Practica una vez para conocer tu nivel.</p>
+      {% endif %}
+      {% if overview.weak_topics %}
+        <p class="cd-label">Por reforzar</p>
+        <div class="cd-topics">{% for t in overview.weak_topics %}<span class="cd-topic cd-topic--weak">{{ t }}</span>{% endfor %}</div>
+      {% endif %}
+      {% if overview.strong_topics %}
+        <p class="cd-label">Dominados</p>
+        <div class="cd-topics">{% for t in overview.strong_topics %}<span class="cd-topic">{{ t }}</span>{% endfor %}</div>
+      {% endif %}
+    </div>
+
+    {% if overview.bank_size or overview.bank_pending_classes %}
+    <div class="cd-card">
+      <h3>Estudiar</h3>
+      <form method="post" action="{% url 'practice_start' course.pk %}" class="cd-practice">
+        {% csrf_token %}
+        <select name="target_count" aria-label="Número de preguntas">
+          <option value="5">5 preguntas</option>
+          <option value="10" selected>10 preguntas</option>
+          <option value="15">15 preguntas</option>
+        </select>
+        <input type="hidden" name="focus" value="balanced">
+        <button class="flow-btn flow-btn--primary" type="submit">Practicar</button>
+      </form>
+      <div class="cd-stack">
+        {% if overview.exam_items >= 5 %}
+        <form method="post" action="{% url 'practice_start' course.pk %}">
+          {% csrf_token %}
+          <input type="hidden" name="target_count" value="{{ overview.exam_items }}">
+          <input type="hidden" name="focus" value="exam">
+          <button class="cd-option" type="submit"><strong>Simulacro ({{ overview.exam_items }} preguntas)</strong><span>Nota sobre 20</span></button>
+        </form>
+        {% endif %}
+        {% if overview.at_risk_topics %}
+        <form method="post" action="{% url 'practice_start' course.pk %}">
+          {% csrf_token %}
+          <input type="hidden" name="target_count" value="6">
+          <input type="hidden" name="focus" value="risk">
+          <button class="cd-option" type="submit"><strong>Repasar antes de olvidar</strong><span>{% for r in overview.at_risk_topics|slice:":3" %}{{ r.topic }}{% if not forloop.last %}, {% endif %}{% endfor %}</span></button>
+        </form>
+        {% endif %}
+        {% if overview.weak_topics %}
+        <form method="post" action="{% url 'practice_start' course.pk %}">
+          {% csrf_token %}
+          <input type="hidden" name="target_count" value="8">
+          <input type="hidden" name="focus" value="weak">
+          <button class="cd-option" type="submit"><strong>Reforzar temas débiles</strong><span>8 preguntas</span></button>
+        </form>
+        <form method="post" action="{% url 'reinforcement_start' course.pk %}">
+          {% csrf_token %}
+          <button class="cd-option" type="submit"><strong>Crear material de refuerzo</strong><span>{{ overview.reinforcement_cost }} créditos</span></button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="cd-card" id="resumen-curso">
+      <h3>Resumen del curso</h3>
+      {% if overview.course_summary %}
+        <p class="cd-muted">{{ overview.course_summary.content|truncatechars:160 }}</p>
+        <a class="cd-link" href="{% url 'course_summary' course.pk %}">Leer resumen →</a>
+      {% else %}
+        <a class="cd-link" href="{% url 'course_summary' course.pk %}">Generar resumen →</a>
+      {% endif %}
+    </div>
+
+    <div class="cd-card" id="progreso-semanal">
+      <h3>Últimas dos semanas</h3>
+      {% if overview.progress.has_data %}
+        {{ overview.progress.svg }}
+        <p class="cd-muted">
+          {{ overview.progress.stats.current.answered }} respuestas esta semana{% if overview.progress.stats.current.accuracy is not None %} · {{ overview.progress.stats.current.accuracy }} % de acierto{% endif %}
+        </p>
+      {% else %}
+        <p class="cd-muted">Aquí verás tu avance cuando practiques.</p>
+      {% endif %}
+    </div>
+
     {% if overview.reinforcements or overview.concepts %}
-    <div class="course-panel">
+    <div class="cd-card">
       <h3>Refuerzos</h3>
       {% for rj in overview.reinforcements %}
-        <p class="progress-label"><a href="{% url 'reinforcement_detail' course.pk rj.pk %}">{{ rj.topics|join:", " }}</a> &middot; {{ rj.get_status_display }} &middot; {{ rj.created_at|date:"d M H:i" }}</p>
+        <p class="cd-muted"><a class="cd-link" href="{% url 'reinforcement_detail' course.pk rj.pk %}">{{ rj.topics|join:", " }}</a> · {{ rj.get_status_display }}</p>
       {% endfor %}
       {% if overview.concepts %}
-      <ul class="rec-list">
+      <ul class="cd-recs">
         {% for c in overview.concepts %}
-        <li><strong>{{ c.title }}</strong><span>{{ c.content|truncatechars:160 }}</span></li>
+        <li><strong>{{ c.title }}</strong><span>{{ c.content|truncatechars:140 }}</span></li>
         {% endfor %}
       </ul>
       {% endif %}
     </div>
     {% endif %}
 
-    {% if overview.recommendations %}
-    <div class="course-panel">
-      <h3>Recomendaciones</h3>
-      <ul class="rec-list">
-        {% for rec in overview.recommendations %}
-        <li>
-          <strong>{{ rec.title }}</strong>
-          <span>{{ rec.message }}</span>
-          <form method="post" action="{% url 'recommendation_update' course.pk rec.pk %}" class="rec-actions">
-            {% csrf_token %}
-            <button name="status" value="completed" type="submit">Hecho</button>
-            <button name="status" value="dismissed" type="submit" class="rec-dismiss">Omitir</button>
-          </form>
-        </li>
-        {% endfor %}
-      </ul>
+    {% if course.main_topics %}
+    <div class="cd-card">
+      <h3>Temas</h3>
+      <div class="cd-topics">{% for topic in course.main_topics %}<span class="cd-topic cd-topic--plain">{{ topic }}</span>{% endfor %}</div>
     </div>
     {% endif %}
-
-    <div class="course-panel">
-      <h3>Acciones rapidas</h3>
-      <div class="course-actions">
-        {% if can_use_api %}
-        <a class="sidebar-action" href="{% url 'api_lesson' %}?course={{ course.pk }}">Nueva clase</a>
-        {% endif %}
-        <a class="sidebar-action" href="{% url 'free_lesson' %}?course={{ course.pk }}">Clase manual</a>
-        <a class="sidebar-action" href="{% url 'course_create' %}">Nuevo curso</a>
-      </div>
-    </div>
-
-    <div class="course-panel course-panel--accent">
-      <h3>Progreso estimado</h3>
-      <div class="course-progress">
-        <div class="progress-track">
-          <div class="progress-fill" style="width:{{ progress_pct }}%"></div>
-        </div>
-        <p class="progress-label">{{ stats.ready }} de {{ stats.classes }} clases listas</p>
-      </div>
-    </div>
   </aside>
 </div>
-
-<style>
-  .topic-chip--weak { border-color: #ff8b8b; color: #ff8b8b; }
-  .plan-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
-  .plan-list li { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-  .plan-copy { display: grid; gap: 2px; }
-  .plan-copy span { color: var(--muted); font-size: .85rem; }
-  .plan-list form { margin: 0; }
-  .plan-go { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--acid); background: transparent; color: var(--acid); cursor: pointer; font-size: .85rem; text-decoration: none; }
-  .practice-form { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
-  .practice-form label { display: flex; align-items: center; gap: 6px; font-size: .9rem; color: var(--muted); }
-  .practice-form select { padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
-  .rec-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
-  .rec-list li { display: grid; gap: 4px; border-left: 3px solid var(--acid); padding: 4px 10px; }
-  .rec-list span { color: var(--muted); font-size: .9rem; }
-  .rec-actions { display: flex; gap: 8px; margin-top: 4px; }
-  .rec-actions button { padding: 4px 10px; border-radius: 8px; border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; font-size: .85rem; }
-  .rec-actions .rec-dismiss { color: var(--muted); }
-  .course-hero {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 20px;
-    flex-wrap: wrap;
-    margin-bottom: 24px;
-  }
-  .course-hero-copy { flex: 1; min-width: 0; }
-  .course-breadcrumb {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 10px;
-    font-size: .82rem;
-    color: var(--muted);
-  }
-  .course-breadcrumb a {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    color: var(--muted);
-    transition: color .2s;
-  }
-  .course-breadcrumb a:hover { color: var(--ink); }
-  .course-hero h1 {
-    margin: 0 0 10px;
-    font-family: var(--font-display);
-    font-size: clamp(1.8rem, 4vw, 3rem);
-    line-height: 1.05;
-  }
-  .course-goal {
-    margin: 0 0 12px;
-    color: var(--muted);
-    font-size: 1rem;
-    line-height: 1.6;
-    max-width: 640px;
-  }
-  .course-meta-row {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-  .course-level, .course-instructor {
-    display: inline-flex;
-    align-items: center;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    background: var(--surface);
-    padding: 5px 11px;
-    font-size: .78rem;
-    font-weight: 700;
-    color: var(--muted);
-  }
-  .course-hero-actions {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    align-items: flex-start;
-  }
-  .course-hero-actions .primary-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .course-stats-bar {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 12px;
-    margin-bottom: 28px;
-  }
-  .stat-pill {
-    display: grid;
-    gap: 4px;
-    align-content: center;
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    background: var(--surface);
-    padding: 16px;
-    min-height: 90px;
-  }
-  .stat-pill strong {
-    font-family: var(--font-display);
-    font-size: 1.9rem;
-    line-height: 1;
-    color: var(--ink);
-  }
-  .stat-pill span {
-    font-size: .78rem;
-    font-weight: 800;
-    color: var(--muted);
-  }
-  .stat-pill--ready strong { color: var(--green-dark); }
-  .stat-pill--processing strong { color: var(--blue); }
-  .stat-pill--quiz strong { color: var(--acid); }
-
-  .course-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
-    gap: 28px;
-    align-items: start;
-  }
-  .course-content { min-width: 0; }
-  .course-sidebar {
-    display: grid;
-    gap: 16px;
-    position: sticky;
-    top: 94px;
-  }
-  .course-panel {
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    background: var(--surface);
-    padding: 18px;
-  }
-  .course-panel h3 {
-    margin: 0 0 12px;
-    font-size: 1rem;
-    color: var(--ink);
-  }
-  .topic-cloud {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .topic-chip {
-    display: inline-flex;
-    align-items: center;
-    border: 1px solid rgba(217, 52, 36, .22);
-    border-radius: 999px;
-    background: rgba(217, 52, 36, .08);
-    color: var(--acid);
-    padding: 6px 12px;
-    font-size: .78rem;
-    font-weight: 900;
-  }
-  .course-actions {
-    display: grid;
-    gap: 8px;
-  }
-  .course-actions .sidebar-action {
-    width: 100%;
-    min-height: 42px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    border: 1px solid transparent;
-    border-radius: 8px;
-    background: transparent;
-    color: var(--muted);
-    padding: 10px 11px;
-    font-weight: 800;
-    text-align: left;
-    text-decoration: none;
-    cursor: pointer;
-    transition: all .2s;
-  }
-  .course-actions .sidebar-action:hover {
-    border-color: var(--acid-hot);
-    background: var(--acid-hot);
-    color: var(--paper);
-  }
-  .course-progress .progress-track {
-    height: 8px;
-    border-radius: 999px;
-    background: var(--line);
-    overflow: hidden;
-    margin-bottom: 10px;
-  }
-  .course-progress .progress-fill {
-    height: 100%;
-    border-radius: 999px;
-    background: linear-gradient(90deg, var(--acid), var(--acid-hot));
-    transition: width .6s ease;
-  }
-  .course-progress .progress-label {
-    margin: 0;
-    font-size: .82rem;
-    color: var(--muted);
-  }
-
-  .course-lesson-grid {
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 14px;
-  }
-  .course-lesson-card {
-    grid-template-rows: auto auto 1fr auto;
-  }
-  .course-lesson-card .lesson-cta {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-  }
-  .status-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--gray-400);
-    flex-shrink: 0;
-  }
-  .status-dot--corrected,
-  .status-dot--ready {
-    background: var(--green);
-  }
-  .status-dot--toon_ready,
-  .status-dot--verified {
-    background: var(--blue);
-  }
-  .status-dot--queued,
-  .status-dot--processing {
-    background: var(--yellow);
-  }
-  .status-dot--error {
-    background: var(--red);
-  }
-  .course-empty-state {
-    text-align: center;
-    padding: 48px 24px;
-    border: 1px dashed var(--line);
-    border-radius: 16px;
-    background: var(--surface);
-  }
-  .empty-state-icon {
-    color: var(--line-strong);
-    margin-bottom: 14px;
-  }
-  .course-empty-state h3 {
-    margin: 0 0 8px;
-    font-family: var(--font-display);
-    font-size: 1.4rem;
-  }
-  .course-empty-state p {
-    margin: 0 0 18px;
-    color: var(--muted);
-    max-width: 420px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  @media (max-width: 980px) {
-    .course-layout {
-      grid-template-columns: 1fr;
-    }
-    .course-sidebar {
-      position: static;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-    .course-stats-bar {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-  @media (max-width: 640px) {
-    .course-sidebar {
-      grid-template-columns: 1fr;
-    }
-    .course-stats-bar {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-    .course-hero {
-      flex-direction: column;
-    }
-  }
-</style>
 
 {% endblock %}

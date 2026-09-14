@@ -26,8 +26,8 @@ class BackendSelectorRenderTests(TestCase):
         html = response.content.decode("utf-8")
         self.assertIn('value="cloud"', html)
         self.assertIn('value="local"', html)
-        self.assertIn("DeepSeek", html)
-        self.assertIn("deepseek-v4-flash", html)
+        # El formulario habla en términos del usuario: no muestra proveedor ni modelo.
+        self.assertNotIn("deepseek-v4-flash", html)
         self.assertNotIn('value="anthropic"', html)
         self.assertNotIn("Nube Claude", html)
 
@@ -45,7 +45,7 @@ class BackendSelectorRenderTests(TestCase):
         self.assertEqual(response.status_code, 200)
         html = response.content.decode("utf-8")
         self.assertIn('name="backend" value="cloud"', html)
-        self.assertIn("DeepSeek", html)
+        self.assertIn("Usa más créditos", html)
         self.assertNotIn('value="anthropic"', html)
 
     @override_settings(CLOUD_API_KEY="local")
@@ -53,5 +53,7 @@ class BackendSelectorRenderTests(TestCase):
         response = self.client.get("/api/nueva/")
         self.assertEqual(response.status_code, 200)
         html = response.content.decode("utf-8")
-        self.assertIn("backend-option--disabled", html)
-        self.assertIn("falta CLOUD_API_KEY", html)
+        # Sin clave de nube no se ofrece la opción: el formulario usa el motor local sin preguntar.
+        self.assertNotIn('value="cloud"', html)
+        self.assertIn('<input type="hidden" name="backend" value="local">', html)
+        self.assertNotIn("CLOUD_API_KEY", html)

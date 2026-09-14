@@ -1,142 +1,83 @@
 {% extends "base.html" %}
-{% block title %}{% if course %}Editar {{ course.name }}{% else %}Nuevo curso{% endif %} - SIMA{% endblock %}
+{% block title %}{% if course %}Editar {{ course.name }}{% else %}Nuevo curso{% endif %} · SIMA{% endblock %}
 {% block content %}
 
-<section class="course-create-shell">
-  <div class="course-create-hero">
-    <div class="course-hero-copy">
-      {% if course %}
-      <a class="back-link" href="{% url 'course_detail' course.pk %}">Volver a {{ course.name }}</a>
-      <p class="eyebrow">Editar curso</p>
-      <h1>{{ course.name }}</h1>
-      {% else %}
-      <a class="back-link" href="{% url 'dashboard' %}">Volver al dashboard</a>
-      <p class="eyebrow">Nuevo espacio academico</p>
-      <h1>Curso <span>inteligente</span></h1>
-      {% endif %}
-      <p class="muted">SIMA usa este contexto para clasificar clases, generar materiales, medir progreso y recomendar el siguiente bloque de estudio.</p>
-      <div class="course-hero-actions">
-        <a class="primary-button" href="#course-form">Configurar curso</a>
-        <a class="secondary-button" href="{% url 'dashboard' %}">Ver dashboard</a>
+<section class="flow-page">
+  <header class="flow-head">
+    {% if course %}
+      <a class="flow-back" href="{% url 'course_detail' course.pk %}">← {{ course.name }}</a>
+      <h1>Editar curso</h1>
+    {% else %}
+      <a class="flow-back" href="{% url 'dashboard' %}">← Mis cursos</a>
+      <h1>Nuevo curso</h1>
+      <p class="flow-sub">Después podrás agregar tus clases.</p>
+    {% endif %}
+  </header>
+
+  <form id="course-form" method="post" class="flow-card">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <div class="flow-error">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <div class="flow-field">
+      <label for="{{ form.name.id_for_label }}">Nombre del curso</label>
+      {{ form.name }}
+      {{ form.name.errors }}
+    </div>
+
+    <div class="flow-row">
+      <div class="flow-field">
+        <label for="{{ form.academic_period.id_for_label }}">Ciclo</label>
+        {{ form.academic_period }}
+        {{ form.academic_period.errors }}
       </div>
-      <div class="course-hero-stats" aria-label="Beneficios del curso">
-        <div><strong>01</strong><span>Contexto central</span></div>
-        <div><strong>IRT</strong><span>Quiz adaptativo</span></div>
-        <div><strong>24</strong><span>Temas maximos</span></div>
+      <div class="flow-field">
+        <label for="{{ form.exam_date.id_for_label }}">Próximo examen <span class="flow-optional">opcional</span></label>
+        {{ form.exam_date }}
+        {{ form.exam_date.errors }}
       </div>
     </div>
-    <aside class="course-code-card" aria-label="Vista previa tecnica del curso">
-      <div class="course-code-toolbar">
-        <span></span><span></span><span></span>
-        <small>course.context</small>
-      </div>
-      <div class="course-code-body">
-        <p><em>// Cabecera del curso</em></p>
-        <p><b>course</b>=nuevo <i>|</i> periodo=2026-1</p>
-        <p><b>nivel</b>=introductorio <i>|</i> temas=24</p>
-        <p><b>ruta</b>=resumen, quiz, repaso</p>
-        <p><em>// Salida SIMA</em></p>
-        <p><b>IA</b> genera materiales con contexto academico.</p>
-      </div>
-    </aside>
-  </div>
 
-  <div class="course-create-grid">
-    <form id="course-form" method="post" class="form-card course-form-card">
-      {% csrf_token %}
-      {% if form.non_field_errors %}
-        <div class="error-note">{{ form.non_field_errors }}</div>
-      {% endif %}
-
-      <div class="form-section-heading">
-        <span class="form-section-icon">A</span>
-        <div>
-          <h2>Identidad del curso</h2>
-          <p>Define como se vera en tu tablero y en tus clases procesadas.</p>
-        </div>
+    <div class="flow-row">
+      <div class="flow-field">
+        <label for="{{ form.level.id_for_label }}">Nivel</label>
+        {{ form.level }}
+        {{ form.level.errors }}
       </div>
+      <div class="flow-field">
+        <label for="{{ form.instructor.id_for_label }}">Docente <span class="flow-optional">opcional</span></label>
+        {{ form.instructor }}
+        {{ form.instructor.errors }}
+      </div>
+    </div>
 
-      <div class="course-field-grid">
-        <p class="field-wide">
-          {{ form.name.label_tag }}
-          {{ form.name }}
-          {{ form.name.errors }}
-        </p>
-        <p>
-          {{ form.academic_period.label_tag }}
-          {{ form.academic_period }}
-          {{ form.academic_period.errors }}
-        </p>
-        <p>
-          {{ form.exam_date.label_tag }}
-          {{ form.exam_date }}
-          {{ form.exam_date.errors }}
-          <small class="muted">Opcional. Con fecha, el curso muestra la cuenta regresiva y el plan propone simulacros.</small>
-        </p>
-        <p>
-          {{ form.instructor.label_tag }}
-          {{ form.instructor }}
-          {{ form.instructor.errors }}
-        </p>
-        <p>
-          {{ form.level.label_tag }}
-          {{ form.level }}
-          {{ form.level.errors }}
-        </p>
-        <p class="field-wide">
-          {{ form.main_topics_text.label_tag }}
+    <details class="flow-more" {% if form.main_topics_text.errors or form.description.errors or form.student_goal.errors or course %}open{% endif %}>
+      <summary>Más detalles</summary>
+      <div class="flow-more__body">
+        <div class="flow-field">
+          <label for="{{ form.main_topics_text.id_for_label }}">Temas <span class="flow-optional">separados por comas</span></label>
           {{ form.main_topics_text }}
-          {% if form.main_topics_text.help_text %}<span class="helptext">{{ form.main_topics_text.help_text }}</span>{% endif %}
           {{ form.main_topics_text.errors }}
-        </p>
-      </div>
-
-      <div class="form-section-heading">
-        <span class="form-section-icon">B</span>
-        <div>
-          <h2>Objetivo de aprendizaje</h2>
-          <p>Ayuda a SIMA a priorizar resumenes, quizzes y repasos.</p>
         </div>
-      </div>
-
-      <div class="course-field-grid">
-        <p>
-          {{ form.description.label_tag }}
-          {{ form.description }}
-          {{ form.description.errors }}
-        </p>
-        <p>
-          {{ form.student_goal.label_tag }}
+        <div class="flow-field">
+          <label for="{{ form.student_goal.id_for_label }}">Tu objetivo</label>
           {{ form.student_goal }}
           {{ form.student_goal.errors }}
-        </p>
-      </div>
-
-      <div class="action-row course-actions">
-        <button class="primary-button" type="submit">Crear curso</button>
-        <a class="secondary-button" href="{% url 'dashboard' %}">Cancelar</a>
-      </div>
-    </form>
-
-    <aside class="course-create-aside" aria-label="Guia del curso">
-      <div class="course-preview-panel">
-        <div class="preview-grid-lines" aria-hidden="true"></div>
-        <span class="study-badge">SIMA Course Core</span>
-        <h2>Centro de operacion academica</h2>
-        <div class="course-flow">
-          <div><strong>Clase</strong><span>Audio o texto</span></div>
-          <div><strong>IA</strong><span>Resumen + quiz</span></div>
-          <div><strong>Repaso</strong><span>Ruta adaptativa</span></div>
+        </div>
+        <div class="flow-field">
+          <label for="{{ form.description.id_for_label }}">Descripción</label>
+          {{ form.description }}
+          {{ form.description.errors }}
         </div>
       </div>
+    </details>
 
-      <div class="setup-list course-setup-list">
-        <div><strong>Nombre claro</strong><span>Usa el nombre real del curso o asignatura.</span></div>
-        <div><strong>Temas separados</strong><span>Agrega palabras clave para ordenar las clases.</span></div>
-        <div><strong>Meta concreta</strong><span>Indica si estudias para examenes, practica o seguimiento semanal.</span></div>
-      </div>
-    </aside>
-  </div>
+    <div class="flow-actions">
+      <button class="flow-btn flow-btn--primary" type="submit">{% if course %}Guardar cambios{% else %}Crear curso{% endif %}</button>
+      <a class="flow-btn flow-btn--ghost" href="{% if course %}{% url 'course_detail' course.pk %}{% else %}{% url 'dashboard' %}{% endif %}">Cancelar</a>
+    </div>
+  </form>
 </section>
 
 {% endblock %}

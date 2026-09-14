@@ -8,8 +8,8 @@
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
       Volver al curso
     </a>
-    <h1>Repasos de hoy: {{ course.name }}</h1>
-    <p class="ld-meta">{{ card_count }} en esta tanda · {{ due_count }} pendientes en total · Voltear para ver la respuesta</p>
+    <h1>Repaso de hoy: {{ course.name }}</h1>
+    <p class="ld-meta">{{ card_count }} tarjetas ahora · {{ due_count }} pendientes</p>
   </div>
 </section>
 
@@ -148,7 +148,7 @@
       if (data.ok) {
         advanceCard();
       } else {
-        alert(data.error || 'No se pudo guardar la calificación');
+        alert(data.error || 'No se pudo guardar. Inténtalo de nuevo.');
       }
     })
     .catch(function(err) {
@@ -340,7 +340,7 @@
 {% else %}
 <div class="empty-state">
   <h3>Nada pendiente por hoy</h3>
-  <p>No hay tarjetas vencidas ni nuevas en este curso. Vuelve manana o practica para generar mas.</p>
+  <p>Vuelve mañana para seguir repasando.</p>
   <a class="primary-button" href="{% url 'course_detail' course.pk %}">Volver al curso</a>
 </div>
 {% endif %}

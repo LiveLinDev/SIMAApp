@@ -66,7 +66,7 @@ def class_summary(request, pk):
             if not job.course_id:
                 raise summaries.SummaryUnavailable("La clase debe pertenecer a un curso para generar su resumen.")
             summaries.create_summary_job(request.user, job.course, lesson=job, backend=request.POST.get("backend", "auto"))
-            messages.info(request, "Resumen en cola: esta pagina se actualiza sola cuando este listo.")
+            messages.info(request, "Estamos preparando tu resumen.")
         except summaries.SummaryUnavailable as exc:
             messages.warning(request, str(exc))
         return redirect("class_summary", pk=job.pk)
@@ -91,7 +91,7 @@ def course_summary(request, pk):
     if request.method == "POST":
         try:
             summaries.create_summary_job(request.user, course, backend=request.POST.get("backend", "auto"))
-            messages.info(request, "Resumen del curso en cola: esta pagina se actualiza sola cuando este listo.")
+            messages.info(request, "Estamos preparando el resumen del curso.")
         except summaries.SummaryUnavailable as exc:
             messages.warning(request, str(exc))
         return redirect("course_summary", pk=course.pk)

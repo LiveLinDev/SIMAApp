@@ -16,7 +16,7 @@
 <div class="class-map">
   {% if topics %}
   <div class="cm-section">
-    <h3>Temas de la clase</h3>
+    <h3>Temas</h3>
     <div class="cm-grid">
       {% for topic in topics %}
       <article class="cm-card">
@@ -48,14 +48,13 @@
 
   {% if not topics and not concepts %}
   <div class="empty-state-mini">
-    <p>No hay temas ni conceptos identificados para esta clase.</p>
-    <p class="muted">Asegurate de que los items MINI tengan topics o de que existan flashcards.</p>
+    <p>Aún no hay temas para esta clase.</p>
   </div>
   {% endif %}
 
   {% if bloom_chart_data %}
   <div class="cm-bloom">
-    <h3>Distribucion Bloom</h3>
+    <h3>Tipos de pregunta</h3>
     <div class="bloom-bars">
       {% for row in bloom_chart_data %}
       <div class="bloom-bar-row">

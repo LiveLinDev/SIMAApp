@@ -1,13 +1,13 @@
 {% extends "base.html" %}
-{% block title %}Practica - {{ course.name }}{% endblock %}
+{% block title %}Práctica - {{ course.name }}{% endblock %}
 {% block content %}
 
 <section class="ld-header">
   <div>
     <a href="{% url 'course_detail' course.pk %}" class="back-link">&larr; {{ course.name }}</a>
-    <h1>Practica adaptativa</h1>
+    <h1>Práctica</h1>
     <p class="muted">
-      {% if lesson %}Solo esta clase: {{ lesson.title }} &middot; {% endif %}{% if session.focus == 'weak' %}Modo refuerzo: preguntas de tus temas mas debiles.{% else %}Las preguntas se ajustan a tu nivel a medida que respondes.{% endif %}
+      {% if lesson %}{{ lesson.title }} &middot; {% endif %}{% if session.focus == 'weak' %}Temas por reforzar{% else %}Se ajusta a tu nivel{% endif %}
     </p>
   </div>
 </section>
@@ -65,7 +65,7 @@
     {% endif %}
 
     {% if feedback.failed %}
-    <h3>Lo que conviene revisar</h3>
+    <h3>Para repasar</h3>
     <ol class="pr-failed">
       {% for item in feedback.failed %}
       <li>
@@ -92,21 +92,21 @@
         {% csrf_token %}
         <input type="hidden" name="target_count" value="{{ session.target_count }}">
         <input type="hidden" name="focus" value="balanced">
-        <button class="primary-button" type="submit">Otra sesion</button>
+        <button class="primary-button" type="submit">Practicar de nuevo</button>
       </form>
       {% if feedback.weak_topics %}
       <form method="post" action="{% url 'practice_start' course.pk %}">
         {% csrf_token %}
         <input type="hidden" name="target_count" value="{{ session.target_count }}">
         <input type="hidden" name="focus" value="weak">
-        <button class="secondary-button" type="submit">Reforzar temas debiles</button>
+        <button class="secondary-button" type="submit">Reforzar temas débiles</button>
       </form>
       {% endif %}
       {% if feedback.weak_topics %}
       <form method="post" action="{% url 'reinforcement_start' course.pk %}">
         {% csrf_token %}
         <input type="hidden" name="practice_session" value="{{ session.pk }}">
-        <button class="secondary-button" type="submit">Generar refuerzo ({{ reinforcement_cost }} creditos)</button>
+        <button class="secondary-button" type="submit">Generar refuerzo ({{ reinforcement_cost }} créditos)</button>
       </form>
       {% endif %}
       <a class="secondary-button" href="{% url 'course_detail' course.pk %}">Volver al curso</a>
@@ -120,7 +120,7 @@
   </div>
   <section class="quiz-panel">
     <div class="quiz-item-head">
-      <span class="study-badge">{{ question.bloom_level }} {{ bloom_label }}</span>
+      <span class="study-badge">{{ bloom_label }}</span>
       {% if question.topic %}<span class="study-badge">{{ question.topic }}</span>{% endif %}
       <span class="study-badge">{{ question.get_difficulty_display }}</span>
     </div>
@@ -136,8 +136,8 @@
         </label>
         {% endfor %}
       </div>
-      <button class="primary-button full" type="submit">Responder y continuar</button>
-      <p class="pr-hotkeys muted" data-hotkeys>Teclas <kbd>1</kbd>–<kbd>4</kbd> eligen una opcion y <kbd>Enter</kbd> responde.</p>
+      <button class="primary-button full" type="submit">Responder</button>
+      <p class="pr-hotkeys muted" data-hotkeys>Usa <kbd>1</kbd>–<kbd>4</kbd> para elegir y <kbd>Enter</kbd> para responder.</p>
     </form>
     <script>
       (function () {
@@ -168,8 +168,8 @@
 
   {% else %}
   <section class="quiz-panel">
-    <h2>No hay mas preguntas disponibles</h2>
-    <p class="muted">El banco del curso se agoto para esta sesion.</p>
+    <h2>No quedan preguntas</h2>
+    <p class="muted">Ya respondiste todas las disponibles por ahora.</p>
     <a class="primary-button" href="{% url 'course_detail' course.pk %}">Volver al curso</a>
   </section>
   {% endif %}

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Flashcards - {{ job.title }} - SIMA{% endblock %}
+{% block title %}Tarjetas - {{ job.title }} - SIMA{% endblock %}
 {% block content %}
 
 <section class="ld-header">
@@ -9,7 +9,7 @@
       Volver a la clase
     </a>
     <h1>Repaso: {{ job.title }}</h1>
-    <p class="ld-meta">{{ card_count }} tarjetas · Voltear para ver la respuesta</p>
+    <p class="ld-meta">{{ card_count }} tarjetas</p>
   </div>
 </section>
 
@@ -148,7 +148,7 @@
       if (data.ok) {
         advanceCard();
       } else {
-        alert(data.error || 'No se pudo guardar la calificación');
+        alert(data.error || 'No se pudo guardar. Inténtalo de nuevo.');
       }
     })
     .catch(function(err) {
@@ -339,8 +339,8 @@
 
 {% else %}
 <div class="empty-state">
-  <h3>Sin flashcards disponibles</h3>
-  <p>Esta clase aun no tiene tarjetas de repaso. Asegurate de que los items MINI esten generados.</p>
+  <h3>Aún no hay tarjetas</h3>
+  <p>Aparecerán cuando la clase esté lista.</p>
   <a class="primary-button" href="{% url 'lesson_detail' job.pk %}">Volver a la clase</a>
 </div>
 {% endif %}

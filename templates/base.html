@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}SIMA Learn{% endblock %}</title>
+  <title>{% block title %}SIMA{% endblock %}</title>
   <script>
     (function() {
       var saved = localStorage.getItem("sima-theme");
@@ -18,7 +18,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,300&family=Space+Mono:wght@400;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'learning/app.css' %}">
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
   <div class="app-shell">
     <header class="topbar">
       <a class="brand" href="{% url 'home' %}" aria-label="SIMA inicio">
@@ -26,12 +26,10 @@
         <span class="brand-dot">.</span><strong>SIMA</strong>
       </a>
       {% with current=request.resolver_match.url_name %}
-      <nav class="topnav" aria-label="Navegacion principal">
+      <nav class="topnav" aria-label="Navegación principal">
         {% if user.is_authenticated %}
-          <a class="nav-link {% if current == 'dashboard' %}is-active{% endif %}" href="{% url 'dashboard' %}">Inicio</a>
-          <a class="nav-link {% if current == 'course_create' %}is-active{% endif %}" href="{% url 'course_create' %}">Cursos</a>
+          <a class="nav-link {% if current == 'dashboard' or current == 'course_detail' or current == 'course_create' %}is-active{% endif %}" href="{% url 'dashboard' %}">Mis cursos</a>
           <a class="nav-link {% if current == 'mini_landing' %}is-active{% endif %}" href="{% url 'mini_landing' %}">.mini</a>
-          <a class="nav-link {% if current == 'mini_benchmark' %}is-active{% endif %}" href="{% url 'mini_benchmark' %}">Benchmark</a>
           <a class="nav-link {% if current == 'plans' %}is-active{% endif %}" href="{% url 'plans' %}">Planes</a>
           <form action="{% url 'logout' %}" method="post">
             {% csrf_token %}
@@ -39,9 +37,8 @@
           </form>
         {% else %}
           <a class="nav-link {% if current == 'mini_landing' %}is-active{% endif %}" href="{% url 'mini_landing' %}">.mini</a>
-          <a class="nav-link {% if current == 'mini_benchmark' %}is-active{% endif %}" href="{% url 'mini_benchmark' %}">Benchmark</a>
-          <a class="nav-link {% if current == 'login' %}is-active{% endif %}" href="{% url 'login' %}">Login</a>
-          <a class="nav-pill" href="{% url 'register' %}">v1.0 SIMA</a>
+          <a class="nav-link {% if current == 'login' %}is-active{% endif %}" href="{% url 'login' %}">Entrar</a>
+          <a class="nav-pill" href="{% url 'register' %}">Crear cuenta</a>
         {% endif %}
       </nav>
       {% endwith %}

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Login - SIMA{% endblock %}
+{% block title %}Iniciar sesión - SIMA{% endblock %}
 {% block content %}
 <section class="auth-panel">
   <div>
@@ -11,6 +11,6 @@
     {{ form.as_p }}
     <button class="primary-button" type="submit">Entrar</button>
   </form>
-  <p class="muted center">No tienes cuenta? <a href="{% url 'register' %}">Crear una gratis</a></p>
+  <p class="muted center">¿No tienes cuenta? <a href="{% url 'register' %}">Crear una gratis</a></p>
 </section>
 {% endblock %}

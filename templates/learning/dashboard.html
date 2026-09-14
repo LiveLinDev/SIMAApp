@@ -3,70 +3,77 @@
 {% block content %}
 
 <div class="dashboard-main">
-    <header class="dashboard-hero" {% if active_tab %}hidden{% endif %}>
-      <div class="hero-copy">
-        <p class="eyebrow">Hola, {{ user.username }}</p>
-        <h1>Centro de estudio <span>SIMA</span></h1>
-        <p>Organiza cursos, programa clases, revisa tu progreso y ajusta tus preferencias desde un solo panel.</p>
+    <header class="db-head" {% if active_tab != 'cursos' %}hidden{% endif %}>
+      <div>
+        <h1>Hola, {{ user.first_name|default:user.username }}</h1>
+        <ul class="db-stats" aria-label="Tu progreso">
+          <li><strong>{{ profile.current_streak }}</strong> {% if profile.current_streak == 1 %}día{% else %}días{% endif %} de racha</li>
+          <li>Nivel <strong>{{ profile.level }}</strong></li>
+          <li><strong>{{ dashboard_stats.ready_count }}</strong> {% if dashboard_stats.ready_count == 1 %}clase lista{% else %}clases listas{% endif %}</li>
+          {% if dashboard_stats.processing_count %}<li><strong>{{ dashboard_stats.processing_count }}</strong> procesando</li>{% endif %}
+        </ul>
       </div>
-      <div class="hero-summary" aria-label="Resumen de progreso">
-        <article>
-          <span>Racha</span>
-          <strong>{{ profile.current_streak }}</strong>
-          <small>dias seguidos</small>
-        </article>
-        <article>
-          <span>Nivel</span>
-          <strong>{{ profile.level }}</strong>
-          <small>{{ profile.total_xp }} XP</small>
-        </article>
-        <article>
-          <span>API</span>
-          <strong>{{ profile.remaining_classes }}</strong>
-          <small>clases restantes</small>
-        </article>
-        <article>
-          <span>Listas</span>
-          <strong>{{ dashboard_stats.ready_count }}</strong>
-          <small>materiales</small>
-        </article>
-      </div>
+      <a class="flow-btn flow-btn--primary" href="{% url 'course_create' %}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        Nuevo curso
+      </a>
     </header>
 
-    <section class="dashboard-strip" aria-label="Estado general" {% if active_tab %}hidden{% endif %}>
-      <article>
-        <span>Cursos activos</span>
-        <strong>{{ dashboard_stats.course_count }}</strong>
-      </article>
-      <article>
-        <span>Clases creadas</span>
-        <strong>{{ dashboard_stats.lesson_count }}</strong>
-      </article>
-      <article>
-        <span>En proceso</span>
-        <strong>{{ dashboard_stats.processing_count }}</strong>
-      </article>
-      <article>
-        <span>Meta diaria</span>
-        <strong>{{ preferences.daily_goal }}</strong>
-      </article>
-    </section>
-
     <section class="dashboard-panel" id="panel-cursos" {% if active_tab != 'cursos' %}hidden{% endif %}>
-      <div class="section-toolbar">
-        <div>
-          <p class="eyebrow">Mis cursos</p>
-          <h2>Cursos y contexto academico</h2>
-        </div>
-        <a class="primary-button" href="{% url 'course_create' %}">Nuevo curso</a>
+      <div class="db-section-head">
+        <h2>Tus cursos</h2>
       </div>
 
+
+      {% if courses %}
+        <div class="course-grid">
+          {% for course in courses %}
+          <article class="course-card">
+            <div class="course-card-head">
+              <span>{{ course.academic_period|default:"Personal" }}</span>
+              <small>{{ course.class_count }} clases</small>
+            </div>
+            <h3>{{ course.name }}</h3>
+            {% if course.student_goal %}
+              <p>{{ course.student_goal|truncatechars:130 }}</p>
+            {% elif course.description %}
+              <p>{{ course.description|truncatechars:130 }}</p>
+            {% else %}
+              <p>{{ course.get_level_display }}</p>
+            {% endif %}
+            {% if course.main_topics %}
+            <div class="tag-row">
+              {% for topic in course.main_topics|slice:":5" %}
+                <span>{{ topic }}</span>
+              {% endfor %}
+            </div>
+            {% endif %}
+            <a class="lesson-cta" href="{% url 'course_detail' course.pk %}">Abrir curso</a>
+          </article>
+          {% endfor %}
+        </div>
+
+      {% else %}
+        <div class="empty-dashboard">
+          <div>
+            <span class="study-badge">Primer paso</span>
+            <h3>Crea tu primer curso</h3>
+            <p>Agrupa tus clases y practica por tema.</p>
+            <a class="primary-button" href="{% url 'course_create' %}">Crear curso</a>
+          </div>
+          <ol class="setup-list">
+            <li><strong>Crea el curso</strong><span>Nombre, ciclo y objetivo.</span></li>
+            <li><strong>Sube una clase</strong><span>Audio o apuntes.</span></li>
+            <li><strong>Practica</strong><span>Preguntas, tarjetas y repasos.</span></li>
+          </ol>
+        </div>
+      {% endif %}
       {% if today.courses %}
-      <div class="today-panel">
+      <div class="today-panel today-panel--after">
         <div class="today-head">
           <div>
             <p class="eyebrow">Hoy en SIMA</p>
-            <h3>{% if today.studied_today %}Ya estudiaste hoy: racha de {{ today.streak }} dias{% elif today.streak %}Manten tu racha de {{ today.streak }} dias{% else %}Empieza tu racha hoy{% endif %}</h3>
+            <h3>{% if today.studied_today %}Ya estudiaste hoy: racha de {{ today.streak }} días{% elif today.streak %}Mantén tu racha de {{ today.streak }} días{% else %}Empieza tu racha hoy{% endif %}</h3>
           </div>
           <div class="today-goal">
             <span>Meta de hoy: {{ today.progress.done }} de {{ today.progress.goal }}</span>
@@ -77,7 +84,7 @@
         {% if progress.has_data %}
         <div class="today-progress">
           {{ progress.svg }}
-          <small class="muted">Ultimas dos semanas: {{ progress.stats.current.answered }} respuestas{% if progress.stats.current.accuracy is not None %} &middot; {{ progress.stats.current.accuracy }}% de acierto{% endif %} &middot; {{ progress.stats.current.active_days }} dia{{ progress.stats.current.active_days|pluralize }} activo{{ progress.stats.current.active_days|pluralize }}</small>
+          <small class="muted">Últimas dos semanas: {{ progress.stats.current.answered }} respuestas{% if progress.stats.current.accuracy is not None %} &middot; {{ progress.stats.current.accuracy }}% de aciertos{% endif %} &middot; {{ progress.stats.current.active_days }} día{{ progress.stats.current.active_days|pluralize }} activo{{ progress.stats.current.active_days|pluralize }}</small>
         </div>
         {% endif %}
         <ul class="today-list">
@@ -121,50 +128,6 @@
         .today-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
       </style>
       {% endif %}
-
-      {% if courses %}
-        <div class="course-grid">
-          {% for course in courses %}
-          <article class="course-card">
-            <div class="course-card-head">
-              <span>{{ course.academic_period|default:"Personal" }}</span>
-              <small>{{ course.class_count }} clases</small>
-            </div>
-            <h3>{{ course.name }}</h3>
-            {% if course.student_goal %}
-              <p>{{ course.student_goal|truncatechars:130 }}</p>
-            {% elif course.description %}
-              <p>{{ course.description|truncatechars:130 }}</p>
-            {% else %}
-              <p>{{ course.get_level_display }}</p>
-            {% endif %}
-            {% if course.main_topics %}
-            <div class="tag-row">
-              {% for topic in course.main_topics|slice:":5" %}
-                <span>{{ topic }}</span>
-              {% endfor %}
-            </div>
-            {% endif %}
-            <a class="lesson-cta" href="{% url 'course_detail' course.pk %}">Abrir curso</a>
-          </article>
-          {% endfor %}
-        </div>
-
-      {% else %}
-        <div class="empty-dashboard">
-          <div>
-            <span class="study-badge">Primer paso</span>
-            <h3>Crea tu primer curso</h3>
-            <p>Un curso agrupa clases, transcripciones, quizzes, flashcards, recomendaciones y progreso por tema.</p>
-            <a class="primary-button" href="{% url 'course_create' %}">Crear curso</a>
-          </div>
-          <ol class="setup-list">
-            <li><strong>Define el contexto</strong><span>Nombre, ciclo, nivel, docente y objetivo.</span></li>
-            <li><strong>Sube una clase</strong><span>Audio o apuntes dentro del curso correcto.</span></li>
-            <li><strong>Estudia en bloques</strong><span>Quiz adaptativo, repasos y recomendaciones.</span></li>
-          </ol>
-        </div>
-      {% endif %}
       {% if archived_courses %}
         <details class="archived-courses">
           <summary>Cursos archivados ({{ archived_courses|length }})</summary>
@@ -187,12 +150,12 @@
     <section class="dashboard-panel" id="panel-mis-clases" {% if active_tab != 'mis-clases' %}hidden{% endif %}>
       <div class="section-toolbar">
         <div>
-          <p class="eyebrow">Materiales</p>
+          <p class="eyebrow">Mis clases</p>
           <h2>Clases recientes</h2>
         </div>
         <div class="toolbar-actions">
           <a class="primary-button" href="{% url 'api_lesson' %}">Nueva clase</a>
-          <a class="secondary-button" href="{% url 'free_lesson' %}">Clase manual</a>
+          <a class="secondary-button" href="{% url 'free_lesson' %}">Pegar apuntes</a>
         </div>
       </div>
 
@@ -204,7 +167,7 @@
               <h3>{{ job.title }}</h3>
               <div class="lesson-card-actions">
                 <span class="visibility-badge">{{ job.get_visibility_display }}</span>
-                <form method="post" action="{% url 'delete_lesson' job.pk %}" onsubmit="return confirm('Estas seguro de eliminar esta clase? Esta accion no se puede deshacer.')">
+                <form method="post" action="{% url 'delete_lesson' job.pk %}" onsubmit="return confirm('¿Eliminar esta clase? No se puede deshacer.')">
                   {% csrf_token %}
                   <button type="submit" class="delete-button" title="Eliminar clase" aria-label="Eliminar clase">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
@@ -224,8 +187,8 @@
             {% if job.corrected_output or job.toon_output %}
               <a class="lesson-cta" href="{% url 'lesson_detail' job.pk %}">Estudiar ahora</a>
             {% else %}
-              <p class="lesson-status">En proceso de generacion</p>
-              <a class="lesson-cta lesson-cta--secondary" href="{% url 'lesson_detail' job.pk %}">Ver pipeline</a>
+              <p class="lesson-status">Procesando</p>
+              <a class="lesson-cta lesson-cta--secondary" href="{% url 'lesson_detail' job.pk %}">Ver estado</a>
             {% endif %}
           </article>
           {% endfor %}
@@ -235,8 +198,8 @@
           <div>
             <span class="study-badge">Sin clases</span>
             <h3>Sube tu primera clase</h3>
-            <p>Agrega audio o apuntes y SIMA preparara materiales de estudio dentro de tus cursos.</p>
-            <a class="primary-button" href="{% url 'api_lesson' %}">Crear primera clase</a>
+            <p>Sube un audio o tus apuntes y empieza a practicar.</p>
+            <a class="primary-button" href="{% url 'api_lesson' %}">Subir clase</a>
           </div>
         </div>
       {% endif %}
@@ -246,23 +209,23 @@
       <div class="section-toolbar">
         <div>
           <p class="eyebrow">Plan semanal</p>
-          <h2>Horarios y sesiones</h2>
+          <h2>Tu semana</h2>
         </div>
-        <a class="primary-button" href="{% url 'api_lesson' %}">Registrar clase</a>
+        <a class="primary-button" href="{% url 'api_lesson' %}">Subir clase</a>
       </div>
 
       <div class="schedule-layout">
         <div class="schedule-board">
           <div class="weekday is-active"><strong>Lun</strong><span>Curso</span><small>Clase / repaso</small></div>
-          <div class="weekday"><strong>Mar</strong><span>Bloque</span><small>Quiz corto</small></div>
-          <div class="weekday"><strong>Mie</strong><span>Libre</span><small>Apuntes</small></div>
+          <div class="weekday"><strong>Mar</strong><span>Práctica</span><small>Preguntas</small></div>
+          <div class="weekday"><strong>Mié</strong><span>Libre</span><small>Apuntes</small></div>
           <div class="weekday"><strong>Jue</strong><span>Curso</span><small>Clase / audio</small></div>
-          <div class="weekday"><strong>Vie</strong><span>Repaso</span><small>Flashcards</small></div>
+          <div class="weekday"><strong>Vie</strong><span>Repaso</span><small>Tarjetas</small></div>
         </div>
 
         <div class="session-list">
           <div class="session-list-head">
-            <h3>Sesiones registradas</h3>
+            <h3>Tus clases</h3>
             <span>{{ class_sessions|length }} recientes</span>
           </div>
           {% if class_sessions %}
@@ -276,7 +239,7 @@
             </article>
             {% endfor %}
           {% else %}
-            <p class="quiet-copy">Aun no hay sesiones con fecha. Cuando registres clases dentro de tus cursos, apareceran aqui para que puedas ordenar tu semana.</p>
+            <p class="quiet-copy">Aún no tienes clases con fecha.</p>
           {% endif %}
         </div>
       </div>
@@ -286,12 +249,12 @@
       <div class="section-toolbar">
         <div>
           <p class="eyebrow">Comunidad</p>
-          <h2>Clases publicas</h2>
+          <h2>Clases públicas</h2>
         </div>
         <form method="get" class="explore-search">
           <input type="hidden" name="tab" value="explorar">
           {% if explore_tag %}<input type="hidden" name="tag" value="{{ explore_tag }}">{% endif %}
-          <input type="search" name="q" value="{{ explore_query }}" placeholder="Buscar tema, tag o contenido">
+          <input type="search" name="q" value="{{ explore_query }}" placeholder="Buscar tema o etiqueta">
           <button class="secondary-button" type="submit">Buscar</button>
         </form>
       </div>
@@ -311,7 +274,7 @@
           <article class="lesson-card dashboard-lesson-card">
             <div class="lesson-card-header">
               <h3>{{ job.title }}</h3>
-              <span class="visibility-badge">Publica</span>
+              <span class="visibility-badge">Pública</span>
             </div>
             <p class="lesson-meta">Por {{ job.user.username }} - {{ job.updated_at|date:"d M Y" }}</p>
             {% if job.tag_list %}
@@ -329,8 +292,8 @@
         <div class="empty-dashboard empty-dashboard--compact">
           <div>
             <span class="study-badge">Explorar</span>
-            <h3>No hay clases para esa busqueda</h3>
-            <p>Cuando una clase se marque como publica, aparecera aqui con sus tags.</p>
+            <h3>Sin resultados</h3>
+            <p>Prueba con otro tema.</p>
           </div>
         </div>
       {% endif %}
@@ -340,7 +303,7 @@
       <div class="section-toolbar">
         <div>
           <p class="eyebrow">Cuenta</p>
-          <h2>Configuracion y preferencias</h2>
+          <h2>Preferencias</h2>
         </div>
         <a class="secondary-button" href="{% url 'plans' %}">Ver planes</a>
       </div>
@@ -354,10 +317,9 @@
             <input id="daily_goal" name="daily_goal" type="number" min="1" max="200" value="{{ preferences.daily_goal }}">
             <button class="primary-button" type="submit">Guardar</button>
           </div>
-          <p>Usa esta meta para medir tus bloques de estudio y tu ritmo diario.</p>
-          <label class="check-row">
+                    <label class="check-row">
             <input type="checkbox" name="email_reminders" {% if preferences.email_reminders %}checked{% endif %}>
-            <span>Recordatorio por correo los dias que no estudie{% if not user.email %} (agrega un correo a tu cuenta){% endif %}</span>
+            <span>Recordarme por correo si no estudio{% if not user.email %} (agrega un correo a tu cuenta){% endif %}</span>
           </label>
         </form>
 
@@ -368,14 +330,13 @@
             <a href="{% url 'plans' %}">Cambiar plan</a>
           </article>
           <article>
-            <span>Creditos</span>
+            <span>Créditos</span>
             <strong>{{ profile.credits_label }}</strong>
-            <small>Disponibles para transcripcion, quizzes y regeneraciones.</small>
+            <small>Para subir clases y generar material.</small>
           </article>
           <article>
             <span>Cuenta</span>
             <strong>{{ user.username }}</strong>
-            <small>Las opciones avanzadas de perfil pueden agregarse aqui.</small>
           </article>
         </div>
       </div>
@@ -386,7 +347,7 @@
         <div>
           <span class="study-badge">Biblioteca</span>
           <h3>No tienes clases guardadas</h3>
-          <p>Cuando explores clases publicas, podras guardarlas aqui para estudiar mas tarde.</p>
+          <p>Guarda clases públicas para estudiarlas después.</p>
         </div>
       </div>
     </section>

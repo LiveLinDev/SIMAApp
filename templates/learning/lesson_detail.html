@@ -29,10 +29,10 @@
   {% if is_owner %}
   <div class="ld-actions">
     {% if job.corrected_output or job.toon_output %}
-    <button class="icon-btn" title="Compartir / Visibilidad" onclick="openShareModal()">
+    <button class="icon-btn" title="Compartir" onclick="openShareModal()">
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
     </button>
-    <button class="icon-btn" title="Descargar JSON" onclick="window.location='{% url 'download_json' job.pk %}'">
+    <button class="icon-btn" title="Descargar preguntas" onclick="window.location='{% url 'download_json' job.pk %}'">
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
     </button>
     {% endif %}
@@ -54,7 +54,7 @@
   <div class="study-meta-card">
     <div class="study-meta-row">
       <span class="study-badge">{{ item_count }} preguntas</span>
-      <span class="study-badge">IRT adaptativo</span>
+      <span class="study-badge">A tu nivel</span>
       {% if job.corrected_output %}
         <span class="study-badge study-badge--verified">Verificado</span>
       {% endif %}
@@ -67,8 +67,8 @@
   {# configuración de intensidad #}
   <form class="intensity-card" method="post" action="{% url 'start_quiz' job.pk %}" id="start-quiz-form">
     {% csrf_token %}
-    <h3>Plan de estudio</h3>
-    <p class="muted">Practica esta clase con la memoria de tu curso: las preguntas se eligen por información IRT 3PL a tu nivel, sin repetir lo que ya dominas.</p>
+    <h3>¿Cuántas preguntas?</h3>
+    <p class="muted">Se ajustan a tu nivel y no repiten lo que ya dominas.</p>
     <div class="intensity-options">
       <label class="intensity-btn">
         <input type="radio" name="target_count" value="5">
@@ -97,7 +97,7 @@
     <div class="gamify-badge">
       <span class="gamify-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c0 4-4 6-4 10 0 3 2 6 4 7 2-1 4-4 4-7 0-4-4-6-4-10z"/><path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg></span>
       <div>
-        <strong>{{ profile.current_streak }} dias</strong>
+        <strong>{{ profile.current_streak }} días</strong>
         <small>Racha actual</small>
       </div>
     </div>
@@ -112,7 +112,7 @@
         </span>
         <span>
           <strong>Resumen</strong>
-          <small>{% if class_summary %}Leer el resumen de la clase{% else %}Generar el resumen de la clase{% endif %}</small>
+          <small>{% if class_summary %}Leer resumen{% else %}Generar resumen{% endif %}</small>
         </span>
       </a>
       <a class="study-action-btn study-action-btn--review" href="{% url 'flashcards' job.pk %}">
@@ -121,7 +121,7 @@
         </span>
         <span>
           <strong>Repasar</strong>
-          <small>Flashcards de la clase</small>
+          <small>Tarjetas de la clase</small>
         </span>
       </a>
       <a class="study-action-btn study-action-btn--pipeline" href="{% url 'pipeline_visualization' job.pk %}">
@@ -129,8 +129,8 @@
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
         </span>
         <span>
-          <strong>Ver pipeline</strong>
-          <small>Flujo de generación</small>
+          <strong>Proceso</strong>
+          <small>Cómo se preparó la clase</small>
         </span>
       </a>
       <a class="study-action-btn study-action-btn--map" href="{% url 'class_map' job.pk %}">
@@ -139,7 +139,7 @@
         </span>
         <span>
           <strong>Mapa</strong>
-          <small>Ver temas y conceptos</small>
+          <small>Temas y conceptos</small>
         </span>
       </a>
       <a class="study-action-btn study-action-btn--match" href="{% url 'matching_exercise' job.pk %}">
@@ -165,8 +165,8 @@
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v4"/><path d="M12 18v4"/><path d="M2 12h4"/><path d="M18 12h4"/></svg>
         </span>
         <span>
-          <strong>Tomar quiz</strong>
-          <small>IRT adaptativo · {{ item_count }} items</small>
+          <strong>Practicar</strong>
+          <small>{{ item_count }} preguntas a tu nivel</small>
         </span>
       </button>
       {% if job.transcript %}
@@ -176,7 +176,7 @@
         </span>
         <span>
           <strong>Transcripción</strong>
-          <small>Texto completo de la clase</small>
+          <small>Texto completo</small>
         </span>
       </button>
       {% endif %}
@@ -186,7 +186,7 @@
         </span>
         <span>
           <strong>Descargar</strong>
-          <small>JSON del banco MINI</small>
+          <small>Copia de tus preguntas</small>
         </span>
       </a>
       <button class="study-action-btn study-action-btn--items" type="button" onclick="toggleAdvanced(); document.getElementById('advanced-panel').scrollIntoView({behavior:'smooth'})">
@@ -194,27 +194,27 @@
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
         </span>
         <span>
-          <strong>Ver banco</strong>
-          <small>Todos los ítems IRT</small>
+          <strong>Ver preguntas</strong>
+          <small>Todas las de esta clase</small>
         </span>
       </button>
     </div>
   </div>
 
   <div class="study-meta-card">
-    <h3>Banco IRT y Bloom</h3>
+    <h3>Tipos de pregunta</h3>
     <div class="study-meta-row">
       {% for stat in bloom_stats %}
-        <span class="study-badge">{{ stat.level }} {{ stat.label }}: {{ stat.count }}</span>
+        <span class="study-badge">{{ stat.label }}: {{ stat.count }}</span>
       {% empty %}
-        <span class="study-badge">Sin distribución Bloom</span>
+        <span class="study-badge">Sin datos aún</span>
       {% endfor %}
     </div>
   </div>
 
   {% if bloom_stats %}
   <div class="study-meta-card">
-    <h3>Conceptos clave de la clase</h3>
+    <h3>Conceptos clave</h3>
     <div class="study-meta-row">
       {% for topic in key_topics %}
         <span class="study-badge study-badge--tag">{{ topic }}</span>
@@ -234,7 +234,7 @@
         <a class="attempt-row" href="{% url 'practice_session' ps.course_id ps.pk %}">
           <span>
             <strong>{{ ps.correct_count }}/{{ ps.answered_count }} correctas</strong>
-            <small>{{ ps.created_at|date:"d M H:i" }} · θ {{ ps.theta|floatformat:2 }} · SE {{ ps.standard_error|floatformat:2 }}{% if not ps.is_complete %} · en curso{% endif %}</small>
+            <small>{{ ps.created_at|date:"d M H:i" }}{% if not ps.is_complete %} · sin terminar{% endif %}</small>
           </span>
           <span class="study-badge">{{ ps.accuracy }}%</span>
         </a>
@@ -243,20 +243,17 @@
     {% else %}
     <div class="empty-state-mini">
       <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--line)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-      <p>Aún no has hecho ningún intento.</p>
-      <p class="muted">Cuando completes el primero, verás precisión, θ, error estándar y recorrido por Bloom.</p>
+      <p>Aún no has practicado esta clase.</p>
     </div>
     {% endif %}
   </div>
 
   {# resumen adaptativo #}
   <div class="ranking-card">
-    <h3>Adaptación CAT</h3>
-    <p class="muted">El siguiente ítem se elige por información máxima cerca de tu θ actual, con balance por Bloom y control de exposición.</p>
+    <h3>Práctica a tu medida</h3>
+    <p class="muted">Cada pregunta se ajusta a cómo vas respondiendo.</p>
     <div class="study-meta-row">
-      <span class="study-badge">Modelo {{ cat_params.exposure_control|default:"SH" }}</span>
-      <span class="study-badge">θ {{ cat_params.theta_min|default:"-3" }} a {{ cat_params.theta_max|default:"3" }}</span>
-      <span class="study-badge">Máx. {{ cat_params.max_items|default:"10" }} ítems</span>
+      <span class="study-badge">Hasta {{ cat_params.max_items|default:"10" }} preguntas por sesión</span>
     </div>
   </div>
 
@@ -266,7 +263,7 @@
       <span id="advanced-icon" class="advanced-icon" aria-hidden="true">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
       </span>
-      Modo avanzado (ver pipeline y editar)
+      Opciones avanzadas
     </button>
   </div>
 
@@ -274,22 +271,22 @@
   <div class="advanced-panel" id="advanced-panel" hidden>
     
     <div class="advanced-header">
-      <h3>Pipeline de generación</h3>
-      <p class="muted">Aquí puedes ver cómo se generó la clase y editar manualmente si es necesario.</p>
+      <h3>Detalles de la clase</h3>
+      <p class="muted">Revisa las preguntas y corrígelas si hace falta.</p>
       <a href="{% url 'pipeline_visualization' job.pk %}" class="advanced-viz-link" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-size:.85rem;color:var(--accent);text-decoration:none;font-weight:600;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-        Ver diagrama del flujo real
+        Ver cómo se preparó
       </a>
     </div>
 
     {# toggle raw / estilizado #}
     <div class="view-toggle">
-      <button class="view-btn view-btn--active" id="btn-styled" onclick="setView('styled')">Vista legible</button>
-      <button class="view-btn" id="btn-raw" onclick="setView('raw')">MINI raw</button>
+      <button class="view-btn view-btn--active" id="btn-styled" onclick="setView('styled')">Vista normal</button>
+      <button class="view-btn" id="btn-raw" onclick="setView('raw')">Texto original</button>
       {% if is_owner %}
       <form method="post" action="{% url 'repair_coherence' job.pk %}" class="inline-ai-form" onsubmit="return confirmRepairCoherence(this);">
         {% csrf_token %}
-        <button class="view-btn view-btn--ai" type="submit">Arreglar coherencia con IA</button>
+        <button class="view-btn view-btn--ai" type="submit">Revisar preguntas con IA</button>
       </form>
       {% endif %}
     </div>
@@ -298,7 +295,7 @@
       {% if items_html %}
         {{ items_html }}
       {% else %}
-        <p class="muted">No se pudo renderizar el formato MINI.</p>
+        <p class="muted">No pudimos mostrar las preguntas.</p>
       {% endif %}
     </div>
 
@@ -308,17 +305,17 @@
 
     {% if job.mini_coherence_trace %}
     <section class="output-block audit-block">
-      <h4>Auditoria de coherencia MINI</h4>
+      <h4>Revisiones de preguntas</h4>
       {% for repair in job.mini_coherence_trace reversed %}
       <details class="audit-detail" {% if forloop.first %}open{% endif %}>
         <summary>
           {{ repair.created_at }}
-          {% if repair.changed %}<span class="audit-pill audit-pill--ok">items reparados</span>{% else %}<span class="audit-pill audit-pill--ok">sin cambios</span>{% endif %}
+          {% if repair.changed %}<span class="audit-pill audit-pill--ok">preguntas corregidas</span>{% else %}<span class="audit-pill audit-pill--ok">sin cambios</span>{% endif %}
         </summary>
         <div class="audit-summary">
-          <span>Backend: {{ repair.backend }}</span>
-          <span>Prompt: {{ repair.prompt_chars }} chars</span>
-          <span>Salida: {{ repair.output_chars }} chars</span>
+          <span>Motor: {{ repair.backend }}</span>
+          <span>Entrada: {{ repair.prompt_chars }} caracteres</span>
+          <span>Salida: {{ repair.output_chars }} caracteres</span>
         </div>
         <div class="audit-change-grid transcript-diff-grid">
           <div>
@@ -326,20 +323,20 @@
             <pre class="mini-raw">{{ repair.before }}</pre>
           </div>
           <div>
-            <h5>Despues</h5>
+            <h5>Después</h5>
             <pre class="mini-raw">{{ repair.after }}</pre>
           </div>
         </div>
-        <h5>Cambios por item</h5>
+        <h5>Cambios por pregunta</h5>
         <div class="transcript-change-list">
           {% for change in repair.changes %}
           <div class="transcript-change">
             <strong>{{ change.item }} · {{ change.field }}</strong>
             {% if change.before %}<p><b>Antes:</b> {{ change.before }}</p>{% endif %}
-            {% if change.after %}<p><b>Despues:</b> {{ change.after }}</p>{% endif %}
+            {% if change.after %}<p><b>Después:</b> {{ change.after }}</p>{% endif %}
           </div>
           {% empty %}
-          <p class="muted">No hubo diferencias en los items.</p>
+          <p class="muted">Sin cambios en las preguntas.</p>
           {% endfor %}
         </div>
       </details>
@@ -354,7 +351,7 @@
         {% if is_owner and job.status != 'queued' and job.status != 'processing' %}
         <form method="post" action="{% url 'repair_transcript' job.pk %}" class="inline-ai-form" onsubmit="return confirmRepairTranscript(this);">
           {% csrf_token %}
-          <button class="view-btn view-btn--ai" type="submit">Arreglar transcripción con IA</button>
+          <button class="view-btn view-btn--ai" type="submit">Corregir transcripción con IA</button>
         </form>
         {% endif %}
       </div>
@@ -364,7 +361,7 @@
 
     {% if job.transcript_repair_trace %}
     <section class="output-block audit-block">
-      <h4>Auditoria de transcripcion</h4>
+      <h4>Correcciones de la transcripción</h4>
       {% for repair in job.transcript_repair_trace reversed %}
       <details class="audit-detail" {% if forloop.first %}open{% endif %}>
         <summary>
@@ -372,9 +369,9 @@
           {% if repair.changed %}<span class="audit-pill audit-pill--ok">con cambios</span>{% else %}<span class="audit-pill">sin cambios</span>{% endif %}
         </summary>
         <div class="audit-summary">
-          <span>Backend: {{ repair.backend }}</span>
-          <span>Prompt: {{ repair.prompt_chars }} chars</span>
-          <span>Salida: {{ repair.output_chars }} chars</span>
+          <span>Motor: {{ repair.backend }}</span>
+          <span>Entrada: {{ repair.prompt_chars }} caracteres</span>
+          <span>Salida: {{ repair.output_chars }} caracteres</span>
         </div>
         <div class="audit-change-grid transcript-diff-grid">
           <div>
@@ -382,7 +379,7 @@
             <pre class="mini-raw">{{ repair.before }}</pre>
           </div>
           <div>
-            <h5>Despues</h5>
+            <h5>Después</h5>
             <pre class="mini-raw">{{ repair.after }}</pre>
           </div>
         </div>
@@ -392,10 +389,10 @@
           <div class="transcript-change">
             <strong>{{ change.type }}</strong>
             {% if change.before %}<p><b>Antes:</b> {{ change.before }}</p>{% endif %}
-            {% if change.after %}<p><b>Despues:</b> {{ change.after }}</p>{% endif %}
+            {% if change.after %}<p><b>Después:</b> {{ change.after }}</p>{% endif %}
           </div>
           {% empty %}
-          <p class="muted">No hubo diferencias de palabras.</p>
+          <p class="muted">Sin cambios en el texto.</p>
           {% endfor %}
         </div>
       </details>
@@ -405,22 +402,22 @@
 
     {% if job.verification_output %}
     <section class="output-block">
-      <h4>Reporte de verificación</h4>
+      <h4>Revisión de preguntas</h4>
       <pre class="mini-raw">{{ job.verification_output }}</pre>
     </section>
     {% endif %}
 
     {% if job.verification_trace %}
     <section class="output-block audit-block">
-      <h4>Auditoria de fuentes</h4>
+      <h4>Fuentes consultadas</h4>
       <div class="audit-summary">
         <span>Modo: {{ job.verification_trace.mode|default:job.verification_mode }}</span>
-        <span>Prompt: {{ job.verification_trace.prompt_chars|default:"-" }} chars</span>
-        <span>Contexto: {{ job.verification_trace.context_chars|default:"-" }} chars</span>
+        <span>Entrada: {{ job.verification_trace.prompt_chars|default:"-" }} caracteres</span>
+        <span>Contexto: {{ job.verification_trace.context_chars|default:"-" }} caracteres</span>
       </div>
 
       {% if job.verification_trace.web.queries %}
-      <h5>Busquedas web</h5>
+      <h5>Búsquedas web</h5>
       {% for query in job.verification_trace.web.queries %}
       <details class="audit-detail" {% if forloop.first %}open{% endif %}>
         <summary>{{ query.query }}</summary>
@@ -429,26 +426,26 @@
           <strong>{{ result.title|default:result.url }}</strong>
           <a href="{{ result.url }}" target="_blank" rel="noopener">{{ result.url }}</a>
           {% if result.ok %}
-            <small>{{ result.chars }} chars leidos</small>
+            <small>{{ result.chars }} caracteres leídos</small>
             <p>{{ result.snippet|truncatechars:420 }}</p>
           {% else %}
             <p>{{ result.error }}</p>
           {% endif %}
         </div>
         {% empty %}
-        <p class="muted">La busqueda no devolvio resultados legibles.</p>
+        <p class="muted">La búsqueda no dio resultados.</p>
         {% endfor %}
       </details>
       {% endfor %}
       {% endif %}
 
       {% if job.verification_trace.web.configured_sources %}
-      <h5>Fuentes configuradas</h5>
+      <h5>Fuentes de referencia</h5>
       {% for source in job.verification_trace.web.configured_sources %}
       <div class="audit-source {% if source.ok %}audit-source--ok{% else %}audit-source--error{% endif %}">
         <a href="{{ source.url }}" target="_blank" rel="noopener">{{ source.url }}</a>
         {% if source.ok %}
-          <small>{{ source.chars }} chars leidos</small>
+          <small>{{ source.chars }} caracteres leídos</small>
           <p>{{ source.snippet|truncatechars:420 }}</p>
         {% else %}
           <p>{{ source.error }}</p>
@@ -458,25 +455,25 @@
       {% endif %}
 
       {% if job.verification_trace.eduqg.enabled %}
-      <h5>EduQG local</h5>
+      <h5>Ejemplos de referencia</h5>
       <div class="audit-summary">
         <span>Registros: {{ job.verification_trace.eduqg.records_loaded|default:0 }}</span>
         <span>Archivos: {{ job.verification_trace.eduqg.files|length }}</span>
-        <span>Path: {{ job.verification_trace.eduqg.path }}</span>
+        <span>Ruta: {{ job.verification_trace.eduqg.path }}</span>
       </div>
       {% if job.verification_trace.eduqg.error %}
         <p class="muted">{{ job.verification_trace.eduqg.error }}</p>
       {% endif %}
       {% for match in job.verification_trace.eduqg.matches %}
       <div class="audit-source audit-source--ok">
-        <strong>{{ match.title }} · score {{ match.score }}</strong>
+        <strong>{{ match.title }} · coincidencia {{ match.score }}</strong>
         <small>{{ match.file }}</small>
         {% if match.question %}<p><b>Ejemplo:</b> {{ match.question }}</p>{% endif %}
         {% if match.answer %}<p><b>Respuesta:</b> {{ match.answer }}</p>{% endif %}
         <p>{{ match.excerpt|truncatechars:480 }}</p>
       </div>
       {% empty %}
-        <p class="muted">EduQG no aporto matches para este contenido.</p>
+        <p class="muted">No encontramos ejemplos parecidos.</p>
       {% endfor %}
       {% endif %}
     </section>
@@ -484,11 +481,11 @@
 
     {% if job.correction_trace %}
     <section class="output-block audit-block">
-      <h4>Aplicacion de correcciones al MINI</h4>
+      <h4>Correcciones aplicadas</h4>
       {% for change in job.correction_trace %}
       <details class="audit-detail" {% if forloop.first %}open{% endif %}>
         <summary>
-          Reporte {{ change.report_item_id }} {% if change.matched %}-> {{ change.matched_item_id }}{% else %}-> sin match{% endif %}
+          Pregunta {{ change.report_item_id }} {% if change.matched %}→ {{ change.matched_item_id }}{% else %}→ no encontrada{% endif %}
           {% if change.applied %}<span class="audit-pill audit-pill--ok">aplicado</span>{% else %}<span class="audit-pill">sin cambio</span>{% endif %}
         </summary>
         <div class="audit-change-grid">
@@ -502,11 +499,11 @@
               {% endfor %}
               </ul>
             {% else %}
-              <p class="muted">No hubo match contra el MINI.</p>
+              <p class="muted">No se encontró la pregunta.</p>
             {% endif %}
           </div>
           <div>
-            <h5>Despues</h5>
+            <h5>Después</h5>
             {% if change.after %}
               <p>{{ change.after.statement }}</p>
               <ul>
@@ -520,7 +517,7 @@
           </div>
         </div>
         <p class="muted">{{ change.error_type }} · {{ change.field }} · {{ change.note }}</p>
-        {% if change.justification %}<p class="muted">Justificacion: {{ change.justification }}</p>{% endif %}
+        {% if change.justification %}<p class="muted">Motivo: {{ change.justification }}</p>{% endif %}
       </details>
       {% endfor %}
     </section>
@@ -543,7 +540,7 @@
       {% for i in "1234" %}
       <div class="pipeline-step {% if forloop.counter <= pipeline_step %}pipeline-step--done{% endif %}">
         <div class="pipeline-step-dot">{{ forloop.counter }}</div>
-        <span>{% if forloop.counter == 1 %}Prompt{% elif forloop.counter == 2 %}Ítems{% elif forloop.counter == 3 %}Verificar{% else %}Listo{% endif %}</span>
+        <span>{% if forloop.counter == 1 %}Preparar{% elif forloop.counter == 2 %}Preguntas{% elif forloop.counter == 3 %}Revisar{% else %}Listo{% endif %}</span>
       </div>
       {% if not forloop.last %}<div class="pipeline-connector {% if forloop.counter < pipeline_step %}pipeline-connector--done{% endif %}"></div>{% endif %}
       {% endfor %}
@@ -552,34 +549,34 @@
   </div>
 
   <div class="pipeline-status">
-    <h2>Clase en proceso</h2>
-    <p>Completa los pasos del pipeline para poder estudiar con esta clase.</p>
+    <h2>Preparando tu clase</h2>
+    <p>{% if job.mode == 'api' %}Estará lista en unos minutos.{% else %}Sigue los pasos para empezar a estudiar.{% endif %}</p>
   </div>
 
   {% if job.status == 'queued' or job.status == 'processing' %}
   <section class="output-block queue-status" data-status-url="{% url 'lesson_job_status' job.pk %}">
     <h3>{{ job.get_status_display }}</h3>
-    <p id="queue-stage">{{ job.processing_stage|default:"Preparando cola local" }}</p>
+    <p id="queue-stage">{{ job.processing_stage|default:"Preparando tu clase" }}</p>
     <div class="processing-bar"><div class="processing-bar__fill"></div></div>
     <pre class="processing-log" id="queue-log">{{ job.processing_log }}</pre>
-    <p class="muted">La generación y verificación corren en segundo plano para no colgar la página.</p>
+    <p class="muted">Puedes salir de esta página; seguiremos trabajando.</p>
   </section>
   {% endif %}
 
   {% if job.error %}
   <section class="output-block error-note">
-    <h3>No se pudo completar automáticamente</h3>
+    <h3>No pudimos terminar tu clase</h3>
     <p>{{ job.error }}</p>
     {% if job.mode == 'api' %}
     <form method="post" action="{% url 'retry_api_lesson' job.pk %}" class="retry-form" onsubmit="this.querySelector('button').textContent='Reintentando…'; this.querySelector('button').disabled=true;">
       {% csrf_token %}
       <input type="hidden" name="verification_mode" value="{{ job.verification_mode|default:'web' }}">
-      <div class="retry-backend-options" aria-label="Elegir motor de IA">
+      <div class="retry-backend-options" aria-label="Elegir cómo procesar">
         <label class="retry-backend-option">
           <input type="radio" name="backend" value="local" {% if job.ai_backend != 'cloud' or not backends.cloud %}checked{% endif %}>
           <span class="retry-backend-card">
-            <strong>Modelo local</strong>
-            <small>{{ local_model }}</small>
+            <strong>Estándar</strong>
+            <small>Opción recomendada</small>
           </span>
         </label>
         <label class="retry-backend-option {% if not backends.cloud %}retry-backend-option--disabled{% endif %}">
@@ -587,11 +584,11 @@
             {% if job.ai_backend == 'cloud' and backends.cloud %}checked{% endif %}
             {% if not backends.cloud %}disabled{% endif %}>
           <span class="retry-backend-card">
-            <strong>Nube · {{ backends.cloud_label }}</strong>
+            <strong>Rápido</strong>
             {% if backends.cloud %}
-              <small>Usa mas creditos</small>
+              <small>Usa más créditos</small>
             {% else %}
-              <small>No configurado</small>
+              <small>No disponible</small>
             {% endif %}
           </span>
         </label>
@@ -609,7 +606,7 @@
       {% if is_owner and job.status != 'queued' and job.status != 'processing' %}
       <form method="post" action="{% url 'repair_transcript' job.pk %}" class="inline-ai-form" onsubmit="return confirmRepairTranscript(this);">
         {% csrf_token %}
-        <button class="view-btn view-btn--ai" type="submit">Arreglar transcripción con IA</button>
+        <button class="view-btn view-btn--ai" type="submit">Corregir transcripción con IA</button>
       </form>
       {% endif %}
     </div>
@@ -619,7 +616,7 @@
 
   {% if job.transcript_repair_trace %}
   <section class="output-block audit-block">
-    <h3>Auditoria de transcripcion</h3>
+    <h3>Correcciones de la transcripción</h3>
     {% for repair in job.transcript_repair_trace reversed %}
     <details class="audit-detail" {% if forloop.first %}open{% endif %}>
       <summary>
@@ -627,9 +624,9 @@
         {% if repair.changed %}<span class="audit-pill audit-pill--ok">con cambios</span>{% else %}<span class="audit-pill">sin cambios</span>{% endif %}
       </summary>
       <div class="audit-summary">
-        <span>Backend: {{ repair.backend }}</span>
-        <span>Prompt: {{ repair.prompt_chars }} chars</span>
-        <span>Salida: {{ repair.output_chars }} chars</span>
+        <span>Motor: {{ repair.backend }}</span>
+        <span>Entrada: {{ repair.prompt_chars }} caracteres</span>
+        <span>Salida: {{ repair.output_chars }} caracteres</span>
       </div>
       <div class="audit-change-grid transcript-diff-grid">
         <div>
@@ -637,7 +634,7 @@
           <pre class="mini-raw">{{ repair.before }}</pre>
         </div>
         <div>
-          <h5>Despues</h5>
+          <h5>Después</h5>
           <pre class="mini-raw">{{ repair.after }}</pre>
         </div>
       </div>
@@ -647,10 +644,10 @@
         <div class="transcript-change">
           <strong>{{ change.type }}</strong>
           {% if change.before %}<p><b>Antes:</b> {{ change.before }}</p>{% endif %}
-          {% if change.after %}<p><b>Despues:</b> {{ change.after }}</p>{% endif %}
+          {% if change.after %}<p><b>Después:</b> {{ change.after }}</p>{% endif %}
         </div>
         {% empty %}
-        <p class="muted">No hubo diferencias de palabras.</p>
+        <p class="muted">Sin cambios en el texto.</p>
         {% endfor %}
       </div>
     </details>
@@ -660,13 +657,13 @@
 
   <section class="step-card {% if pipeline_step >= 1 %}step-card--done{% endif %}">
     <span class="step-number">1</span>
-    <h3>Prompt generador</h3>
+    <h3>Instrucciones para la IA</h3>
     {% if job.generation_prompt and job.mode == 'api' %}
-      <p class="muted">La API procesó tu clase automáticamente con este prompt.</p>
+      <p class="muted">Con esto procesamos tu clase.</p>
     {% elif job.generation_prompt %}
-      <p class="muted">Cópialo en tu IA para generar los ítems manualmente.</p>
+      <p class="muted">Cópialo en tu asistente de IA para crear las preguntas.</p>
     {% else %}
-      <p class="muted">Aún no se generó un prompt para esta clase.</p>
+      <p class="muted">Aún no hay instrucciones para esta clase.</p>
     {% endif %}
     {% if job.generation_prompt %}
     <textarea readonly rows="10" class="prompt-textarea">{{ job.generation_prompt }}</textarea>
@@ -675,22 +672,22 @@
 
   {% if job.toon_output %}
   <section class="output-block">
-    <h3>Ítems IRT generados (raw)</h3>
+    <h3>Preguntas generadas</h3>
     <pre class="mini-raw">{{ job.toon_output }}</pre>
   </section>
   {% if job.mini_coherence_trace %}
   <section class="output-block audit-block">
-    <h3>Auditoria de coherencia MINI</h3>
+    <h3>Revisiones de preguntas</h3>
     {% for repair in job.mini_coherence_trace reversed %}
     <details class="audit-detail" {% if forloop.first %}open{% endif %}>
       <summary>
         {{ repair.created_at }}
-        {% if repair.changed %}<span class="audit-pill audit-pill--ok">items reparados</span>{% else %}<span class="audit-pill audit-pill--ok">sin cambios</span>{% endif %}
+        {% if repair.changed %}<span class="audit-pill audit-pill--ok">preguntas corregidas</span>{% else %}<span class="audit-pill audit-pill--ok">sin cambios</span>{% endif %}
       </summary>
       <div class="audit-summary">
-        <span>Backend: {{ repair.backend }}</span>
-        <span>Prompt: {{ repair.prompt_chars }} chars</span>
-        <span>Salida: {{ repair.output_chars }} chars</span>
+        <span>Motor: {{ repair.backend }}</span>
+        <span>Entrada: {{ repair.prompt_chars }} caracteres</span>
+        <span>Salida: {{ repair.output_chars }} caracteres</span>
       </div>
       <div class="audit-change-grid transcript-diff-grid">
         <div>
@@ -698,20 +695,20 @@
           <pre class="mini-raw">{{ repair.before }}</pre>
         </div>
         <div>
-          <h5>Despues</h5>
+          <h5>Después</h5>
           <pre class="mini-raw">{{ repair.after }}</pre>
         </div>
       </div>
-      <h5>Cambios por item</h5>
+      <h5>Cambios por pregunta</h5>
       <div class="transcript-change-list">
         {% for change in repair.changes %}
         <div class="transcript-change">
           <strong>{{ change.item }} · {{ change.field }}</strong>
           {% if change.before %}<p><b>Antes:</b> {{ change.before }}</p>{% endif %}
-          {% if change.after %}<p><b>Despues:</b> {{ change.after }}</p>{% endif %}
+          {% if change.after %}<p><b>Después:</b> {{ change.after }}</p>{% endif %}
         </div>
         {% empty %}
-        <p class="muted">No hubo diferencias en los items.</p>
+        <p class="muted">Sin cambios en las preguntas.</p>
         {% endfor %}
       </div>
     </details>
@@ -721,23 +718,23 @@
   {% elif job.mode == 'api' %}
   <section class="step-card {% if job.status == 'queued' or job.status == 'processing' %}step-card--done{% endif %}">
     <span class="step-number">2</span>
-    <h3>Generacion automatica de items</h3>
+    <h3>Creando preguntas</h3>
     {% if job.status == 'queued' or job.status == 'processing' %}
-      <p class="muted">La IA generara los items automaticamente cuando termine el turno de la cola.</p>
+      <p class="muted">Estamos creando tus preguntas.</p>
     {% elif job.error %}
-      <p class="muted">La generacion automatica se detuvo por el error mostrado arriba. Usa Reintentar para volver a ponerla en cola.</p>
+      <p class="muted">Se detuvo por un error. Pulsa Reintentar.</p>
     {% else %}
-      <p class="muted">No hay items todavia. Este flujo no necesita pegado manual.</p>
+      <p class="muted">Aún no hay preguntas.</p>
     {% endif %}
   </section>
   {% else %}
   <section class="step-card">
     <span class="step-number">2</span>
-    <h3>Pega los ítems generados</h3>
+    <h3>Pega las preguntas</h3>
     <form method="post" action="{% url 'submit_toon' job.pk %}">
       {% csrf_token %}
-      <textarea name="toon_output" rows="8" placeholder="Pega aquí la respuesta en formato MINI (a|... + líneas i)..."></textarea>
-      <button class="primary-button" type="submit">Guardar ítems</button>
+      <textarea name="toon_output" rows="8" placeholder="Pega aquí la respuesta de la IA"></textarea>
+      <button class="primary-button" type="submit">Guardar preguntas</button>
     </form>
   </section>
   {% endif %}
@@ -745,11 +742,11 @@
   {% if job.verification_prompt and not job.corrected_output %}
   <section class="step-card">
     <span class="step-number">3</span>
-    <h3>Prompt de verificación</h3>
+    <h3>Instrucciones de revisión</h3>
     {% if job.mode == 'api' %}
-      <p class="muted">La verificacion automatica usa este prompt internamente; no necesitas pegar nada.</p>
+      <p class="muted">No necesitas hacer nada.</p>
     {% else %}
-      <p class="muted">Pega los ítems generados + este prompt en tu IA para detectar errores.</p>
+      <p class="muted">Pégalas en tu asistente de IA junto con tus preguntas para detectar errores.</p>
     {% endif %}
     <textarea readonly rows="10">{{ job.verification_prompt }}</textarea>
   </section>
@@ -761,25 +758,25 @@
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
       Clase lista
     </h3>
-    <p>Los ítems fueron verificados y corregidos. Ya puedes estudiar.</p>
+    <p>Preguntas revisadas. Ya puedes estudiar.</p>
     <a class="primary-button" href="{% url 'lesson_detail' job.pk %}">Ir a estudiar</a>
   </section>
   {% elif job.verification_prompt and job.mode == 'free_manual' %}
   <section class="step-card">
     <span class="step-number">4</span>
-    <h3>Pega el reporte de verificación</h3>
-    <p class="muted">Las correcciones se aplican automáticamente al guardar.</p>
+    <h3>Pega la revisión</h3>
+    <p class="muted">Las correcciones se aplican al guardar.</p>
     <form method="post" action="{% url 'submit_verification' job.pk %}">
       {% csrf_token %}
-      <textarea name="verification_output" rows="6" placeholder="Pega aquí el reporte (formato v|... + líneas e)..."></textarea>
+      <textarea name="verification_output" rows="6" placeholder="Pega aquí la respuesta de la IA"></textarea>
       <button class="primary-button" type="submit">Aplicar correcciones</button>
     </form>
   </section>
   {% elif job.verification_prompt and job.mode == 'api' %}
   <section class="step-card">
     <span class="step-number">4</span>
-    <h3>Correcciones automaticas</h3>
-    <p class="muted">El flujo API aplica el reporte de verificacion en segundo plano. Si se detuvo, usa Reintentar.</p>
+    <h3>Aplicando correcciones</h3>
+    <p class="muted">Si se detiene, pulsa Reintentar.</p>
   </section>
   {% endif %}
 
@@ -855,8 +852,8 @@
           <input type="radio" name="visibility" value="shared" {% if job.visibility == 'shared' %}checked{% endif %}>
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
           <span>
-            <strong>Compartir con link</strong>
-            <small>Cualquiera con el link puede estudiar</small>
+            <strong>Con enlace</strong>
+            <small>Quien tenga el enlace puede estudiarla</small>
           </span>
         </label>
 
@@ -865,21 +862,21 @@
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
           <span>
             <strong>Pública</strong>
-            <small>Aparece en Explorar para todos</small>
+            <small>Todos pueden verla en Explorar</small>
           </span>
         </label>
 
       </div>
 
       <label class="tag-editor">
-        <span>Tags para Explorar</span>
+        <span>Etiquetas</span>
         <input type="text" name="tags" value="{{ job.tags }}" placeholder="historia, videojuegos, examen">
-        <small>Separalos con comas. Se usan en la busqueda publica.</small>
+        <small>Sepáralas con comas.</small>
       </label>
 
       {% if job.share_token %}
       <div class="share-link-box">
-        <p class="share-link-label">Link de acceso:</p>
+        <p class="share-link-label">Enlace:</p>
         <div class="share-link-row">
           <input type="text" readonly value="{{ request.scheme }}://{{ request.get_host }}{% url 'shared_lesson_detail' job.share_token %}" id="share-link-input">
           <button type="button" class="copy-btn" onclick="copyShareLink()">Copiar</button>
@@ -1390,23 +1387,23 @@
 
   // ── Intensidad ───────────────────────────────────────────────────────────
   function confirmRepairCoherence(form) {
-    var ok = window.confirm('La IA local revisara el MINI contra la transcripcion. Si no ve incoherencias, lo dejara igual. ¿Continuar?');
+    var ok = window.confirm('¿Revisar las preguntas con la transcripción? Si todo está bien, no cambiará nada.');
     if (!ok) return false;
     var btn = form.querySelector('button[type="submit"]');
     if (btn) {
       btn.disabled = true;
-      btn.textContent = 'Revisando coherencia...';
+      btn.textContent = 'Revisando…';
     }
     return true;
   }
 
   function confirmRepairTranscript(form) {
-    var ok = window.confirm('La IA local corregira la transcripcion usando el contexto de la clase. Si cambia algo, los items actuales se invalidan y el pipeline se vuelve a generar desde el texto corregido. ¿Continuar?');
+    var ok = window.confirm('¿Corregir la transcripción? Si hay cambios, las preguntas se volverán a crear.');
     if (!ok) return false;
     var btn = form.querySelector('button[type="submit"]');
     if (btn) {
       btn.disabled = true;
-      btn.textContent = 'Corrigiendo transcripcion...';
+      btn.textContent = 'Corrigiendo…';
     }
     return true;
   }

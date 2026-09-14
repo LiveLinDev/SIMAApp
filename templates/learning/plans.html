@@ -3,8 +3,8 @@
 {% block title %}Planes - SIMA{% endblock %}
 {% block content %}
 <section class="page-head">
-  <p class="eyebrow">Elige ritmo</p>
-  <h1>Planes mensuales</h1>
+  <p class="eyebrow">Planes</p>
+  <h1>Elige tu plan</h1>
 </section>
 <form method="post">
   {% csrf_token %}
@@ -19,14 +19,14 @@
           <p>{{ plan.description }}</p>
         {% endif %}
         {% if plan.credits == None %}
-          <p>Creditos ilimitados.</p>
+          <p>Créditos ilimitados</p>
         {% else %}
-          <p>{{ plan.credits }} creditos mensuales.</p>
+          <p>{{ plan.credits }} créditos al mes</p>
         {% endif %}
         {% if plan.classes == None %}
-          <p>Clases API ilimitadas.</p>
+          <p>Clases ilimitadas</p>
         {% else %}
-          <p>{{ plan.classes }} clases API al mes.</p>
+          <p>{{ plan.classes }} clases al mes</p>
         {% endif %}
       </label>
       {% endwith %}

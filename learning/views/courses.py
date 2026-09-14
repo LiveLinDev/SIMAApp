@@ -58,7 +58,7 @@ def course_create(request):
             course = form.save(commit=False)
             course.user = request.user
             course.save()
-            messages.success(request, "Curso creado. Ahora puedes subir clases dentro de este curso.")
+            messages.success(request, "Curso creado. Ya puedes subir tu primera clase.")
             return redirect("course_detail", pk=course.pk)
     else:
         form = CourseForm()
@@ -160,7 +160,7 @@ def course_archive(request, pk):
     course.is_archived = request.POST.get("action", "archive") != "restore"
     course.save(update_fields=["is_archived", "updated_at"] if hasattr(course, "updated_at") else ["is_archived"])
     if course.is_archived:
-        messages.info(request, f"«{course.name}» quedo archivado. Puedes restaurarlo desde Inicio → Cursos.")
+        messages.info(request, f"«{course.name}» se archivó. Puedes restaurarlo desde Cursos.")
         return redirect("dashboard")
-    messages.success(request, f"«{course.name}» esta activo de nuevo.")
+    messages.success(request, f"«{course.name}» está activo de nuevo.")
     return redirect("course_detail", pk=course.pk)

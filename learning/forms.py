@@ -34,8 +34,8 @@ class CourseForm(forms.ModelForm):
     main_topics_text = forms.CharField(
         label="Temas principales",
         required=False,
-        widget=forms.TextInput(attrs={"placeholder": "fotosintesis, celula, genetica"}),
-        help_text="Separalos con comas.",
+        widget=forms.TextInput(attrs={"placeholder": "fotosíntesis, célula, genética"}),
+        help_text="Sepáralos con comas.",
     )
 
     class Meta:
@@ -52,19 +52,19 @@ class CourseForm(forms.ModelForm):
         labels = {
             "name": "Nombre del curso",
             "academic_period": "Ciclo o periodo",
-            "description": "Descripcion",
+            "description": "Descripción",
             "instructor": "Docente",
             "level": "Nivel",
             "student_goal": "Objetivo de estudio",
-            "exam_date": "Fecha del proximo examen",
+            "exam_date": "Próximo examen",
         }
         widgets = {
             "exam_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
-            "name": forms.TextInput(attrs={"placeholder": "Ej: Biologia General"}),
+            "name": forms.TextInput(attrs={"placeholder": "Ej: Biología General", "autofocus": True}),
             "academic_period": forms.TextInput(attrs={"placeholder": "Ej: 2026-1"}),
-            "description": forms.Textarea(attrs={"rows": 3, "placeholder": "Opcional: que cubre este curso"}),
+            "description": forms.Textarea(attrs={"rows": 2, "placeholder": "Qué cubre este curso"}),
             "instructor": forms.TextInput(attrs={"placeholder": "Opcional"}),
-            "student_goal": forms.Textarea(attrs={"rows": 3, "placeholder": "Ej: prepararme para parciales y reforzar conceptos semanales"}),
+            "student_goal": forms.Textarea(attrs={"rows": 2, "placeholder": "Ej: aprobar el parcial"}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -108,16 +108,16 @@ class ApiLessonForm(forms.ModelForm):
         fields = ("course", "title", "source_text", "audio", "tags")
         labels = {
             "course": "Curso",
-            "title": "Titulo",
+            "title": "Título",
             "source_text": "Texto de la clase",
             "audio": "Audio de la clase",
             "tags": "Etiquetas",
         }
         widgets = {
-            "title": forms.TextInput(attrs={"placeholder": "Ej: Clase de economia"}),
-            "source_text": forms.Textarea(attrs={"rows": 5, "placeholder": "Opcional si subes audio. Tambien puedes pegar texto directo."}),
+            "title": forms.TextInput(attrs={"placeholder": "Ej: Clase 3 · Mercados"}),
+            "source_text": forms.Textarea(attrs={"rows": 8, "placeholder": "Pega aquí el texto de tu clase o tus apuntes"}),
             "audio": forms.ClearableFileInput(attrs={"accept": "audio/*", "capture": "microphone"}),
-            "tags": forms.TextInput(attrs={"placeholder": "moba, historia, videojuegos"}),
+            "tags": forms.TextInput(attrs={"placeholder": "parcial 1, repaso"}),
         }
 
     def __init__(self, *args, user=None, **kwargs):

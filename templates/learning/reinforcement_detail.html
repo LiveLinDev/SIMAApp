@@ -6,8 +6,8 @@
 <section class="ld-header">
   <div>
     <a href="{% url 'course_detail' course.pk %}" class="back-link">&larr; {{ course.name }}</a>
-    <h1>Refuerzo adaptativo</h1>
-    <p class="muted">{{ job.topics|join:", " }} &middot; habilidad estimada {{ job.theta|floatformat:2 }} &middot; {{ job.requested_items }} preguntas solicitadas</p>
+    <h1>Refuerzo</h1>
+    <p class="muted">{{ job.topics|join:", " }} &middot; {{ job.requested_items }} preguntas</p>
   </div>
 </section>
 
@@ -16,9 +16,9 @@
   {% if job.status == 'done' %}
   <section class="rf-panel">
     <div class="rf-stats">
-      <div><strong>{{ question_count }}</strong><span>preguntas nuevas en el banco</span></div>
+      <div><strong>{{ question_count }}</strong><span>preguntas nuevas</span></div>
       <div><strong>{{ summaries|length }}</strong><span>explicaciones</span></div>
-      <div><strong>{{ job.flashcard_ids|length }}</strong><span>flashcards</span></div>
+      <div><strong>{{ job.flashcard_ids|length }}</strong><span>tarjetas</span></div>
     </div>
 
     {% if summaries %}
@@ -41,7 +41,7 @@
         <input type="hidden" name="focus" value="weak">
         <button class="primary-button" type="submit">Practicar el refuerzo</button>
       </form>
-      {% if flashcards_url %}<a class="secondary-button" href="{{ flashcards_url }}">Ver flashcards</a>{% endif %}
+      {% if flashcards_url %}<a class="secondary-button" href="{{ flashcards_url }}">Ver tarjetas</a>{% endif %}
       <a class="secondary-button" href="{% url 'course_detail' course.pk %}">Volver al curso</a>
     </div>
   </section>
@@ -50,11 +50,11 @@
   <section class="rf-panel rf-panel--error">
     <h3>No se pudo generar el refuerzo</h3>
     <p>{{ job.error }}</p>
-    {% if job.credits_refunded %}<p class="muted">Los {{ job.credits_charged }} creditos fueron reembolsados.</p>{% endif %}
+    {% if job.credits_refunded %}<p class="muted">Te devolvimos los {{ job.credits_charged }} créditos.</p>{% endif %}
     <div class="rf-actions">
       <form method="post" action="{% url 'reinforcement_start' course.pk %}">
         {% csrf_token %}
-        <button class="primary-button" type="submit">Intentar de nuevo</button>
+        <button class="primary-button" type="submit">Reintentar</button>
       </form>
       <a class="secondary-button" href="{% url 'course_detail' course.pk %}">Volver al curso</a>
     </div>
@@ -63,12 +63,12 @@
   {% else %}
   <section class="rf-panel">
     <h3>Generando material a tu medida&hellip;</h3>
-    <p class="muted">Estamos leyendo las clases del curso y creando preguntas y explicaciones sobre {{ job.topics|join:", " }}. Esta pagina se actualiza sola.</p>
+    <p class="muted">Creando preguntas y explicaciones sobre {{ job.topics|join:", " }}.</p>
   </section>
   {% endif %}
 
   <details class="rf-log">
-    <summary>Registro del proceso</summary>
+    <summary>Ver detalles</summary>
     <pre>{{ job.processing_log }}</pre>
   </details>
 </div>

@@ -73,7 +73,7 @@ def register(request):
             profile = _get_or_create_profile(user)
             grant_plan_credits(profile, description="Creditos iniciales del plan gratis")
             login(request, user)
-            messages.success(request, "Cuenta creada. Bienvenido a tu dojo de clases.")
+            messages.success(request, "Cuenta creada. ¡Bienvenido a SIMA!")
             return redirect("dashboard")
     else:
         form = RegisterForm()
@@ -92,7 +92,7 @@ def dashboard(request):
         preferences.daily_goal = max(1, min(daily_goal, 200))
         preferences.email_reminders = bool(request.POST.get("email_reminders"))
         preferences.save(update_fields=["daily_goal", "email_reminders", "updated_at"])
-        messages.success(request, "Preferencias actualizadas.")
+        messages.success(request, "Preferencias guardadas.")
         return redirect(f"{request.path}?tab=preferencias")
 
     courses = Course.objects.filter(user=request.user, is_archived=False).annotate(
@@ -156,7 +156,7 @@ def plans(request):
             profile.api_classes_used = 0
             profile.save()
             grant_plan_credits(profile)
-            messages.success(request, "Plan actualizado para este mes.")
+            messages.success(request, "Plan actualizado.")
             return redirect("dashboard")
     else:
         form = PlanForm(initial={"plan": profile.plan})

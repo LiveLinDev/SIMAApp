@@ -5,8 +5,8 @@
 <section class="ld-header">
   <div>
     <a href="{% url 'course_detail' course.pk %}" class="back-link">&larr; {{ course.name }}</a>
-    <h1>Resumen acumulado del curso</h1>
-    <p class="muted">Integra {{ class_summary_count }} resumen{{ class_summary_count|pluralize:"es" }} de clase{% if weak_topics %} &middot; prioriza: {{ weak_topics|join:", " }}{% endif %}</p>
+    <h1>Resumen del curso</h1>
+    <p class="muted">{{ class_summary_count }} clase{{ class_summary_count|pluralize }}{% if weak_topics %} &middot; por reforzar: {{ weak_topics|join:", " }}{% endif %}</p>
   </div>
 </section>
 
@@ -14,26 +14,26 @@
   {% if pending_job %}
   <section class="sm-card sm-card--pending">
     <strong>{{ pending_job.get_status_display }}</strong>
-    <p class="muted">SIMA esta redactando el resumen con {{ pending_job.backend }}. Esta pagina se actualiza sola; puedes seguir estudiando mientras tanto.</p>
+    <p class="muted">Estamos preparando tu resumen. Puedes seguir estudiando mientras tanto.</p>
   </section>
   {% elif last_job and last_job.status == 'error' %}
   <section class="sm-card sm-card--error">
-    <strong>El ultimo intento fallo</strong>
-    <p class="muted">{{ last_job.error|truncatechars:240 }} Los creditos se reembolsaron.</p>
+    <strong>No pudimos generar el resumen</strong>
+    <p class="muted">{{ last_job.error|truncatechars:240 }} Te devolvimos los créditos. Inténtalo de nuevo.</p>
   </section>
   {% endif %}
   {% if summary %}
     {% include "learning/_summary_body.html" with summary=summary %}
   {% else %}
   <section class="sm-card sm-card--empty">
-    <h2>Todavia no hay resumen del curso</h2>
-    <p class="muted">SIMA integra los resumenes de tus clases (o sus transcripciones) en un unico documento por temas, y senala que repasar primero segun tus temas debiles.</p>
+    <h2>Aún no hay resumen del curso</h2>
+    <p class="muted">Reúne todas tus clases en un solo resumen por temas.</p>
   </section>
   {% endif %}
 
   {% if class_summaries %}
   <section class="sm-card">
-    <h3>Resumenes por clase</h3>
+    <h3>Resúmenes por clase</h3>
     <ul class="rec-list">
       {% for s in class_summaries %}
       <li>
@@ -50,11 +50,11 @@
     <form method="post">
       {% csrf_token %}
       <button class="{% if summary %}secondary-button{% else %}primary-button{% endif %}" type="submit">
-        {% if summary %}Regenerar resumen{% else %}Generar resumen del curso{% endif %} ({{ summary_cost }} creditos)
+        {% if summary %}Regenerar resumen{% else %}Generar resumen del curso{% endif %} ({{ summary_cost }} créditos)
       </button>
     </form>
     {% else %}
-    <p class="muted">El curso aun no tiene clases con contenido para resumir.</p>
+    <p class="muted">Sube una clase para poder resumir el curso.</p>
     {% endif %}
     {% if summary %}
     <form method="post" action="{% url 'practice_start' course.pk %}">

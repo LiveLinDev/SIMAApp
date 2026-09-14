@@ -20,7 +20,7 @@
       <span class="cloze-num">{{ forloop.counter }}</span>
       <div class="cloze-body">
         <p class="cloze-prompt">{{ item.prompt }}</p>
-        <input type="text" class="cloze-input" placeholder="Escribe aqui..." autocomplete="off" aria-label="Respuesta {{ forloop.counter }}">
+        <input type="text" class="cloze-input" placeholder="Escribe aquí" autocomplete="off" aria-label="Respuesta {{ forloop.counter }}">
         <span class="cloze-feedback" aria-live="polite"></span>
       </div>
     </div>
@@ -28,7 +28,7 @@
   </form>
 
   <div class="cloze-hud">
-    <button class="primary-button" type="button" id="cloze-check">Verificar respuestas</button>
+    <button class="primary-button" type="button" id="cloze-check">Revisar respuestas</button>
     <div class="cloze-score" id="cloze-score" hidden>
       <strong>0</strong><span>/ {{ items|length }}</span>
     </div>

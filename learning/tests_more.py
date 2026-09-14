@@ -44,7 +44,7 @@ class ExamDateTests(TestCase):
         self.assertIn("en 3 dias", plan[0]["title"])
         self.assertEqual(plan[0]["fields"]["focus"], "exam")
         page = self.client.get(reverse("course_detail", args=[self.course.pk]))
-        self.assertContains(page, "Examen en 3 dias")
+        self.assertContains(page, "Examen en 3 días")
         self.course.exam_date = timezone.localdate() - timedelta(days=1)
         self.course.save()
         self.assertContains(self.client.get(reverse("course_detail", args=[self.course.pk])), "Examen pasado")

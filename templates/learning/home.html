@@ -1,157 +1,134 @@
 {% extends "base.html" %}
-{% block title %}SIMA - Plataforma de estudio con IA{% endblock %}
+{% block title %}SIMA · Estudia lo que te falta{% endblock %}
+{% block body_class %}page-landing{% endblock %}
 {% block content %}
 
-<section class="landing-hero">
-  <div class="landing-copy">
-    <p class="eyebrow">Acompañamiento adaptativo para universitarios</p>
-    <h1>Sube tu clase. SIMA recuerda lo que sabes y te dice qué estudiar hoy.</h1>
-    <p class="hero-lead">
-      Cada respuesta ajusta tu perfil por curso: práctica que se adapta a tu nivel, refuerzo a la medida de tus temas débiles,
-      repaso antes de que olvides y simulacros con nota. Con la transcripción de tu propia clase como fuente.
-    </p>
-    <div class="action-row">
-      <a class="primary-button" href="{% url 'register' %}">Empezar gratis</a>
-      <a class="secondary-button" href="{% url 'login' %}">Entrar a mi cuenta</a>
+<section class="lp-hero">
+  <div class="lp-hero__copy">
+    <p class="lp-eyebrow">Para universitarios</p>
+    <h1 class="lp-title">Sube tu clase. <span>Estudia lo que te falta.</span></h1>
+    <p class="lp-lead">SIMA convierte tus clases en preguntas, tarjetas y resúmenes, y te dice qué repasar cada día.</p>
+    <div class="lp-actions">
+      <a class="lp-btn lp-btn--primary" href="{% url 'register' %}">Empezar gratis</a>
+      <a class="lp-btn lp-btn--ghost" href="{% url 'login' %}">Ya tengo cuenta</a>
     </div>
-    <div class="trust-row">
-      <span>Clase → práctica → plan de hoy</span>
-      <span>IRT + Bloom + repetición espaciada</span>
-      <span>Créditos controlados</span>
-    </div>
+    <ul class="lp-points">
+      <li>Audio o texto</li>
+      <li>Preguntas verificadas</li>
+      <li>Repaso diario</li>
+    </ul>
   </div>
 
-  <div class="product-preview" aria-label="Vista previa de SIMA">
-    <div class="preview-toolbar">
+  <div class="lp-mock" aria-hidden="true">
+    <div class="lp-mock__bar">
       <span></span><span></span><span></span>
       <strong>Biología General</strong>
     </div>
-    <div class="preview-body">
-      <aside class="preview-sidebar">
-        <span class="active">Resumen</span>
-        <span>Flashcards</span>
-        <span>Quiz</span>
-      </aside>
-      <div class="preview-main">
-        <div class="preview-kicker">Clase 04</div>
-        <h2>Fotosíntesis y respiración celular</h2>
-        <div class="preview-progress"><span style="width:68%"></span></div>
-        <div class="preview-cards">
-          <article>
-            <strong>12</strong>
-            <small>conceptos clave</small>
-          </article>
-          <article>
-            <strong>24</strong>
-            <small>flashcards</small>
-          </article>
-          <article>
-            <strong>L4</strong>
-            <small>reforzar análisis</small>
-          </article>
-        </div>
-        <div class="recommendation-strip">
-          Repasa “función de la luz” antes del siguiente quiz.
-        </div>
+    <div class="lp-mock__body">
+      <p class="lp-mock__kicker">Plan de hoy</p>
+      <h2 class="lp-mock__title">Fotosíntesis y respiración celular</h2>
+      <ul class="lp-mock__tasks">
+        <li><span class="lp-dot lp-dot--acid"></span><div><strong>Practicar 10 preguntas</strong><small>Tu nivel: intermedio</small></div><em>Ir</em></li>
+        <li><span class="lp-dot lp-dot--green"></span><div><strong>Repasar 8 tarjetas</strong><small>Antes de que las olvides</small></div><em>Ir</em></li>
+        <li><span class="lp-dot lp-dot--ink"></span><div><strong>Simulacro</strong><small>Examen en 5 días</small></div><em>Ir</em></li>
+      </ul>
+      <div class="lp-mock__progress">
+        <div><span style="width:68%"></span></div>
+        <small>68 % de acierto esta semana</small>
       </div>
     </div>
   </div>
 </section>
 
-<section class="study-map">
-  <div class="section-narrative">
-    <p class="eyebrow">Flujo principal</p>
-    <h2>Una clase larga entra. Un plan de estudio que se ajusta a ti sale.</h2>
-    <p>Cada curso acumula un banco de preguntas verificadas a partir de tus clases; cada sesión de práctica actualiza tu perfil por tema y decide el siguiente paso: reforzar, repasar, hacer un simulacro o avanzar.</p>
-  </div>
-  <div class="map-board">
-    <div class="map-line" aria-hidden="true"></div>
-    <article class="map-node node-course">
-      <span>01</span>
-      <h3>Contexto de curso</h3>
-      <p>Temas, ciclo, docente y objetivo personal.</p>
-      <small>Biología General · 2026-1</small>
+<section class="lp-section">
+  <header class="lp-section__head">
+    <p class="lp-eyebrow">Cómo funciona</p>
+    <h2>De la clase al examen, en tres pasos</h2>
+  </header>
+  <ol class="lp-steps">
+    <li>
+      <span class="lp-steps__num">1</span>
+      <h3>Sube tu clase</h3>
+      <p>Graba el audio, súbelo o pega tus apuntes.</p>
+    </li>
+    <li>
+      <span class="lp-steps__num">2</span>
+      <h3>Practica</h3>
+      <p>Responde preguntas de tu propia clase que se ajustan a tu nivel.</p>
+    </li>
+    <li>
+      <span class="lp-steps__num">3</span>
+      <h3>Repasa a tiempo</h3>
+      <p>Cada día ves qué repasar y llegas al examen con un simulacro.</p>
+    </li>
+  </ol>
+</section>
+
+<section class="lp-section">
+  <header class="lp-section__head">
+    <p class="lp-eyebrow">Todo en un lugar</p>
+    <h2>Lo que obtienes de cada clase</h2>
+  </header>
+  <div class="lp-features">
+    <article class="lp-feature">
+      <span class="lp-feature__icon">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      </span>
+      <h3>Práctica a tu nivel</h3>
+      <p>Las preguntas se vuelven más difíciles o más fáciles según respondes.</p>
     </article>
-    <article class="map-node node-class">
-      <span>02</span>
-      <h3>Clase procesada</h3>
-      <p>Audio, transcripción y segmentación temática.</p>
-      <small>45 min → 8 bloques clave</small>
+    <article class="lp-feature">
+      <span class="lp-feature__icon">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M7 22h10"/></svg>
+      </span>
+      <h3>Tarjetas de repaso</h3>
+      <p>Aparecen justo cuando estás por olvidarlas.</p>
     </article>
-    <article class="map-node node-study">
-      <span>03</span>
-      <h3>Ruta de repaso</h3>
-      <p>Resumen, flashcards, quiz y recomendación.</p>
-      <small>Próximo foco: análisis</small>
+    <article class="lp-feature">
+      <span class="lp-feature__icon">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8"/></svg>
+      </span>
+      <h3>Resúmenes</h3>
+      <p>Los puntos clave de cada clase y de todo el curso.</p>
+    </article>
+    <article class="lp-feature">
+      <span class="lp-feature__icon">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      </span>
+      <h3>Simulacros</h3>
+      <p>Pon la fecha de tu examen y practica con nota sobre 20.</p>
     </article>
   </div>
 </section>
 
-<section class="sima-os">
-  <div class="section-narrative">
-    <p class="eyebrow">Qué genera SIMA</p>
-    <h2>Un sistema de materiales conectados, no cuatro archivos separados.</h2>
-    <p>Los outputs nacen del mismo contexto del curso y se retroalimentan con tus respuestas.</p>
-  </div>
-  <div class="bento-outputs">
-    <article class="bento-card bento-summary">
-      <span class="bento-label">Resumen</span>
-      <h3>Mapa breve de la clase</h3>
-      <p>Ideas principales, conceptos y ejemplos organizados por tema.</p>
-      <div class="summary-lines">
-        <i></i><i></i><i></i>
-      </div>
-    </article>
-    <article class="bento-card bento-quiz">
-      <span class="bento-label">Quiz adaptativo</span>
-      <h3>Bloom + IRT/CAT</h3>
-      <p>La dificultad se ajusta según precisión y error estándar.</p>
-      <div class="theta-meter"><span style="width:62%"></span></div>
-    </article>
-    <article class="bento-card bento-flashcards">
-      <span class="bento-label">Flashcards</span>
-      <h3>Repaso mínimo viable</h3>
-      <div class="flash-stack">
-        <div>¿Dónde ocurre la fotosíntesis?</div>
-        <div>Cloroplastos</div>
-      </div>
-    </article>
-    <article class="bento-card bento-recommendation">
-      <span class="bento-label">Recomendación</span>
-      <h3>Qué estudiar después</h3>
-      <p>Repasa función de la luz y resuelve 5 preguntas de análisis.</p>
-    </article>
-  </div>
-</section>
-
-<section class="pricing-lab">
-  <div class="section-narrative pricing-copy">
-    <p class="eyebrow">Planes</p>
-    <h2>Créditos claros para estudiar sin sorpresas.</h2>
-    <p>Antes de procesar una clase, SIMA muestra el costo estimado. Tú decides cuándo gastar créditos.</p>
-  </div>
-  <div class="pricing-shell">
+{% if plans %}
+<section class="lp-section" id="planes">
+  <header class="lp-section__head">
+    <p class="lp-eyebrow">Planes</p>
+    <h2>Empieza gratis</h2>
+  </header>
+  <div class="lp-plans">
     {% for key, plan in plans.items %}
-      <article class="pricing-card {% if key == 'pro' %}pricing-card--featured{% endif %}">
-        {% if key == 'pro' %}<span class="recommended">Recomendado</span>{% endif %}
-        <div>
-          <span class="plan-badge">{{ plan.label }}</span>
-          <p class="plan-price">${{ plan.price }}<small>/mes</small></p>
-        </div>
-        {% if key == "free" %}
-          <p>Para probar el flujo, crear cursos y organizar primeros materiales.</p>
-          <strong>30 créditos</strong>
-        {% elif key == "unlimited" %}
-          <p>Para estudiantes intensivos que procesan muchas clases por semana.</p>
-          <strong>Créditos ilimitados</strong>
-        {% else %}
-          <p>Para procesar clases con transcripción, quizzes y repasos adaptativos.</p>
-          <strong>{{ plan.credits }} créditos</strong>
-        {% endif %}
-        <a class="primary-button" href="{% url 'register' %}">Elegir</a>
-      </article>
+    <article class="lp-plan {% if key == 'pro' %}lp-plan--featured{% endif %}">
+      {% if key == 'pro' %}<span class="lp-plan__tag">Recomendado</span>{% endif %}
+      <h3>{{ plan.label }}</h3>
+      <p class="lp-plan__price">${{ plan.price }}<small>/mes</small></p>
+      <p class="lp-plan__credits">{% if key == "unlimited" %}Créditos ilimitados{% else %}{{ plan.credits }} créditos{% endif %}</p>
+      <a class="lp-btn {% if key == 'pro' %}lp-btn--primary{% else %}lp-btn--ghost{% endif %}" href="{% url 'register' %}">Elegir</a>
+    </article>
     {% endfor %}
   </div>
 </section>
+{% endif %}
+
+<section class="lp-cta">
+  <h2>Tu próxima clase puede ser tu mejor repaso.</h2>
+  <a class="lp-btn lp-btn--primary" href="{% url 'register' %}">Crear cuenta gratis</a>
+</section>
+
+<footer class="lp-footer">
+  <span>SIMA · UPC 2026</span>
+  <a href="{% url 'mini_landing' %}">Formato .mini</a>
+</footer>
 
 {% endblock %}

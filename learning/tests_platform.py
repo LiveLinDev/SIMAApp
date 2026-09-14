@@ -83,7 +83,7 @@ class SummaryQueueTests(TestCase):
         self.profile.refresh_from_db()
         self.assertEqual(self.profile.credit_balance, 100)
         page = self.client.get(f"/clase/{self.job.pk}/resumen/")
-        self.assertContains(page, "El ultimo intento fallo")
+        self.assertContains(page, "No pudimos generar el resumen")
         self.assertContains(page, "Generar resumen")
 
     @patch("learning.job_queue.enqueue_summary_job")

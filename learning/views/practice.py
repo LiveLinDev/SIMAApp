@@ -58,7 +58,7 @@ def practice_start(request, pk):
             focus=request.POST.get("focus", "balanced"),
         )
     except adaptive.NoItemsError:
-        messages.warning(request, "Este curso aun no tiene preguntas listas. Sube una clase y espera a que termine de procesarse.")
+        messages.warning(request, "Este curso aún no tiene preguntas. Sube una clase para empezar.")
         return redirect("course_detail", pk=course.pk)
     return redirect("practice_session", pk=course.pk, session_id=session.pk)
 
@@ -81,7 +81,7 @@ def practice_answer(request, pk, session_id):
         try:
             answer = adaptive.answer_question(session, int(request.POST.get("question_id", 0)), request.POST.get("option_id"))
         except (ValueError, adaptive.Question.DoesNotExist):
-            messages.info(request, "Esa pregunta ya no esta activa; continua con la siguiente.")
+            messages.info(request, "Esa pregunta ya no está disponible. Sigue con la siguiente.")
     url = reverse("practice_session", args=[course.pk, session.pk])
     return redirect(f"{url}?last={answer.pk}" if answer else url)
 

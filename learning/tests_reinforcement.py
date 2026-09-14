@@ -156,4 +156,4 @@ class ReinforcementTests(TestCase):
         self.assertEqual(page.status_code, 200)
         self.assertContains(page, "Generando material")
         detail = self.client.get(f"/cursos/{self.course.pk}/")
-        self.assertContains(detail, "Generar refuerzo")
+        self.assertContains(detail, "Crear material de refuerzo")

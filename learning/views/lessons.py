@@ -65,7 +65,7 @@ from ._common import (
 @login_required
 def free_lesson(request):
     if not Course.objects.filter(user=request.user, is_archived=False).exists():
-        messages.info(request, "Primero crea un curso para que SIMA guarde tus clases con contexto.")
+        messages.info(request, "Primero crea un curso para guardar tus clases.")
         return redirect("course_create")
     if request.method == "POST":
         form = FreeLessonForm(request.POST, user=request.user)
@@ -89,16 +89,16 @@ def api_lesson(request):
     profile = _get_or_create_profile(request.user)
     backends = get_available_backends()
     if not _has_api_capacity(request.user, profile):
-        messages.warning(request, "Tu plan actual no tiene clases API disponibles.")
+        messages.warning(request, "Ya usaste las clases de tu plan. Cambia de plan para subir más.")
         return redirect("plans")
     if not Course.objects.filter(user=request.user, is_archived=False).exists():
-        messages.info(request, "Primero crea un curso para que SIMA guarde tus clases con contexto.")
+        messages.info(request, "Primero crea un curso para guardar tus clases.")
         return redirect("course_create")
     if request.method == "POST":
         form = ApiLessonForm(request.POST, request.FILES, user=request.user)
         backend = _normalize_ai_backend_choice(request.POST.get("backend"), backends)
         if normalize_backend(request.POST.get("backend")) == "cloud" and backend != "cloud":
-            messages.info(request, "La nube no esta configurada; se usara el modelo local.")
+            messages.info(request, "Usaremos el procesamiento estándar.")
         verification_mode = request.POST.get("verification_mode") or getattr(settings, "VERIFICATION_DEFAULT_MODE", "web")
         if form.is_valid():
             job = form.save(commit=False)
@@ -118,7 +118,7 @@ def api_lesson(request):
             if not has_enough_credits(profile, estimate.amount):
                 messages.warning(
                     request,
-                    f"No tienes creditos suficientes. Esta clase requiere {estimate.amount} y tienes {profile.credits_label}.",
+                    f"Te faltan créditos: esta clase necesita {estimate.amount} y tienes {profile.credits_label}.",
                 )
                 return redirect("plans")
             try:
@@ -140,17 +140,17 @@ def api_lesson(request):
                 )
             except ValueError:
                 job.delete()
-                messages.warning(request, "No tienes creditos suficientes para procesar esta clase.")
+                messages.warning(request, "No tienes créditos suficientes para esta clase.")
                 return redirect("plans")
             try:
                 enqueue_lesson_job(job.pk, backend=backend)
-                messages.success(request, "Clase agregada a la cola. Puedes dejar esta página abierta; se actualizará sola.")
+                messages.success(request, "Estamos procesando tu clase. Te avisaremos aquí cuando esté lista.")
             except Exception as exc:
                 err_str = clean_ai_error(exc)
                 job.error = err_str
                 job.status = LessonJob.Status.ERROR
                 job.save(update_fields=["error", "status", "updated_at"])
-                messages.warning(request, f"No se pudo completar automaticamente: {err_str}")
+                messages.warning(request, f"No pudimos procesar tu clase: {err_str}")
             return redirect("lesson_detail", pk=job.pk)
     else:
         form = ApiLessonForm(user=request.user, initial={"course": request.GET.get("course")})
@@ -259,7 +259,7 @@ def start_quiz(request, pk):
         raise Http404()
     job = _get_accessible_job(request.user, pk)
     if not job.course_id:
-        messages.warning(request, "Asigna esta clase a un curso para practicarla con seguimiento.")
+        messages.warning(request, "Agrega esta clase a un curso para practicarla.")
         return redirect("lesson_detail", pk=job.pk)
     try:
         session = adaptive.start_practice(
@@ -270,7 +270,7 @@ def start_quiz(request, pk):
             lesson=job,
         )
     except adaptive.NoItemsError:
-        messages.warning(request, "Esta clase aun no tiene items validos para practicar.")
+        messages.warning(request, "Esta clase aún no tiene preguntas para practicar.")
         return redirect("lesson_detail", pk=job.pk)
     return redirect("practice_session", pk=job.course_id, session_id=session.pk)
 
@@ -282,16 +282,16 @@ def retry_api_lesson(request, pk):
     profile = _get_or_create_profile(request.user)
     job = get_object_or_404(LessonJob, pk=pk, user=request.user, mode=LessonJob.Mode.API)
     if not _has_api_capacity(request.user, profile):
-        messages.warning(request, "Tu plan actual no tiene clases API disponibles.")
+        messages.warning(request, "Ya usaste las clases de tu plan. Cambia de plan para subir más.")
         return redirect("plans")
 
     backends = get_available_backends()
     backend = _normalize_ai_backend_choice(request.POST.get("backend"), backends)
     if normalize_backend(request.POST.get("backend")) == "cloud" and backend != "cloud":
-        messages.info(request, "La nube no esta configurada; se reintentara con el modelo local.")
+        messages.info(request, "Reintentaremos con el procesamiento estándar.")
     verification_mode = request.POST.get("verification_mode") or job.verification_mode
     if not has_enough_credits(profile, REGENERATION_COST):
-        messages.warning(request, f"Necesitas {REGENERATION_COST} creditos para regenerar esta clase.")
+        messages.warning(request, f"Necesitas {REGENERATION_COST} créditos para reintentar.")
         return redirect("plans")
     try:
         consume_credits(
@@ -304,7 +304,7 @@ def retry_api_lesson(request, pk):
             metadata={"lesson_job_id": job.pk},
         )
     except ValueError:
-        messages.warning(request, "No tienes creditos suficientes para regenerar esta clase.")
+        messages.warning(request, "No tienes créditos suficientes para reintentar.")
         return redirect("plans")
     job.status = LessonJob.Status.QUEUED
     job.ai_backend = backend
@@ -337,12 +337,12 @@ def retry_api_lesson(request, pk):
     ])
     try:
         enqueue_lesson_job(job.pk, backend=backend)
-        messages.success(request, "Reintento agregado a la cola.")
+        messages.success(request, "Reintentando. Te avisaremos cuando esté lista.")
     except Exception as exc:
         err_str = clean_ai_error(exc)
         job.error = err_str
         job.status = LessonJob.Status.ERROR
-        messages.warning(request, f"No se pudo completar automaticamente: {err_str}")
+        messages.warning(request, f"No pudimos procesar tu clase: {err_str}")
         job.save(update_fields=["error", "status", "updated_at"])
     return redirect("lesson_detail", pk=job.pk)
 
@@ -357,13 +357,13 @@ def submit_toon(request, pk):
         try:
             job.toon_output, item_count = _compile_mini_for_render(form.cleaned_data["toon_output"], "MINI manual")
         except ValueError as exc:
-            messages.warning(request, f"No se guardo el MINI porque no parsea completo: {exc}")
+            messages.warning(request, "No pudimos leer las preguntas pegadas. Revisa el texto e inténtalo de nuevo.")
             return redirect("lesson_detail", pk=job.pk)
         job.verification_prompt = build_verification_prompt(job.toon_output)
         job.status = LessonJob.Status.TOON_READY
         job.processing_log = _append_view_log(job.processing_log, "MINI manual parseado", f"{item_count} items renderizables.")
         job.save()
-        messages.success(request, "Ítems guardados. Ya puedes verificarlos.")
+        messages.success(request, "Preguntas guardadas.")
     return redirect("lesson_detail", pk=job.pk)
 
 
@@ -379,12 +379,12 @@ def submit_verification(request, pk):
         try:
             job.corrected_output, item_count = _compile_mini_for_render(job.corrected_output, "MINI corregido manual")
         except ValueError as exc:
-            messages.warning(request, f"Las correcciones no se guardaron porque el MINI no parsea completo: {exc}")
+            messages.warning(request, "No pudimos aplicar las correcciones. Revisa el texto e inténtalo de nuevo.")
             return redirect("lesson_detail", pk=job.pk)
         job.status = LessonJob.Status.CORRECTED
         job.processing_log = _append_view_log(job.processing_log, "MINI corregido parseado", f"{item_count} items renderizables.")
         job.save()
-        messages.success(request, "Correcciones aplicadas automáticamente.")
+        messages.success(request, "Correcciones aplicadas.")
     return redirect("lesson_detail", pk=job.pk)
 
 
@@ -395,7 +395,7 @@ def repair_coherence(request, pk):
     job = get_object_or_404(LessonJob, pk=pk, user=request.user)
     mini_text = job.corrected_output or job.toon_output
     if not mini_text.strip():
-        messages.warning(request, "Aun no hay items MINI para revisar.")
+        messages.warning(request, "Aún no hay preguntas para revisar.")
         return redirect("lesson_detail", pk=job.pk)
 
     source_context = "\n\n".join(
@@ -414,7 +414,7 @@ def repair_coherence(request, pk):
             backend="local",
         )
     except Exception as exc:
-        messages.warning(request, f"No se pudo reparar coherencia con IA local: {clean_ai_error(exc)}")
+        messages.warning(request, f"No pudimos revisar las preguntas: {clean_ai_error(exc)}")
         return redirect("lesson_detail", pk=job.pk)
 
     update_fields = ["ai_backend", "processing_log", "updated_at"]
@@ -422,7 +422,7 @@ def repair_coherence(request, pk):
     try:
         repaired_mini, item_count = _compile_mini_for_render(repaired_mini, "Coherencia MINI manual")
     except ValueError as exc:
-        messages.warning(request, f"La reparacion no se guardo porque el MINI no parsea completo: {exc}")
+        messages.warning(request, "No pudimos guardar la revisión. Inténtalo de nuevo.")
         return redirect("lesson_detail", pk=job.pk)
     if job.corrected_output:
         job.corrected_output = repaired_mini
@@ -440,9 +440,9 @@ def repair_coherence(request, pk):
     job.save(update_fields=update_fields)
 
     if trace.get("changed"):
-        messages.success(request, "Coherencia reparada con IA local.")
+        messages.success(request, "Preguntas corregidas.")
     else:
-        messages.info(request, "La IA local no encontro incoherencias que cambiar.")
+        messages.info(request, "Todo en orden: no hubo nada que corregir.")
     return redirect("lesson_detail", pk=job.pk)
 
 
@@ -452,10 +452,10 @@ def repair_transcript(request, pk):
         raise Http404()
     job = get_object_or_404(LessonJob, pk=pk, user=request.user)
     if job.status in [LessonJob.Status.QUEUED, LessonJob.Status.PROCESSING]:
-        messages.warning(request, "Espera a que termine el procesamiento antes de corregir la transcripcion.")
+        messages.warning(request, "Espera a que termine de procesarse para corregir la transcripción.")
         return redirect("lesson_detail", pk=job.pk)
     if not job.transcript.strip():
-        messages.warning(request, "Esta clase aun no tiene transcripcion para corregir.")
+        messages.warning(request, "Esta clase aún no tiene transcripción.")
         return redirect("lesson_detail", pk=job.pk)
 
     original_transcript = job.transcript
@@ -467,7 +467,7 @@ def repair_transcript(request, pk):
             backend="local",
         )
     except Exception as exc:
-        messages.warning(request, f"No se pudo corregir la transcripcion con IA local: {clean_ai_error(exc)}")
+        messages.warning(request, f"No pudimos corregir la transcripción: {clean_ai_error(exc)}")
         return redirect("lesson_detail", pk=job.pk)
 
     changed = bool(trace.get("changed"))
@@ -528,15 +528,15 @@ def repair_transcript(request, pk):
             job.processing_stage = "Error"
             job.processing_log = _append_view_log(job.processing_log, "Error", err_str)
             job.save(update_fields=["error", "status", "processing_stage", "processing_log", "updated_at"])
-            messages.warning(request, f"Transcripcion corregida, pero no se pudo regenerar automaticamente: {err_str}")
+            messages.warning(request, f"Transcripción corregida, pero no pudimos crear las preguntas: {err_str}")
             return redirect("lesson_detail", pk=job.pk)
 
     if changed and job.mode == LessonJob.Mode.API:
-        messages.success(request, "Transcripcion corregida. Se reinicio todo el pipeline desde ese lienzo.")
+        messages.success(request, "Transcripción corregida. Estamos creando las preguntas de nuevo.")
     elif changed:
-        messages.success(request, "Transcripcion corregida. El prompt manual fue regenerado y los items anteriores quedaron invalidados.")
+        messages.success(request, "Transcripción corregida. Copia las nuevas instrucciones para crear las preguntas.")
     else:
-        messages.info(request, "La IA local no encontro cambios necesarios en la transcripcion.")
+        messages.info(request, "La transcripción ya estaba bien.")
     return redirect("lesson_detail", pk=job.pk)
 
 

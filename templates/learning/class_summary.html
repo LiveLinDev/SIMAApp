@@ -14,20 +14,20 @@
   {% if pending_job %}
   <section class="sm-card sm-card--pending">
     <strong>{{ pending_job.get_status_display }}</strong>
-    <p class="muted">SIMA esta redactando el resumen con {{ pending_job.backend }}. Esta pagina se actualiza sola; puedes seguir estudiando mientras tanto.</p>
+    <p class="muted">Estamos preparando tu resumen. Puedes seguir estudiando mientras tanto.</p>
   </section>
   {% elif last_job and last_job.status == 'error' %}
   <section class="sm-card sm-card--error">
-    <strong>El ultimo intento fallo</strong>
-    <p class="muted">{{ last_job.error|truncatechars:240 }} Los creditos se reembolsaron.</p>
+    <strong>No pudimos generar el resumen</strong>
+    <p class="muted">{{ last_job.error|truncatechars:240 }} Te devolvimos los créditos. Inténtalo de nuevo.</p>
   </section>
   {% endif %}
   {% if summary %}
     {% include "learning/_summary_body.html" with summary=summary %}
   {% else %}
   <section class="sm-card sm-card--empty">
-    <h2>Todavia no hay resumen de esta clase</h2>
-    <p class="muted">SIMA lo redacta a partir de la transcripcion y de las preguntas que ya se evaluan sobre esta clase: conceptos clave, parrafos por idea y que repasar primero.</p>
+    <h2>Aún no hay resumen</h2>
+    <p class="muted">Genera uno con los conceptos clave de la clase.</p>
   </section>
   {% endif %}
 
@@ -36,11 +36,11 @@
     <form method="post">
       {% csrf_token %}
       <button class="{% if summary %}secondary-button{% else %}primary-button{% endif %}" type="submit">
-        {% if summary %}Regenerar resumen{% else %}Generar resumen{% endif %} ({{ summary_cost }} creditos)
+        {% if summary %}Regenerar resumen{% else %}Generar resumen{% endif %} ({{ summary_cost }} créditos)
       </button>
     </form>
     {% else %}
-    <p class="muted">La clase aun no tiene transcripcion suficiente para resumir.</p>
+    <p class="muted">Esta clase aún no tiene suficiente contenido para resumir.</p>
     {% endif %}
     {% if summary and job.course %}
       <a class="secondary-button" href="{% url 'course_summary' job.course.pk %}">Ver resumen del curso</a>

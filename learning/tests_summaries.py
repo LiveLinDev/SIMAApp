@@ -109,7 +109,7 @@ class SummaryGenerationTests(TestCase):
         self.assertContains(page, "Fotosintesis y respiracion")
         self.assertContains(page, "Regenerar resumen")
         page = self.client.get(f"/cursos/{self.course.pk}/resumen/")
-        self.assertContains(page, "Resumenes por clase")
+        self.assertContains(page, "Resúmenes por clase")
         resp = self.client.post(f"/cursos/{self.course.pk}/resumen/")
         self.assertEqual(resp.status_code, 302)
         job_queue._process_summary_job(SummaryJob.objects.get(kind=SummaryJob.Kind.COURSE).pk)

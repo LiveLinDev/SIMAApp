@@ -42,6 +42,7 @@ from .services import (
     text_change_summary,
     transcribe_audio,
     transcribe_audio_detailed,
+    transcription_label,
     use_direct_cloud_mini,
     verify_items,
 )
@@ -56,7 +57,7 @@ def process_lesson_job(job_id: int, backend: str = "auto"):
         _set_stage(job, "Preparando contenido", "Leyendo texto, audio y configuracion del trabajo.")
 
         if job.audio:
-            _set_stage(job, "Transcribiendo audio con Whisper", f"Archivo: {job.audio.name}. Whisper corre localmente.")
+            _set_stage(job, "Transcribiendo audio con Whisper", f"Archivo: {job.audio.name}. {transcription_label()}.")
             if not job.transcript:
                 job.transcript, whisper_segments = transcribe_audio_detailed(job.audio.path)
                 job.save(update_fields=["transcript", "updated_at"])

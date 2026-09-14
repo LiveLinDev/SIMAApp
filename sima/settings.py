@@ -236,6 +236,16 @@ LOCAL_API_TIMEOUT = env_int("LOCAL_API_TIMEOUT", 7200)
 LOCAL_TRANSCRIPT_REPAIR_CHUNK_WORDS = env_int("LOCAL_TRANSCRIPT_REPAIR_CHUNK_WORDS", 500)
 LOCAL_CHUNK_WORDS = env_int("LOCAL_CHUNK_WORDS", 2000)
 WHISPER_MODEL = os.getenv("WHISPER_MODEL", "base")
+# Transcripcion: local (Whisper en este servidor) o remote (servicio `manage.py serve_whisper` en otra
+# maquina, p. ej. la PC del equipo alcanzada por un tunel SSH inverso, para no cargar Whisper en un VPS pequeno).
+TRANSCRIPTION_BACKEND = env_text("TRANSCRIPTION_BACKEND", "local").lower()
+WHISPER_REMOTE_URL = env_text("WHISPER_REMOTE_URL", "http://127.0.0.1:9000")
+WHISPER_REMOTE_TOKEN = env_text("WHISPER_REMOTE_TOKEN", "")
+WHISPER_REMOTE_TIMEOUT = env_int("WHISPER_REMOTE_TIMEOUT", 3600)
+# Respaldo si el backend principal falla: vacio (ninguno), local o cloud (API de Whisper del proveedor, p. ej. Groq).
+# cloud envia el audio a un tercero: usar solo si se acepta ese intercambio de privacidad.
+TRANSCRIPTION_FALLBACK = env_text("TRANSCRIPTION_FALLBACK", "").lower()
+CLOUD_TRANSCRIPTION_MODEL = env_text("CLOUD_TRANSCRIPTION_MODEL", "whisper-large-v3-turbo")
 LOCAL_TASK_QUEUE_MAXSIZE = env_int("LOCAL_TASK_QUEUE_MAXSIZE", 20)
 LOCAL_TASK_WORKERS = env_int("LOCAL_TASK_WORKERS", 1)
 # thread: worker en hilos dentro del proceso web (por defecto). db: proceso aparte `manage.py run_worker`.

@@ -16,7 +16,8 @@
 #                   edita .env a mano despues).
 #   REPO_URL        por defecto https://github.com/LiveLinDev/SIMAApp.git
 #   BRANCH          por defecto main
-#   INSTALL_WHISPER 1 (defecto) instala torch CPU + openai-whisper; 0 = solo texto.
+#   INSTALL_WHISPER 0 (defecto) no instala Whisper: la transcripcion la hace la PC por tunel
+#                   (TRANSCRIPTION_BACKEND=remote). 1 = instala torch CPU + openai-whisper en el VPS.
 #   WHISPER_PRELOAD 1 (defecto) descarga el modelo de WHISPER_MODEL por adelantado.
 #   SWAP_SIZE       tamano del swapfile si no hay swap (defecto 4G; "0" = no crear).
 #
@@ -29,7 +30,7 @@ DB_PASSWORD="${DB_PASSWORD:-}"
 GROQ_API_KEY="${GROQ_API_KEY:-}"
 REPO_URL="${REPO_URL:-https://github.com/LiveLinDev/SIMAApp.git}"
 BRANCH="${BRANCH:-main}"
-INSTALL_WHISPER="${INSTALL_WHISPER:-1}"
+INSTALL_WHISPER="${INSTALL_WHISPER:-0}"
 WHISPER_PRELOAD="${WHISPER_PRELOAD:-1}"
 SWAP_SIZE="${SWAP_SIZE:-4G}"
 
@@ -139,7 +140,7 @@ if [[ "$INSTALL_WHISPER" == "1" ]]; then
     fi
     as_app "$VENV/bin/pip" install -r "$APP_DIR/requirements.txt"
 else
-    warn "INSTALL_WHISPER=0: se omite openai-whisper (solo clases de texto)"
+    log "INSTALL_WHISPER=0: se omite openai-whisper (el audio lo transcribe la PC por el tunel SSH)"
     grep -viE '^openai-whisper' "$APP_DIR/requirements.txt" > "$SIMA_HOME/requirements-sin-whisper.txt"
     chown "$APP_USER:$APP_USER" "$SIMA_HOME/requirements-sin-whisper.txt"
     as_app "$VENV/bin/pip" install -r "$SIMA_HOME/requirements-sin-whisper.txt"
@@ -160,8 +161,11 @@ if [[ ! -f "$ENV_FILE" ]]; then
         sed -i -e "s|^CSRF_TRUSTED_ORIGINS=.*|CSRF_TRUSTED_ORIGINS=http://$DOMAIN|" \
                -e "s|^SIMA_SITE_URL=.*|SIMA_SITE_URL=http://$DOMAIN|" "$ENV_FILE"
     fi
-    if [[ "$INSTALL_WHISPER" != "1" ]]; then
-        sed -i "s|^WHISPER_MODEL=.*|WHISPER_MODEL=tiny|" "$ENV_FILE"
+    if [[ "$INSTALL_WHISPER" == "1" ]]; then
+        sed -i "s|^TRANSCRIPTION_BACKEND=.*|TRANSCRIPTION_BACKEND=local|" "$ENV_FILE"
+    fi
+    if [[ -n "${WHISPER_REMOTE_TOKEN:-}" ]]; then
+        sed -i "s|^WHISPER_REMOTE_TOKEN=.*|WHISPER_REMOTE_TOKEN=$WHISPER_REMOTE_TOKEN|" "$ENV_FILE"
     fi
 else
     log ".env ya existe: no se sobrescribe (solo se sincroniza POSTGRES_PASSWORD)"

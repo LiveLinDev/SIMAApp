@@ -106,6 +106,8 @@ from .repairs import (  # noqa: F401
 from .transcription import (  # noqa: F401
     transcribe_audio,
     transcribe_audio_detailed,
+    transcription_backend,
+    transcription_label,
     configure_local_ffmpeg,
     patch_whisper_loader,
 )

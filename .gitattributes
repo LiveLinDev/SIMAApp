@@ -3,3 +3,5 @@
 # scripts y configuracion que corren en Linux: siempre LF
 *.sh text eol=lf
 deploy/** text eol=lf
+# scripts de Windows: siempre CRLF (cmd.exe falla con goto/etiquetas en LF)
+*.bat text eol=crlf

@@ -92,16 +92,15 @@ El kit ya viene ajustado a este Droplet. Resumen de lo que cambia frente al perf
 | Swap | 4 GB (el bootstrap lo crea) | `SWAP_SIZE=4G` (defecto) |
 | Procesos web | 2 procesos gunicorn x 2 hilos | `deploy/systemd/sima-web.service` |
 | Memoria máxima del worker | 1400M | `deploy/systemd/sima-worker.service` |
-| Modelo de Whisper | `tiny` (audios cortos, de hasta ~20 min) | `WHISPER_MODEL` en `.env` |
+| Transcripción | **en la PC del equipo** por túnel SSH (`TRANSCRIPTION_BACKEND=remote`); el VPS no instala Whisper | Sección 15 |
 | Trabajos pendientes por usuario | 2 | `SIMA_MAX_PENDING_JOBS` en `.env` |
 | Firewall | UFW en el Droplet; opcional, Cloud Firewall de DigitalOcean con 22, 80 y 443 | Sección 1 |
 
 Recomendaciones para la demostración:
 
-- **Usa clases en texto** para el guion de validación: con 1 vCPU la transcripción de audio es lenta
-  (un audio de 10 min puede tardar 5 a 15 min con `tiny`). Deja una clase con audio ya procesada.
-- Si el worker muere por memoria al transcribir (sección 13), instala sin Whisper con `INSTALL_WHISPER=0`
-  o redimensiona el Droplet a 2 vCPU / 4 GB solo durante la presentación.
+- **El audio lo transcribe la PC** (sección 15): el Droplet no carga torch ni Whisper y le queda la RAM para la web,
+  la cola y PostgreSQL. La PC debe estar encendida con `iniciar-transcripcion-remota.bat` mientras se procesan clases con audio.
+- Las clases en texto no dependen de la PC. Si la PC está apagada, una clase con audio queda en error y se usa **Reintentar**.
 - El disco de 70 GB sobra: torch, Whisper y dependencias ocupan ~1,5 GB y los respaldos diarios pesan poco.
 
 ### 0.3 Tamano del VPS y memoria de Whisper
@@ -770,3 +769,57 @@ DATABASE_URL=postgresql://sima_admin:CAMBIAR_CONTRASENA_PG@sima-pg.postgres.data
   - `LOCAL_AI_ENABLED` (agregado en paralelo): con `False`, las etapas que pedian el modelo local usan la nube.
 - `requirements.txt`: `gunicorn>=23.0; sys_platform != "win32"`.
 - `.gitignore`: ya ignoraba `staticfiles/`, `.env` y `media/`.
+
+## 15. Transcripción en la PC del equipo (túnel SSH inverso)
+
+El Droplet de 2 GB no transcribe. La PC corre Whisper como servicio y abre un túnel SSH hacia el VPS; el worker del VPS le
+envía el audio a `http://127.0.0.1:9000`, que en realidad es la PC. No se abren puertos en el router ni en el VPS y el
+audio no sale a terceros: viaja cifrado por SSH entre dos máquinas del equipo.
+
+```text
+PC (Windows)                                        VPS
+manage.py serve_whisper  127.0.0.1:9000  <──ssh -R──  sima-worker → http://127.0.0.1:9000/transcribe
+```
+
+### 15.1 En el VPS (una sola vez)
+
+Crea el usuario restringido `sima-tunnel`, que no tiene shell y solo puede publicar `127.0.0.1:9000`:
+
+```bash
+sudo bash /srv/sima/app/deploy/setup_tunnel_user.sh "$(cat sima_tunnel_ed25519.pub)"
+```
+
+En `/srv/sima/app/.env`:
+
+```bash
+TRANSCRIPTION_BACKEND=remote
+WHISPER_REMOTE_URL=http://127.0.0.1:9000
+WHISPER_REMOTE_TOKEN=el-mismo-valor-que-en-la-PC
+TRANSCRIPTION_FALLBACK=
+```
+
+Reinicia el worker y la web con `sudo systemctl restart sima-worker sima-web`.
+
+### 15.2 En la PC
+
+1. Clave del túnel: `%USERPROFILE%\.ssh\sima_tunnel_ed25519` (su `.pub` es la que se autoriza en 15.1).
+2. En el `.env` de la PC: `WHISPER_REMOTE_TOKEN=...` (igual que en el VPS) y `SIMA_VPS_HOST=IP_O_DOMINIO_DEL_VPS`.
+3. Doble clic en `iniciar-transcripcion-remota.bat`: abre el servicio de Whisper en una ventana y mantiene el túnel en
+   otra, reconectando solo si se cae.
+
+### 15.3 Comprobar
+
+En el VPS, `curl -s http://127.0.0.1/salud/ -H "Host: DOMINIO"` debe mostrar
+`"transcription_backend": "remote"` y `"transcription_remote": {"reachable": true, ...}`. Luego sube una clase con un
+audio corto y mira el progreso en la ventana del servicio de la PC.
+
+### 15.4 Si la PC no está disponible
+
+| Situación | Qué pasa | Qué hacer |
+|---|---|---|
+| PC apagada o túnel caído | La clase con audio queda en error: "El equipo de transcripción no responde" | Enciende la PC, abre el `.bat` y pulsa **Reintentar** en la clase |
+| Token distinto en PC y VPS | Error "rechazó el token" | Copia el mismo `WHISPER_REMOTE_TOKEN` en ambos `.env` |
+| Se necesita transcribir sin la PC | — | `TRANSCRIPTION_FALLBACK=cloud` usa la API de Whisper de Groq (el audio sale a un tercero; límite de tamaño por archivo) |
+| Se quiere volver a Whisper en el VPS | — | `INSTALL_WHISPER=1` en el bootstrap y `TRANSCRIPTION_BACKEND=local` (requiere más RAM) |
+
+En Azure (sección 14) la opción natural es `TRANSCRIPTION_BACKEND=local` en una VM con más memoria.

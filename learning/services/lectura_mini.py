@@ -287,3 +287,26 @@ def validar_item(texto: str) -> str:
     if "____" not in enunciado and not enunciado.endswith("?"):
         return "el enunciado dejó de ser una pregunta o una completación"
     return ""
+
+
+def medir_tokens(banco: str) -> dict:
+    """
+    Tokens de salida del banco en .mini y del mismo banco convertido a JSON (compacto y con sangría).
+    Usa el tokenizador o200k_base si tiktoken está instalado; si no, estima 4 caracteres por token.
+    """
+    import json
+
+    try:
+        registros = parse(banco, contrato(), strict=False).records
+    except MiniValidationError:
+        return {}
+    compacto = json.dumps({"items": registros}, ensure_ascii=False, separators=(",", ":"))
+    sangria = json.dumps({"items": registros}, ensure_ascii=False, indent=2)
+    try:
+        import tiktoken
+
+        cod = tiktoken.get_encoding("o200k_base")
+        contar, nombre = (lambda s: len(cod.encode(s))), "o200k_base"
+    except Exception:  # noqa: BLE001 - la medición es informativa
+        contar, nombre = (lambda s: max(1, round(len(s) / 4))), "estimado (4 caracteres por token)"
+    return {"tokenizador": nombre, "mini": contar(banco), "json_compacto": contar(compacto), "json": contar(sangria)}

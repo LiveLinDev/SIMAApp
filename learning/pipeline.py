@@ -121,6 +121,7 @@ def process_lesson_job(job_id: int, backend: str = "auto"):
             informe=informe_lectura,
         )
         resumen_lectura = lectura_mini.resumen(informe_lectura)
+        resumen_lectura["tokens"] = lectura_mini.medir_tokens(toon_output)
         job.lectura_trace = _strip_nul({"resumen": resumen_lectura, "bloques": informe_lectura})
         job.processing_log = _append_log(
             job.processing_log,

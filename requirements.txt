@@ -8,6 +8,8 @@ openai-whisper>=20250625
 python-dotenv>=1.0.1
 # lectura de las respuestas de generacion contra el contrato de items (learning/services/lectura_mini.py)
 mini-format @ https://mini-format.pmoluna.com/downloads/mini_format-1.2.1-py3-none-any.whl
+# conteo de tokens del panel de lectura (opcional: sin el, se estima con 4 caracteres por token)
+tiktoken>=0.7
 imageio-ffmpeg>=0.6.0
 psycopg[binary]>=3.2.3
 ddgs>=9.14

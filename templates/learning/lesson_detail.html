@@ -426,6 +426,9 @@
           <tr><td>Ítems válidos al final</td><td>{{ r.legado_aceptados }}</td><td><strong>{{ r.finales }}</strong></td></tr>
           <tr><td>Llamadas al modelo</td><td>—</td><td>{{ r.llamadas }}</td></tr>
           {% endif %}
+          {% if r.tokens.mini %}
+          <tr><td>Tokens de salida del banco (.mini frente al mismo banco en JSON)</td><td>{{ r.tokens.json_compacto }} en JSON compacto · {{ r.tokens.json }} con sangría</td><td><strong>{{ r.tokens.mini }}</strong> en .mini</td></tr>
+          {% endif %}
           {% if r.correcciones_aplicadas is not None %}
           <tr><td>Correcciones del verificador aplicadas</td><td colspan="2">{{ r.correcciones_aplicadas }}{% if r.lector == "minifmt" %} · {{ r.correcciones_rechazadas }} rechazadas porque rompían el ítem (se conserva el original){% endif %}</td></tr>
           <tr><td>Ítems en el banco final</td><td colspan="2"><strong>{{ r.items_finales }}</strong> de {{ r.items_generados }} generados</td></tr>

@@ -2,9 +2,10 @@
 API de demostración para la página mini-format.pmoluna.com/sima/: procesa una clase real en SIMA (DeepSeek,
 lector mini-format) y devuelve el avance y los resultados para mostrarlos en vivo.
 
-Solo responde si SIMA_DEMO_API=1 (lo activa demo_mini.ps1). La clave del modelo nunca sale de SIMA: la página
-envía el texto de la clase y recibe resultados. Solo se aceptan peticiones del sitio de mini-format (CORS y
-comprobación del encabezado Origin) con cuerpo JSON, y solo una clase a la vez.
+Activa por defecto; SIMA_DEMO_API=0 la apaga. La clave del modelo nunca sale de SIMA: la página envía el texto
+de la clase y recibe resultados. Solo se aceptan peticiones del sitio de mini-format (CORS y comprobación del
+encabezado Origin) con cuerpo JSON, una clase a la vez y como máximo SIMA_DEMO_API_DIARIO clases por día
+(30 por defecto), para acotar el gasto del proveedor.
 
   GET  /api/mini/estado/          SIMA disponible, modelo y lector activos
   POST /api/mini/clase/           {"titulo", "texto"} -> {"id"}
@@ -31,7 +32,14 @@ EN_CURSO = (LessonJob.Status.QUEUED, LessonJob.Status.PROCESSING)
 
 
 def _habilitada() -> bool:
-    return os.environ.get("SIMA_DEMO_API", "").strip() == "1"
+    return os.environ.get("SIMA_DEMO_API", "1").strip() != "0"
+
+
+def _limite_diario() -> int:
+    try:
+        return max(0, int(os.environ.get("SIMA_DEMO_API_DIARIO", "30")))
+    except ValueError:
+        return 30
 
 
 def _cors(request, respuesta):
@@ -101,6 +109,9 @@ def crear_clase(request):
     activa = LessonJob.objects.filter(user=usuario, status__in=EN_CURSO).order_by("-id").first()
     if activa:
         return JsonResponse({"error": "ya hay una clase en proceso", "id": activa.pk}, status=409)
+    hoy = timezone.localdate()
+    if LessonJob.objects.filter(user=usuario, created_at__date=hoy).count() >= _limite_diario():
+        return JsonResponse({"error": "se alcanzó el límite diario de clases de demostración"}, status=429)
     job = LessonJob.objects.create(
         user=usuario, course=curso, title=titulo, mode=LessonJob.Mode.API, source_text=texto,
         ai_backend="cloud", status=LessonJob.Status.QUEUED, processing_stage="En cola",

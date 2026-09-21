@@ -173,8 +173,8 @@ class DemoApiTests(TestCase):
     ORIGEN = "https://mini-format.pmoluna.com"
     TEXTO = " ".join(["La fotosíntesis ocurre en el cloroplasto."] * 40)
 
-    def test_apagada_sin_la_variable(self):
-        with patch.dict("os.environ", {"SIMA_DEMO_API": ""}):
+    def test_se_puede_apagar(self):
+        with patch.dict("os.environ", {"SIMA_DEMO_API": "0"}):
             self.assertEqual(self.client.get("/api/mini/estado/").status_code, 404)
 
     def test_crea_la_clase_y_devuelve_su_estado(self):
@@ -190,6 +190,12 @@ class DemoApiTests(TestCase):
             # una clase a la vez
             r = self.client.post("/api/mini/clase/", data={"texto": self.TEXTO}, content_type="application/json", HTTP_ORIGIN=self.ORIGEN)
             self.assertEqual(r.status_code, 409)
+
+    def test_limite_diario(self):
+        with patch.dict("os.environ", {"SIMA_DEMO_API": "1", "SIMA_DEMO_API_DIARIO": "0"}),                 patch("learning.views.demo_api.enqueue_lesson_job") as encolar:
+            r = self.client.post("/api/mini/clase/", data={"texto": self.TEXTO}, content_type="application/json", HTTP_ORIGIN=self.ORIGEN)
+            self.assertEqual(r.status_code, 429)
+            encolar.assert_not_called()
 
     def test_rechaza_otros_origenes(self):
         with patch.dict("os.environ", {"SIMA_DEMO_API": "1"}), patch("learning.views.demo_api.enqueue_lesson_job") as encolar:

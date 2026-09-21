@@ -433,3 +433,32 @@ pre,
   font-family: var(--font-mono);
   font-size: 0.76rem;
 }
+
+/* Lectura de las respuestas del modelo: lector anterior frente a mini-format */
+.lectura-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.6rem 0 0.8rem;
+  font-size: 0.92rem;
+}
+.lectura-tabla th,
+.lectura-tabla td {
+  border-bottom: 1px solid var(--line);
+  padding: 0.4rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+}
+.lectura-tabla td:nth-child(n + 2),
+.lectura-tabla th:nth-child(n + 2) {
+  width: 28%;
+}
+.lectura-bloque {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.8rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--line);
+}
+@media (max-width: 640px) {
+  .lectura-tabla { font-size: 0.82rem; }
+}

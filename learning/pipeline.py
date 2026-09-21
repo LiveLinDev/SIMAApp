@@ -21,6 +21,7 @@ from .parse_mini import (
     filter_nonuniform_items,
     merge_mini_chunks,
     normalize_mini_text,
+    parse_mini,
     validate_mini_parse,
 )
 from .services import (
@@ -111,10 +112,20 @@ def process_lesson_job(job_id: int, backend: str = "auto"):
             )
             job.save(update_fields=["processing_log", "updated_at"])
 
+        from .services import lectura_mini
+        informe_lectura: list = []
         generation_prompt, toon_output, resolved_backend = generate_items(
             content,
             backend=requested_backend,
             progress_callback=_progress_callback,
+            informe=informe_lectura,
+        )
+        resumen_lectura = lectura_mini.resumen(informe_lectura)
+        job.lectura_trace = _strip_nul({"resumen": resumen_lectura, "bloques": informe_lectura})
+        job.processing_log = _append_log(
+            job.processing_log,
+            "Lectura de respuestas" + (" (mini-format)" if resumen_lectura["lector"] == "minifmt" else " (lector anterior)"),
+            lectura_mini.linea_log(resumen_lectura),
         )
         toon_output, item_count, incoherent_mini = _compile_mini_for_render(toon_output, "Generacion MINI")
 
@@ -138,7 +149,7 @@ def process_lesson_job(job_id: int, backend: str = "auto"):
         job.toon_output = toon_output
         job.ai_backend = resolved_backend
         job.processing_log = _append_log(job.processing_log, "MINI parseado", f"{item_count} items listos para renderizar.")
-        job.save(update_fields=["generation_prompt", "toon_output", "ai_backend", "processing_log", "updated_at"])
+        job.save(update_fields=["generation_prompt", "toon_output", "ai_backend", "lectura_trace", "processing_log", "updated_at"])
 
         if resolved_backend == "local":
             _auto_repair_mini_coherence(job)
@@ -186,7 +197,13 @@ def process_lesson_job(job_id: int, backend: str = "auto"):
             corrected_output, correction_trace = apply_corrections_with_trace(job.toon_output, verification_output)
             job.corrected_output = _strip_nul(corrected_output)
             job.correction_trace = _strip_nul(correction_trace)
+            if job.lectura_trace.get("resumen"):
+                job.lectura_trace["resumen"]["correcciones_aplicadas"] = sum(1 for t in correction_trace if t.get("applied"))
+                job.lectura_trace["resumen"]["correcciones_rechazadas"] = sum(1 for t in correction_trace if t.get("rejected"))
             job.corrected_output, corrected_count = _finalize_mini_quality(job, job.corrected_output, "Correccion MINI")
+            if job.lectura_trace.get("resumen"):
+                job.lectura_trace["resumen"]["items_generados"] = len(parse_mini(job.toon_output).items)
+                job.lectura_trace["resumen"]["items_finales"] = corrected_count
         job.error = ""
         job.status = LessonJob.Status.CORRECTED
         job.processing_stage = "Listo"
@@ -199,6 +216,7 @@ def process_lesson_job(job_id: int, backend: str = "auto"):
             "verification_trace",
             "corrected_output",
             "correction_trace",
+            "lectura_trace",
             "error",
             "status",
             "processing_stage",

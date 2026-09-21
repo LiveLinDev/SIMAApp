@@ -400,6 +400,52 @@
     </section>
     {% endif %}
 
+    {% if job.lectura_trace.resumen %}
+    {% with r=job.lectura_trace.resumen %}
+    <section class="output-block audit-block lectura-block">
+      <h4>Lectura de las respuestas del modelo</h4>
+      <p class="muted">
+        {% if r.lector == "minifmt" %}Lector activo: mini-format (contrato <code>a</code>).{% else %}Lector activo: lector anterior (parse_mini).{% endif %}
+        La columna «Lector anterior» indica lo que habría ocurrido con exactamente las mismas respuestas.
+      </p>
+      <table class="lectura-tabla">
+        <thead><tr><th></th><th>Lector anterior</th><th>mini-format</th></tr></thead>
+        <tbody>
+          <tr><td>Ítems pedidos al modelo</td><td>{{ r.pedidos }}</td><td>{{ r.pedidos }}</td></tr>
+          <tr><td>Ítems aceptados de la primera respuesta</td><td>{{ r.legado_aceptados }}</td><td>{{ r.recibidos }}</td></tr>
+          <tr><td>Ítems sin respuesta correcta marcada</td><td>{{ r.legado_sin_correcta }} (se marca la primera opción)</td><td>se rechazan y se reparan</td></tr>
+          <tr><td>Líneas descartadas sin aviso</td><td>{{ r.legado_descartados }}</td><td>0 (cada error con código y línea)</td></tr>
+          <tr><td>Texto del modelo que no es formato (razonamiento, planes)</td><td>se mezcla con la lectura</td><td>{{ r.prosa_descartada }} líneas separadas{% if r.sin_cabecera %} · {{ r.sin_cabecera }} sin cabecera{% endif %}</td></tr>
+          <tr><td>Ítems escritos como «i3: …» en lugar de «i3|…»</td><td>se pierden</td><td>{{ r.normalizados }} normalizados</td></tr>
+          <tr><td>Borradores del mismo ítem (el modelo lo escribe dos veces)</td><td>se cuentan como ítems distintos</td><td>{{ r.borradores }} descartados, vale la última versión</td></tr>
+          <tr><td>Líneas inválidas detectadas</td><td>—</td><td>{{ r.invalidos }}</td></tr>
+          <tr><td>Respuestas cortadas por el límite de tokens</td><td>—</td><td>{{ r.truncados }}</td></tr>
+          {% if r.lector == "minifmt" %}
+          <tr><td>Líneas reparadas (solo esas líneas se reenviaron)</td><td>—</td><td>{{ r.reparados }}{% if r.rechazados %} · {{ r.rechazados }} sin corregir{% endif %}</td></tr>
+          <tr><td>Ítems faltantes pedidos aparte</td><td>—</td><td>{{ r.recuperados }} de {{ r.faltantes_pedidos }}</td></tr>
+          <tr><td>Ítems válidos al final</td><td>{{ r.legado_aceptados }}</td><td><strong>{{ r.finales }}</strong></td></tr>
+          <tr><td>Llamadas al modelo</td><td>—</td><td>{{ r.llamadas }}</td></tr>
+          {% endif %}
+          {% if r.correcciones_aplicadas is not None %}
+          <tr><td>Correcciones del verificador aplicadas</td><td colspan="2">{{ r.correcciones_aplicadas }}{% if r.lector == "minifmt" %} · {{ r.correcciones_rechazadas }} rechazadas porque rompían el ítem (se conserva el original){% endif %}</td></tr>
+          <tr><td>Ítems en el banco final</td><td colspan="2"><strong>{{ r.items_finales }}</strong> de {{ r.items_generados }} generados</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+      <details>
+        <summary>Detalle por bloque ({{ r.bloques }})</summary>
+        {% for b in job.lectura_trace.bloques %}
+        <div class="lectura-bloque">
+          <strong>Bloque {{ forloop.counter }}</strong>
+          <span>{{ b.recibidos }}/{{ b.pedidos }} válidos en la primera respuesta{% if b.truncado %} · cortada{% endif %}</span>
+          {% for linea in b.lineas_invalidas %}<code>línea {{ linea.0 }} · {{ linea.1 }}{% if linea.2 %} · {{ linea.2 }}{% endif %}</code>{% endfor %}
+        </div>
+        {% endfor %}
+      </details>
+    </section>
+    {% endwith %}
+    {% endif %}
+
     {% if job.verification_output %}
     <section class="output-block">
       <h4>Revisión de preguntas</h4>

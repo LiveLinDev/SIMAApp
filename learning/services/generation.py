@@ -16,6 +16,45 @@ from .prompts import (
 )
 
 
+def _leer_respuesta(raw: str, prompt: str, chunk_items: int, chunk_info: str, backend: str, informe) -> tuple[str, str]:
+    """
+    Lee la respuesta de un bloque segun SIMA_LECTOR.
+
+    minifmt: valida contra el contrato de mini-format, repara solo las lineas invalidas y pide solo lo que falta.
+    legado:  conserva el comportamiento anterior (reintento completo si llegan pocos items) y registra lo que
+             el lector anterior hace con esa misma respuesta, para poder comparar.
+    """
+    from . import lectura_mini
+
+    if lectura_mini.lector_activo() == "legado":
+        bloque = lectura_mini.diagnostico_legado(raw, chunk_items, chunk_info)
+        if count_mini_items(raw) < max(3, math.floor(chunk_items * 0.75)):
+            # el lector anterior repite el bloque completo cuando llegan pocos items
+            bloque.llamadas = 2
+        nuevo_prompt, nuevo_raw = _retry_if_few_items(prompt, raw, chunk_items, backend=backend)
+        bloque.finales = len(lectura_mini.parse_mini(nuevo_raw or "").items)
+        if informe is not None:
+            informe.append(bloque.a_dict())
+        return nuevo_prompt, nuevo_raw
+
+    def llamar(texto: str) -> str:
+        return call_ai(texto, backend=backend, role="generation", max_tokens=output_budget(chunk_items))
+
+    def pedir_faltantes(n: int, enunciados: list[str]) -> str:
+        evitar = "\n".join(f"- {e}" for e in enunciados if e)
+        extra = (
+            f"{prompt}\n\n"
+            f"COMPLEMENTO: genera exactamente {n} items nuevos para este mismo fragmento. "
+            "No repitas ninguno de estos enunciados ya generados:\n" + evitar
+        )
+        return call_generation_prompt(extra, backend=backend, items=n)
+
+    texto, bloque = lectura_mini.leer_bloque(raw, chunk_items, chunk_info, llamar, pedir_faltantes)
+    if informe is not None:
+        informe.append(bloque.a_dict())
+    return prompt, texto
+
+
 def _get_merge_fn():
     from ..parse_mini import merge_mini_chunks
     return merge_mini_chunks
@@ -242,6 +281,7 @@ def _generate_chunk_safe(
     backend: str,
     language: str = "es",
     depth: int = 0,
+    informe: list | None = None,
 ) -> tuple[str, str]:
     """
     Genera items para un chunk. Si el modelo local hace timeout,
@@ -269,17 +309,16 @@ def _generate_chunk_safe(
         second = " ".join(words[mid:])
         half_items = max(3, chunk_items // 2)
         prompt1, mini1 = _generate_chunk_safe(
-            first, half_items, chunk_info + " [parte A]", backend, language, depth + 1
+            first, half_items, chunk_info + " [parte A]", backend, language, depth + 1, informe
         )
         prompt2, mini2 = _generate_chunk_safe(
-            second, max(3, chunk_items - half_items), chunk_info + " [parte B]", backend, language, depth + 1
+            second, max(3, chunk_items - half_items), chunk_info + " [parte B]", backend, language, depth + 1, informe
         )
         merged = _get_merge_fn()([mini1, mini2])
         combined_prompt = prompt1 + "\n\n--- division por timeout ---\n\n" + prompt2
         return combined_prompt, merged
 
-    prompt, mini = _retry_if_few_items(prompt, mini, chunk_items, backend=backend)
-    return prompt, mini
+    return _leer_respuesta(mini, prompt, chunk_items, chunk_info, backend, informe)
 
 
 def generate_items(
@@ -288,6 +327,7 @@ def generate_items(
     language: str = "es",
     items_requested=None,
     progress_callback=None,
+    informe: list | None = None,
 ) -> tuple[str, str, str]:
     """
     Genera bancos MINI con un presupuesto adaptativo y llamadas stateless.
@@ -306,7 +346,7 @@ def generate_items(
             cloud_optimized=(backend == "cloud"),
         )
         result = call_generation_prompt(prompt, backend=backend, items=budgets[0])
-        prompt, result = _retry_if_few_items(prompt, result, budgets[0], backend=backend)
+        prompt, result = _leer_respuesta(result, prompt, budgets[0], "1 de 1", backend, informe)
         return prompt, result, backend
 
     all_prompts = []
@@ -316,7 +356,9 @@ def generate_items(
             f"{i} de {len(chunks)}; objetivo_global={total_items}; "
             f"objetivo_chunk={chunk_items}; generar exactamente {chunk_items} items unicos"
         )
-        prompt, mini = _generate_chunk_safe(chunk, chunk_items, chunk_info, backend=backend, language=language)
+        prompt, mini = _generate_chunk_safe(
+            chunk, chunk_items, chunk_info, backend=backend, language=language, informe=informe
+        )
         all_prompts.append(f"--- chunk {i}/{len(chunks)} ---\n{prompt}")
         all_minis.append(mini)
         if progress_callback:

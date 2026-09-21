@@ -6,6 +6,8 @@ openai>=1.109.0,<3
 httpx>=0.27,<1
 openai-whisper>=20250625
 python-dotenv>=1.0.1
+# lectura de las respuestas de generacion contra el contrato de items (learning/services/lectura_mini.py)
+mini-format @ https://mini-format.pmoluna.com/downloads/mini_format-1.2.1-py3-none-any.whl
 imageio-ffmpeg>=0.6.0
 psycopg[binary]>=3.2.3
 ddgs>=9.14

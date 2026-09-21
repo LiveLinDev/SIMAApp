@@ -772,6 +772,8 @@ class LessonJob(models.Model):
     mini_coherence_prompt = models.TextField(blank=True)
     mini_coherence_trace = models.JSONField(default=list, blank=True)
     verification_trace = models.JSONField(default=dict, blank=True)
+    # lectura de las respuestas de generacion: lector usado (minifmt | legado), totales y detalle por bloque
+    lectura_trace = models.JSONField(default=dict, blank=True)
     correction_trace = models.JSONField(default=list, blank=True)
     tags = models.CharField(max_length=260, blank=True)
     api_usage_counted = models.BooleanField(default=False)

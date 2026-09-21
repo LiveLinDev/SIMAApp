@@ -45,3 +45,4 @@ logs/
 docs/archimate/report/
 
 docs/archimate/*.bak
+db_mini.sqlite3

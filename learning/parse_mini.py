@@ -12,6 +12,7 @@ Los campos separados por coma aceptan comillas CSV, por ejemplo:
   "Garcia [2021], p. 1"
 """
 
+import copy
 import csv
 import io
 import re
@@ -386,14 +387,38 @@ def apply_corrections_with_trace(mini_text: str, report_text: str) -> tuple[str,
             continue
 
         before = _item_snapshot(item)
+        respaldo = copy.deepcopy(item)
         _apply_fix(item, err)
         after = _item_snapshot(item)
+        motivo = _correccion_invalida(item) if before != after else ""
+        if motivo:
+            # la correccion rompe el item: se conserva el original en lugar de perderlo en el filtro de coherencia
+            item.__dict__.update(respaldo.__dict__)
+            entry["after"] = before
+            entry["applied"] = False
+            entry["rejected"] = True
+            entry["note"] = f"Correccion rechazada por el contrato: {motivo}"
+            trace.append(entry)
+            continue
         entry["after"] = after
         entry["applied"] = before != after
         entry["note"] = "Cambio aplicado al MINI." if entry["applied"] else "La correccion no cambio el MINI."
         trace.append(entry)
 
     return _serialize(assessment), trace
+
+
+def _correccion_invalida(item: MiniItem) -> str:
+    """
+    Con el lector mini-format, un item corregido se valida antes de aceptarlo: debe cumplir el contrato `a`
+    de mini-format y seguir siendo una pregunta o una completacion. Devuelve el motivo del rechazo o "".
+    Con el lector anterior las correcciones se aplican sin validar, como antes.
+    """
+    from .services import lectura_mini
+
+    if lectura_mini.lector_activo() != "minifmt":
+        return ""
+    return lectura_mini.validar_item(_serialize(MiniAssessment(header="a|n=1", items=[item])))
 
 
 def _item_snapshot(item: MiniItem | None) -> dict | None:
@@ -447,6 +472,13 @@ def _apply_fix(item: MiniItem, err: dict):
     error_type = err["error_type"]
     field = err.get("field", "")
     fix = err["fix"].strip()
+
+    # el campo indicado por el verificador manda sobre el tipo de error: una correccion de "opciones"
+    # clasificada como wrong_statement no debe escribirse en el enunciado
+    if field in {"opciones", "options", "respuesta", "answer"}:
+        error_type = "wrong_answer"
+    elif field in {"enunciado", "statement"}:
+        error_type = "wrong_statement"
 
     if error_type == "wrong_answer":
         fixed_options = _split_csv(fix)

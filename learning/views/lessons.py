@@ -318,6 +318,7 @@ def retry_api_lesson(request, pk):
     job.verification_prompt = ""
     job.verification_output = ""
     job.verification_trace = {}
+    job.lectura_trace = {}
     job.corrected_output = ""
     job.correction_trace = []
     job.mini_coherence_prompt = ""
@@ -332,6 +333,7 @@ def retry_api_lesson(request, pk):
         "verification_prompt",
         "verification_output",
         "verification_trace",
+        "lectura_trace",
         "corrected_output",
         "correction_trace",
         "mini_coherence_prompt",

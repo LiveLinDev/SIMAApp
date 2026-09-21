@@ -103,6 +103,8 @@ def process_lesson_job(job_id: int, backend: str = "auto"):
             ),
         )
 
+        from .services import lectura_mini
+
         def _progress_callback(done_index: int, total_chunks: int, partial_mini: str):
             partial_count = count_mini_items(partial_mini)
             job.processing_log = _append_log(
@@ -110,9 +112,11 @@ def process_lesson_job(job_id: int, backend: str = "auto"):
                 f"Chunk {done_index}/{total_chunks} completado",
                 f"{partial_count} items generados hasta ahora; reiniciando contexto para el siguiente chunk.",
             )
-            job.save(update_fields=["processing_log", "updated_at"])
+            # avance de la lectura por bloque, para quien sigue la clase en vivo (página /sima/ de mini-format)
+            job.lectura_trace = _strip_nul({"resumen": lectura_mini.resumen(informe_lectura), "bloques": informe_lectura,
+                                            "total_bloques": total_chunks})
+            job.save(update_fields=["processing_log", "lectura_trace", "updated_at"])
 
-        from .services import lectura_mini
         informe_lectura: list = []
         generation_prompt, toon_output, resolved_backend = generate_items(
             content,

@@ -4,7 +4,12 @@ from django.urls import path
 from . import views
 
 
+from .views import demo_api
+
 urlpatterns = [
+    path("api/mini/estado/", demo_api.estado, name="demo_api_estado"),
+    path("api/mini/clase/", demo_api.crear_clase, name="demo_api_crear"),
+    path("api/mini/clase/<int:pk>/", demo_api.detalle_clase, name="demo_api_detalle"),
     path("", views.home, name="home"),
     path("mini", views.mini_landing, name="mini_landing"),
     path("mini/", views.mini_landing, name="mini_landing_slash"),

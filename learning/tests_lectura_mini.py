@@ -1,7 +1,7 @@
 """Lectura de las respuestas de generación con mini-format frente al lector anterior."""
 from unittest.mock import patch
 
-from django.test import SimpleTestCase, override_settings
+from django.test import SimpleTestCase, TestCase, override_settings
 
 from learning.parse_mini import apply_corrections_with_trace, merge_mini_chunks, parse_mini
 from learning.services import generation, lectura_mini
@@ -166,3 +166,36 @@ class CorreccionesTests(SimpleTestCase):
         self.assertIn("____", parse_mini(salida).items[0].statement)
         salida, traza = self._corregir("legado")
         self.assertNotIn("____", parse_mini(salida).items[0].statement)
+
+
+@override_settings(ALLOWED_HOSTS=["testserver", "127.0.0.1"])
+class DemoApiTests(TestCase):
+    ORIGEN = "https://mini-format.pmoluna.com"
+    TEXTO = " ".join(["La fotosíntesis ocurre en el cloroplasto."] * 40)
+
+    def test_apagada_sin_la_variable(self):
+        with patch.dict("os.environ", {"SIMA_DEMO_API": ""}):
+            self.assertEqual(self.client.get("/api/mini/estado/").status_code, 404)
+
+    def test_crea_la_clase_y_devuelve_su_estado(self):
+        with patch.dict("os.environ", {"SIMA_DEMO_API": "1"}), patch("learning.views.demo_api.enqueue_lesson_job") as encolar:
+            r = self.client.get("/api/mini/estado/", HTTP_ORIGIN=self.ORIGEN)
+            self.assertEqual(r["Access-Control-Allow-Origin"], self.ORIGEN)
+            r = self.client.post("/api/mini/clase/", data={"titulo": "Prueba", "texto": self.TEXTO},
+                                 content_type="application/json", HTTP_ORIGIN=self.ORIGEN)
+            self.assertEqual(r.status_code, 201)
+            encolar.assert_called_once()
+            d = self.client.get(f"/api/mini/clase/{r.json()['id']}/", HTTP_ORIGIN=self.ORIGEN).json()
+            self.assertEqual((d["estado"], d["terminado"], d["palabras"]), ("queued", False, 240))
+            # una clase a la vez
+            r = self.client.post("/api/mini/clase/", data={"texto": self.TEXTO}, content_type="application/json", HTTP_ORIGIN=self.ORIGEN)
+            self.assertEqual(r.status_code, 409)
+
+    def test_rechaza_otros_origenes(self):
+        with patch.dict("os.environ", {"SIMA_DEMO_API": "1"}), patch("learning.views.demo_api.enqueue_lesson_job") as encolar:
+            r = self.client.post("/api/mini/clase/", data={"texto": self.TEXTO}, content_type="application/json",
+                                 HTTP_ORIGIN="https://otro-sitio.example")
+            self.assertEqual(r.status_code, 403)
+            r = self.client.post("/api/mini/clase/", data={"texto": self.TEXTO}, content_type="text/plain", HTTP_ORIGIN=self.ORIGEN)
+            self.assertEqual(r.status_code, 403)
+            encolar.assert_not_called()

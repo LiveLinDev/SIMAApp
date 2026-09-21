@@ -62,6 +62,7 @@ class Bloque:
     recuperados: int = 0               # ítems válidos obtenidos al pedir los que faltaban
     finales: int = 0
     llamadas: int = 1
+    respuesta: str = ""                # primera respuesta del modelo para el bloque, tal como llegó (recortada)
     # lo que hace parse_mini.py con la misma primera respuesta (se registra con ambos lectores)
     legado_aceptados: int = 0
     legado_sin_correcta: int = 0       # ítems sin respuesta marcada a los que se les marcó la primera opción
@@ -145,7 +146,7 @@ def _texto(cabecera: dict, registros: list) -> str:
 def diagnostico_legado(texto: str, pedidos: int, bloque: str) -> Bloque:
     """Lo que el lector anterior hace con una respuesta, medido con el contrato para poder compararlo."""
     doc, leido, _ = _leer(texto)
-    ev = Bloque(bloque=bloque, lector="legado", pedidos=pedidos)
+    ev = Bloque(bloque=bloque, lector="legado", pedidos=pedidos, respuesta=(texto or "")[:8000])
     if leido is not None:
         ev.recibidos = len(leido.records)
         ev.lineas_invalidas = [(e.line, e.code, e.field or "") for e in leido.errors if e.line]
@@ -167,7 +168,7 @@ def leer_bloque(texto: str, pedidos: int, bloque: str, llamar, pedir_faltantes) 
     llamar(prompt) -> str                    llama al modelo con un prompt libre (reparación).
     pedir_faltantes(n, enunciados) -> str    pide n ítems nuevos distintos de los enunciados dados.
     """
-    ev = Bloque(bloque=bloque, lector="minifmt", pedidos=pedidos)
+    ev = Bloque(bloque=bloque, lector="minifmt", pedidos=pedidos, respuesta=(texto or "")[:8000])
     # lo que el lector anterior habría hecho con esta misma respuesta, para comparar sobre los mismos datos
     antes = diagnostico_legado(texto, pedidos, bloque)
     ev.legado_aceptados = antes.legado_aceptados

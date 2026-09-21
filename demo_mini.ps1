@@ -44,6 +44,7 @@ if ($Regenerar -or -not (Test-Path $demo)) {
 
 $env:SIMA_ENV_FILE = $demo
 $env:SIMA_LECTOR = $Lector
+$env:SIMA_DEMO_API = "1"   # API para la página mini-format.pmoluna.com/sima/ (solo acepta ese sitio)
 py -3.14 manage.py migrate --noinput | Out-Null
 py -3.14 manage.py shell -c @"
 from django.contrib.auth.models import User

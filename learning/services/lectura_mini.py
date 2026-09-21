@@ -66,6 +66,7 @@ class Bloque:
     legado_aceptados: int = 0
     legado_sin_correcta: int = 0       # ítems sin respuesta marcada a los que se les marcó la primera opción
     legado_descartados: int = 0        # líneas de ítem que el lector anterior omitió sin aviso
+    legado_invalidos: int = 0          # ítems que no cumplen el contrato y el lector anterior aceptó igual
 
     def a_dict(self) -> dict:
         return asdict(self)
@@ -154,6 +155,7 @@ def diagnostico_legado(texto: str, pedidos: int, bloque: str) -> Bloque:
     ev.legado_aceptados = len(legado.items)
     ev.legado_descartados = max(0, len(lineas) - len(legado.items))
     ev.legado_sin_correcta = sum(1 for it in legado.items if "*" not in (it.raw or "*"))
+    ev.legado_invalidos = sum(1 for it in legado.items if validar_item(f"{contrato().prefix}|n=1\n{it.raw}", coherencia=False))
     ev.finales = len(legado.items)
     return ev
 
@@ -171,6 +173,7 @@ def leer_bloque(texto: str, pedidos: int, bloque: str, llamar, pedir_faltantes) 
     ev.legado_aceptados = antes.legado_aceptados
     ev.legado_sin_correcta = antes.legado_sin_correcta
     ev.legado_descartados = antes.legado_descartados
+    ev.legado_invalidos = antes.legado_invalidos
 
     doc, leido, ajustes = _leer(texto)
     ev.normalizados = ajustes["normalizados"]
@@ -255,6 +258,7 @@ def resumen(bloques: list[dict]) -> dict:
         "legado_aceptados": total("legado_aceptados"),
         "legado_sin_correcta": total("legado_sin_correcta"),
         "legado_descartados": total("legado_descartados"),
+        "legado_invalidos": total("legado_invalidos"),
     }
 
 
@@ -274,7 +278,7 @@ def linea_log(r: dict) -> str:
     )
 
 
-def validar_item(texto: str) -> str:
+def validar_item(texto: str, coherencia: bool = True) -> str:
     """Motivo por el que un ítem (cabecera + una línea) no es válido, o "" si cumple el contrato y es coherente."""
     try:
         doc = parse(texto, contrato(), strict=False)
@@ -284,7 +288,7 @@ def validar_item(texto: str) -> str:
     if errores or not doc.records:
         return "; ".join(f"{e.code} {e.message}" for e in errores[:2]) or "ítem ilegible"
     enunciado = str(doc.records[0].get("statement", "")).strip()
-    if "____" not in enunciado and not enunciado.endswith("?"):
+    if coherencia and "____" not in enunciado and not enunciado.endswith("?"):
         return "el enunciado dejó de ser una pregunta o una completación"
     return ""
 

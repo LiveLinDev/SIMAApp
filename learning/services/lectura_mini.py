@@ -134,8 +134,11 @@ def _leer(texto: str):
 
 def _cortado(leido, doc: str) -> bool:
     """La última línea de ítem quedó incompleta: la respuesta se cortó por el límite de tokens."""
-    ultima = len(doc.splitlines())
-    return ultima > 1 and any(e.code == "E05" and e.line == ultima for e in leido.errors)
+    lineas = doc.splitlines()
+    ultima = len(lineas)
+    # cortada = le faltan campos; una línea con campos de más (p. ej. opciones separadas con |) está mal formada, no cortada
+    return (ultima > 1 and len(lineas[-1].split("|")) < len(contrato().core)
+            and any(e.code == "E05" and e.line == ultima for e in leido.errors))
 
 
 def _texto(cabecera: dict, registros: list) -> str:

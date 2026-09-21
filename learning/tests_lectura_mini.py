@@ -240,3 +240,14 @@ class ComparacionTests(TestCase):
             r = self.client.post("/api/mini/comparar/", data={"texto": texto, "items": 7}, content_type="application/json",
                                  HTTP_ORIGIN="https://mini-format.pmoluna.com")
             self.assertEqual(r.status_code, 400)
+
+
+class CorteTests(SimpleTestCase):
+    def test_opciones_separadas_con_barra_no_es_corte(self):
+        # observado con deepseek-chat: opciones separadas con | en la última línea (campos de más, no de menos)
+        linea = item(4, "Que etapa ocurre en el citoplasma?", "glucolisis*|ciclo de Krebs|cadena respiratoria|fermentacion")
+        doc, leido, _ = lectura_mini._leer("\n".join([CAB, *BIEN[:3], linea]))
+        self.assertIn("E05", {e.code for e in leido.errors})
+        self.assertFalse(lectura_mini._cortado(leido, doc))
+        doc, leido, _ = lectura_mini._leer("\n".join([CAB, *BIEN[:3], "i4|L1|Respiracion celular|Que etapa"]))
+        self.assertTrue(lectura_mini._cortado(leido, doc))

@@ -14,6 +14,7 @@ encabezado Origin) con cuerpo JSON, una clase a la vez y como máximo SIMA_DEMO_
 from __future__ import annotations
 
 import json
+from datetime import timedelta
 import os
 
 from django.conf import settings
@@ -151,4 +152,61 @@ def detalle_clase(request, pk: int):
         "lectura": job.lectura_trace or {},
         "preguntas": _preguntas(job) if terminado else [],
         "error": job.error,
+    })
+
+
+ITEMS_COMPARACION = (12, 25, 40)
+
+
+@_api
+def crear_comparacion(request):
+    """Mismo fragmento de clase pedido en .mini y en JSON, en paralelo, con el prompt real de SIMA."""
+    from ..models import ComparacionFormato
+    from ..services import comparacion
+    from ..services.generation import generation_chunk_plan
+
+    if request.method != "POST":
+        return JsonResponse({"error": "usa POST"}, status=405)
+    try:
+        datos = json.loads(request.body or b"{}")
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "JSON inválido"}, status=400)
+    texto = str(datos.get("texto", "")).strip()
+    try:
+        items = int(datos.get("items", 12))
+    except (TypeError, ValueError):
+        items = 12
+    if items not in ITEMS_COMPARACION:
+        return JsonResponse({"error": f"items debe ser uno de {ITEMS_COMPARACION}"}, status=400)
+    if len(texto.split()) < 150 or len(texto) > MAX_CARACTERES:
+        return JsonResponse({"error": "la clase necesita entre 150 palabras y 150 000 caracteres"}, status=400)
+    hace_poco = timezone.now() - timedelta(minutes=10)
+    activa = ComparacionFormato.objects.filter(estado="en_curso", creado__gte=hace_poco).first()
+    if activa:
+        return JsonResponse({"error": "ya hay una comparación en curso", "id": activa.pk}, status=409)
+    if ComparacionFormato.objects.filter(creado__date=timezone.localdate()).count() >= _limite_diario():
+        return JsonResponse({"error": "se alcanzó el límite diario de comparaciones"}, status=429)
+    fragmento = generation_chunk_plan(texto, "cloud")[0][0]
+    c = ComparacionFormato.objects.create(
+        items=items, fragmento=fragmento, palabras=len(fragmento.split()),
+        modelo=getattr(settings, "CLOUD_MODEL", ""), proveedor=getattr(settings, "CLOUD_LABEL", ""),
+    )
+    comparacion.iniciar(c)
+    return JsonResponse({"id": c.pk}, status=201)
+
+
+@_api
+def detalle_comparacion(request, pk: int):
+    from ..models import ComparacionFormato
+    from ..services.comparacion import _precio
+
+    c = ComparacionFormato.objects.filter(pk=pk).first()
+    if not c:
+        return JsonResponse({"error": "no existe"}, status=404)
+    entrada, salida = _precio()
+    return JsonResponse({
+        "id": c.pk, "estado": c.estado, "terminado": c.estado != "en_curso", "items": c.items, "palabras": c.palabras,
+        "modelo": c.modelo, "proveedor": c.proveedor, "limite_salida": getattr(settings, "CLOUD_MAX_TOKENS", 0),
+        "precio": {"entrada": entrada, "salida": salida}, "mini": c.mini, "json": c.json,
+        "segundos": round((timezone.now() - c.creado).total_seconds()),
     })

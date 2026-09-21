@@ -205,3 +205,38 @@ class DemoApiTests(TestCase):
             r = self.client.post("/api/mini/clase/", data={"texto": self.TEXTO}, content_type="text/plain", HTTP_ORIGIN=self.ORIGEN)
             self.assertEqual(r.status_code, 403)
             encolar.assert_not_called()
+
+
+class ComparacionTests(TestCase):
+    def test_prompt_json_solo_cambia_el_formato(self):
+        from learning.services.comparacion import prompt_json
+        from learning.services.prompts import build_generation_prompt
+        p = build_generation_prompt("Texto de la clase.", language="es", items_requested=12, cloud_optimized=True)
+        j = prompt_json(p)
+        self.assertNotIn("i<N>|", j)
+        self.assertNotIn("Devuelve solo MINI", j)
+        self.assertIn('"correct"', j)
+        self.assertIn("Texto de la clase.", j)
+
+    def test_json_cortado_no_se_puede_leer(self):
+        from learning.services.comparacion import _leer_json, _validas_json
+        items, error = _leer_json('{"header":{},"items":[{"id":"i1","bloom":"L1"')
+        self.assertEqual(items, [])
+        self.assertTrue(error)
+        from minifmt import parse
+        doc = parse("\n".join([CAB, *BIEN]), lectura_mini.contrato(), strict=False)
+        self.assertEqual(_validas_json(doc.records), 4)
+
+    @override_settings(ALLOWED_HOSTS=["testserver"])
+    def test_endpoint_crea_la_comparacion(self):
+        texto = " ".join(["La fotosíntesis ocurre en el cloroplasto."] * 40)
+        with patch.dict("os.environ", {"SIMA_DEMO_API": "1"}), patch("learning.services.comparacion.iniciar") as iniciar:
+            r = self.client.post("/api/mini/comparar/", data={"texto": texto, "items": 25}, content_type="application/json",
+                                 HTTP_ORIGIN="https://mini-format.pmoluna.com")
+            self.assertEqual(r.status_code, 201)
+            iniciar.assert_called_once()
+            d = self.client.get(f"/api/mini/comparar/{r.json()['id']}/", HTTP_ORIGIN="https://mini-format.pmoluna.com").json()
+            self.assertEqual((d["items"], d["terminado"]), (25, False))
+            r = self.client.post("/api/mini/comparar/", data={"texto": texto, "items": 7}, content_type="application/json",
+                                 HTTP_ORIGIN="https://mini-format.pmoluna.com")
+            self.assertEqual(r.status_code, 400)

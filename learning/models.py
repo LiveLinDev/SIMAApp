@@ -853,3 +853,20 @@ def days_until(date_value):
     from django.utils import timezone as _tz
 
     return (date_value - _tz.localdate()).days
+
+
+class ComparacionFormato(models.Model):
+    """Mismo fragmento de clase pedido al modelo en .mini y en JSON (página mini-format.pmoluna.com/sima/)."""
+
+    creado = models.DateTimeField(auto_now_add=True)
+    estado = models.CharField(max_length=20, default="en_curso")
+    items = models.PositiveIntegerField(default=12)
+    palabras = models.PositiveIntegerField(default=0)
+    fragmento = models.TextField(blank=True)
+    modelo = models.CharField(max_length=120, blank=True)
+    proveedor = models.CharField(max_length=60, blank=True)
+    mini = models.JSONField(default=dict, blank=True)
+    json = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        ordering = ["-creado"]

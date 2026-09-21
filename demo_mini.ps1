@@ -7,6 +7,10 @@
 # La primera vez crea .env.demo a partir de .env: misma configuracion, base SQLite propia (db_mini.sqlite3)
 # y DeepSeek como proveedor. La clave se copia de DEEPSEEK_APIKEY / DEEPSEEK_API_KEY / CLOUD_API_KEY sin
 # mostrarse. .env.demo y db_mini.sqlite3 estan en .gitignore: no se suben al repositorio.
+#
+# Prueba en vivo: entrar como demo, «Nueva clase», curso «Biología celular», pegar el texto de
+# clase_bioenergetica.txt y procesar. El panel «Lectura de las respuestas del modelo» queda en la
+# clase, sección «Proceso».
 param(
     [ValidateSet("minifmt", "legado")][string]$Lector = "minifmt",
     [int]$Puerto = 8010,
@@ -43,12 +47,13 @@ $env:SIMA_LECTOR = $Lector
 py -3.14 manage.py migrate --noinput | Out-Null
 py -3.14 manage.py shell -c @"
 from django.contrib.auth.models import User
-from learning.models import Profile
+from learning.models import Course, Profile
 u, creado = User.objects.get_or_create(username='demo')
 if creado:
     u.set_password('demo-mini'); u.save()
 p, _ = Profile.objects.get_or_create(user=u)
-p.credit_balance = max(p.credit_balance, 100); p.save()
+p.plan = 'unlimited'; p.credit_balance = max(p.credit_balance, 5000); p.save()
+Course.objects.get_or_create(user=u, name='Biología celular')
 "@
 Write-Host ""
 Write-Host "SIMA con el lector '$Lector' en http://127.0.0.1:$Puerto   usuario: demo   clave: demo-mini"
